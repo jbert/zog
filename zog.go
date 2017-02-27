@@ -67,15 +67,16 @@ type Location8 interface {
 
 type R8Loc int
 
+// Order and numbering is important here, e.g. see decodeLD8
 const (
 	B R8Loc = iota
 	C
 	D
 	E
-	A
 	F
-	H
 	L
+	HL_PLACE_HOLDER
+	A
 )
 
 func (l R8Loc) Read8(z *Zog) byte {
@@ -90,15 +91,13 @@ func (l R8Loc) Read8(z *Zog) byte {
 	case E:
 		return z.reg.E
 
-	case A:
-		return z.reg.A
 	case F:
 		return z.reg.F
-
-	case H:
-		return z.reg.H
 	case L:
 		return z.reg.L
+
+	case A:
+		return z.reg.A
 
 	default:
 		panic(fmt.Errorf("Unrecognised R8 Location: %d", int(l)))
@@ -117,15 +116,13 @@ func (l R8Loc) Write8(z *Zog, n byte) {
 	case E:
 		z.reg.E = n
 
-	case A:
-		z.reg.A = n
 	case F:
 		z.reg.F = n
-
-	case H:
-		z.reg.H = n
 	case L:
 		z.reg.L = n
+
+	case A:
+		z.reg.A = n
 
 	default:
 		panic(fmt.Errorf("Unrecognised R8 Location: %d", int(l)))
@@ -144,15 +141,13 @@ func (l R8Loc) String() string {
 	case E:
 		return "E"
 
-	case A:
-		return "A"
 	case F:
 		return "F"
-
-	case H:
-		return "H"
 	case L:
 		return "L"
+
+	case A:
+		return "A"
 
 	default:
 		panic(fmt.Errorf("Unrecognised R8 Location: %d", int(l)))
@@ -191,7 +186,9 @@ func (l R16Loc) Read16(z *Zog) uint16 {
 	case AF:
 		return combine(A, F)
 	case HL:
-		return combine(H, L)
+		hi := z.reg.H
+		lo := z.reg.L
+		return uint16(hi)<<8 | uint16(lo)
 
 	case SP:
 		return z.reg.SP
@@ -223,7 +220,10 @@ func (l R16Loc) Write16(z *Zog, nn uint16) {
 		split(A, F, nn)
 		return
 	case HL:
-		split(H, L, nn)
+		hi := byte(nn >> 8)
+		z.reg.H = hi
+		lo := byte(nn)
+		z.reg.L = lo
 		return
 
 	case SP:
@@ -263,9 +263,42 @@ func (l R16Loc) String() string {
 
 type Instruction interface {
 	Execute(z *Zog) error
+	String() string
+}
+
+type ILD8 struct {
+	from, to R8Loc
+}
+
+func (ld *ILD8) String() string {
+	return fmt.Sprintf("LD %s, %s", ld.to, ld.from)
+}
+func (ld *ILD8) Execute(z *Zog) error {
+	n := z.Read8(ld.from)
+	z.Write8(ld.to, n)
+	return nil
+}
+
+func decodeLD8(n byte) (*ILD8, error) {
+	low3bits := n & 0x07
+	if low3bits == 6 {
+		panic("(HL) not yet implemented")
+	}
+	from := R8Loc(low3bits)
+
+	next3 := (n & 0x38) >> 3
+	if next3 == 6 {
+		panic("(HL) not yet implemented")
+	}
+	to := R8Loc(next3)
+	return &ILD8{from: from, to: to}, nil
 }
 
 func Decode(n byte) (Instruction, error) {
+	if n >= 0x40 && n <= 0x7f {
+		// Main part of 8bit load group
+		return decodeLD8(n)
+	}
 	return nil, fmt.Errorf("Failed to decode: %d", n)
 }
 
