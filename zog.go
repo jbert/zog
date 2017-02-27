@@ -68,6 +68,10 @@ type Location8 interface {
 type R8Loc int
 
 // Order and numbering is important here, e.g. see decodeLD8
+
+// LD src		B C D E F L (HL) A
+// LD dst		B C D E H L (HL) A
+// ADD src	B C D E F L (HL) A
 const (
 	B R8Loc = iota
 	C
@@ -77,6 +81,7 @@ const (
 	L
 	HL_PLACE_HOLDER
 	A
+	H
 )
 
 func (l R8Loc) Read8(z *Zog) byte {
@@ -93,6 +98,8 @@ func (l R8Loc) Read8(z *Zog) byte {
 
 	case F:
 		return z.reg.F
+	case H:
+		return z.reg.H
 	case L:
 		return z.reg.L
 
@@ -118,6 +125,8 @@ func (l R8Loc) Write8(z *Zog, n byte) {
 
 	case F:
 		z.reg.F = n
+	case H:
+		z.reg.H = n
 	case L:
 		z.reg.L = n
 
@@ -143,6 +152,8 @@ func (l R8Loc) String() string {
 
 	case F:
 		return "F"
+	case H:
+		return "H"
 	case L:
 		return "L"
 
@@ -267,15 +278,15 @@ type Instruction interface {
 }
 
 type ILD8 struct {
-	from, to R8Loc
+	src, dst R8Loc
 }
 
 func (ld *ILD8) String() string {
-	return fmt.Sprintf("LD %s, %s", ld.to, ld.from)
+	return fmt.Sprintf("LD %s, %s", ld.dst, ld.src)
 }
 func (ld *ILD8) Execute(z *Zog) error {
-	n := z.Read8(ld.from)
-	z.Write8(ld.to, n)
+	n := z.Read8(ld.src)
+	z.Write8(ld.dst, n)
 	return nil
 }
 
@@ -284,14 +295,18 @@ func decodeLD8(n byte) (*ILD8, error) {
 	if low3bits == 6 {
 		panic("(HL) not yet implemented")
 	}
-	from := R8Loc(low3bits)
+	src := R8Loc(low3bits)
 
 	next3 := (n & 0x38) >> 3
 	if next3 == 6 {
 		panic("(HL) not yet implemented")
 	}
-	to := R8Loc(next3)
-	return &ILD8{from: from, to: to}, nil
+	dst := R8Loc(next3)
+	if next3 == 4 {
+		// Can read F, but not write to it
+		dst = H
+	}
+	return &ILD8{src: src, dst: dst}, nil
 }
 
 func Decode(n byte) (Instruction, error) {

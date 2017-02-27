@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadSave8(t *testing.T) {
-	regs := []Location8{B, C, D, E, A, F, H, L}
+	regs := []Location8{B, C, D, E, A, F, L}
 	z := New(1024)
 	for _, r := range regs {
 		n := z.Read8(r)
@@ -59,5 +59,30 @@ func TestHiLoLoadSaveAdHoc(t *testing.T) {
 	n = z.Read8(C)
 	if n != 0x34 {
 		t.Fail()
+	}
+}
+
+func TestDecodeLDBasic(t *testing.T) {
+	testCases := []struct {
+		code byte
+		str  string
+	}{
+		{0x7f, "LD A, A"},
+		{0x41, "LD B, C"},
+		{0x4c, "LD C, F"},
+		{0x67, "LD H, A"},
+		{0x64, "LD H, F"},
+	}
+	for _, tc := range testCases {
+		log.Printf("About to decode: %x", tc.code)
+		i, err := Decode(tc.code)
+		if err != nil {
+			log.Printf("Failed: %s", err)
+			t.Fail()
+		}
+		if i.String() != tc.str {
+			log.Printf("Wrong instruction: %s != %s", i, tc.str)
+			t.Fail()
+		}
 	}
 }
