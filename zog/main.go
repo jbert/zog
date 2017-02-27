@@ -15,9 +15,11 @@ func main() {
 			HALT
 		`)
 	*/
-	b := z.Read8(zog.B)
-	fmt.Printf("%s holds %v\n", zog.B, b)
+	n := z.Read8(zog.B)
+	fmt.Printf("%s holds %v\n", zog.B, n)
 	z.Write8(zog.B, 0x10)
-	b = z.Read8(zog.B)
-	fmt.Printf("%s holds %v\n", zog.B, b)
+	n = z.Read8(zog.B)
+	fmt.Printf("%s holds %v\n", zog.B, n)
+	nn := z.Read16(zog.BC)
+	fmt.Printf("%s holds %v\n", zog.BC, nn)
 }

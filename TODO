@@ -1,3 +1,9 @@
+- add Read/Write16 (want it to read (PC))
+
+- Add a Run loop
+  - single byte instructions initially
+  - fetch, then execute instrucion
+
 - Add a LD8 instruction which copies a single byte
   - register to register
   - and immediate constant
@@ -10,7 +16,7 @@
 
 - add INC8 and DEC8
 
-- add (HL) address mode
+- add (HL) address mode to R8Loc
 
 - add LD16, INC16, DEC16
 
