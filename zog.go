@@ -26,6 +26,21 @@ func New(memSize uint16) *Zog {
 	}
 }
 
+func (z *Zog) Peek(addr uint16) (byte, error) {
+	if int(addr) >= len(z.mem) {
+		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
+	}
+	return z.mem[addr], nil
+}
+
+func (z *Zog) Poke(addr uint16, n byte) error {
+	if int(addr) >= len(z.mem) {
+		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
+	}
+	z.mem[addr] = n
+	return nil
+}
+
 func (z *Zog) Read8(l Location8) byte {
 	return l.Read8(z)
 }
@@ -243,5 +258,31 @@ func (l R16Loc) String() string {
 
 	default:
 		panic(fmt.Errorf("Unrecognised R16 Location: %d", int(l)))
+	}
+}
+
+type Instruction interface {
+	Execute(z *Zog) error
+}
+
+func Decode(n byte) (Instruction, error) {
+	return nil, fmt.Errorf("Failed to decode: %d", n)
+}
+
+func (z *Zog) Run() error {
+	for {
+		n, err := z.Peek(z.reg.PC)
+		if err != nil {
+			return err
+		}
+
+		// TODO - decoder with state for multiple-byte instructions
+		i, err := Decode(n)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("I: %s\n", i)
+		i.Execute(z)
+		z.reg.PC++
 	}
 }

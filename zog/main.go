@@ -15,11 +15,9 @@ func main() {
 			HALT
 		`)
 	*/
-	n := z.Read8(zog.B)
-	fmt.Printf("%s holds %v\n", zog.B, n)
-	z.Write8(zog.B, 0x10)
-	n = z.Read8(zog.B)
-	fmt.Printf("%s holds %v\n", zog.B, n)
-	nn := z.Read16(zog.BC)
-	fmt.Printf("%s holds %v\n", zog.BC, nn)
+	z.Poke(0, 0x41)
+	err := z.Run()
+	if err != nil {
+		fmt.Printf("Terminated: %s\n", err)
+	}
 }

@@ -1,4 +1,4 @@
-- add Read/Write16 (want it to read (PC))
+DONE - add Read/Write16 (want it to read (PC))
 
 - Add a Run loop
   - single byte instructions initially
