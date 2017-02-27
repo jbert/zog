@@ -82,7 +82,7 @@ const (
 	E
 	F
 	L
-	HL_PLACE_HOLDER
+	HL_CONTENTS
 	A
 	H
 )
@@ -105,6 +105,13 @@ func (l R8Loc) Read8(z *Zog) byte {
 		return z.reg.H
 	case L:
 		return z.reg.L
+	case HL_CONTENTS:
+		addr := z.Read16(HL)
+		n, err := z.Peek(addr)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to fetch (HL) [%04X]: %s", addr, err))
+		}
+		return n
 
 	case A:
 		return z.reg.A
@@ -132,6 +139,12 @@ func (l R8Loc) Write8(z *Zog, n byte) {
 		z.reg.H = n
 	case L:
 		z.reg.L = n
+	case HL_CONTENTS:
+		addr := z.Read16(HL)
+		err := z.Poke(addr, n)
+		if err != nil {
+			panic(fmt.Errorf("Can't write to addr [%04x]: %s", addr, err))
+		}
 
 	case A:
 		z.reg.A = n
@@ -159,6 +172,8 @@ func (l R8Loc) String() string {
 		return "H"
 	case L:
 		return "L"
+	case HL_CONTENTS:
+		return "(HL)"
 
 	case A:
 		return "A"
@@ -294,14 +309,7 @@ func (ld *ILD8) Execute(z *Zog) error {
 }
 
 func decodeLD8(hi3, lo3 byte) (*ILD8, error) {
-	if lo3 == 6 {
-		panic("(HL) not yet implemented")
-	}
 	src := R8Loc(lo3)
-
-	if hi3 == 6 {
-		panic("(HL) not yet implemented")
-	}
 	dst := R8Loc(hi3)
 	if hi3 == 4 {
 		// Can read F, but not write to it
@@ -324,9 +332,6 @@ func (ld *ILD8Immediate) Execute(z *Zog) error {
 }
 
 func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, error) {
-	if hi3 == 6 {
-		panic("(HL) not yet implemented")
-	}
 	dst := R8Loc(hi3)
 	n, err := getNext()
 	if err != nil {

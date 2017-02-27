@@ -74,6 +74,9 @@ func TestDecodeLDBasic(t *testing.T) {
 		{[]byte{0x67}, "LD H, A"},
 		{[]byte{0x64}, "LD H, F"},
 
+		{[]byte{0x7e}, "LD A, (HL)"},
+		{[]byte{0x77}, "LD (HL), A"},
+
 		{[]byte{0x3e, 0xab}, "LD A, 0xAB"},
 	}
 	for _, tc := range testCases {
