@@ -1,0 +1,19 @@
+- Add a LD8 instruction which copies a single byte
+  - register to register
+  - and immediate constant
+
+- Add a RST16 hack which debug-prints contents of A?
+  - need a way to run until test
+
+- write a program which stores 0x16 to A then prints it
+
+
+- add INC8 and DEC8
+
+- add (HL) address mode
+
+- add LD16, INC16, DEC16
+
+- add DJNZ
+
+profit
