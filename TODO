@@ -1,10 +1,10 @@
 DONE - add Read/Write16 (want it to read (PC))
 
 DONE - Add a Run loop
-  - single byte instructions initially
-  - fetch, then execute instrucion
-  - gah. ok, look at the loc8 bit patterns for other instructions and work out categories
-  (LD src, dest has different bit patterns for src and dest, work out how many funcs we need for 3bits => reg)
+  DONE- single byte instructions initially
+  DONE - fetch, then execute instrucion
+  DONE- gah. ok, look at the loc8 bit patterns for other instructions and work out categories
+  DONE (LD src, dest has different bit patterns for src and dest, work out how many funcs we need for 3bits => reg)
 
 - Add a LD8 instruction which copies a single byte
   DONE - register to register

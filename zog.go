@@ -1,6 +1,9 @@
 package zog
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 type Registers struct {
 	A, F byte
@@ -290,46 +293,89 @@ func (ld *ILD8) Execute(z *Zog) error {
 	return nil
 }
 
-func decodeLD8(n byte) (*ILD8, error) {
-	low3bits := n & 0x07
-	if low3bits == 6 {
+func decodeLD8(hi3, lo3 byte) (*ILD8, error) {
+	if lo3 == 6 {
 		panic("(HL) not yet implemented")
 	}
-	src := R8Loc(low3bits)
+	src := R8Loc(lo3)
 
-	next3 := (n & 0x38) >> 3
-	if next3 == 6 {
+	if hi3 == 6 {
 		panic("(HL) not yet implemented")
 	}
-	dst := R8Loc(next3)
-	if next3 == 4 {
+	dst := R8Loc(hi3)
+	if hi3 == 4 {
 		// Can read F, but not write to it
 		dst = H
 	}
 	return &ILD8{src: src, dst: dst}, nil
 }
 
-func Decode(n byte) (Instruction, error) {
-	if n >= 0x40 && n <= 0x7f {
-		// Main part of 8bit load group
-		return decodeLD8(n)
+type ILD8Immediate struct {
+	dst R8Loc
+	n   byte
+}
+
+func (ld *ILD8Immediate) String() string {
+	return fmt.Sprintf("LD %s, 0x%X", ld.dst, ld.n)
+}
+func (ld *ILD8Immediate) Execute(z *Zog) error {
+	z.Write8(ld.dst, ld.n)
+	return nil
+}
+
+func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, error) {
+	if hi3 == 6 {
+		panic("(HL) not yet implemented")
 	}
-	return nil, fmt.Errorf("Failed to decode: %d", n)
+	dst := R8Loc(hi3)
+	n, err := getNext()
+	if err != nil {
+		return nil, err
+	}
+	return &ILD8Immediate{dst: dst, n: n}, nil
+}
+
+func Decode(getNext func() (byte, error)) (Instruction, error) {
+	var n byte
+	var err error
+	for {
+		n, err = getNext()
+		if err != nil {
+			return nil, err
+		}
+
+		lo3 := n & 0x07
+		hi3 := (n & 0x38) >> 3
+		top2 := (n & 0xc0) >> 6
+
+		//		fmt.Printf("top2 %x, hi3 %x, lo3 %x\n", top2, hi3, lo3)
+
+		if top2 == 0x01 {
+			// Main part of 8bit load group
+			return decodeLD8(hi3, lo3)
+		} else if top2 == 0x00 && lo3 == 6 {
+			return decodeLD8Immediate(hi3, getNext)
+		} else {
+			break
+		}
+	}
+	return nil, fmt.Errorf("Failed to decode: %02x", n)
 }
 
 func (z *Zog) Run() error {
-	for {
+	getNext := func() (byte, error) {
 		n, err := z.Peek(z.reg.PC)
-		if err != nil {
-			return err
-		}
+		z.reg.PC++
+		return n, err
+	}
 
+	for {
 		// TODO - decoder with state for multiple-byte instructions
-		i, err := Decode(n)
+		i, err := Decode(getNext)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("I: %s\n", i)
+		log.Printf("I: %s\n", i)
 		i.Execute(z)
 		z.reg.PC++
 	}

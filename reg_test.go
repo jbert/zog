@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"fmt"
 	"log"
 	"testing"
 )
@@ -64,18 +65,30 @@ func TestHiLoLoadSaveAdHoc(t *testing.T) {
 
 func TestDecodeLDBasic(t *testing.T) {
 	testCases := []struct {
-		code byte
-		str  string
+		codes []byte
+		str   string
 	}{
-		{0x7f, "LD A, A"},
-		{0x41, "LD B, C"},
-		{0x4c, "LD C, F"},
-		{0x67, "LD H, A"},
-		{0x64, "LD H, F"},
+		{[]byte{0x7f}, "LD A, A"},
+		{[]byte{0x41}, "LD B, C"},
+		{[]byte{0x4c}, "LD C, F"},
+		{[]byte{0x67}, "LD H, A"},
+		{[]byte{0x64}, "LD H, F"},
+
+		{[]byte{0x3e, 0xab}, "LD A, 0xAB"},
 	}
 	for _, tc := range testCases {
-		log.Printf("About to decode: %x", tc.code)
-		i, err := Decode(tc.code)
+		log.Printf("About to decode: %X", tc.codes)
+		codes := tc.codes
+		getNext := func() (byte, error) {
+			if len(codes) == 0 {
+				t.Fail()
+				return 0, fmt.Errorf("ERROR: overrun in decode")
+			}
+			c := codes[0]
+			codes = codes[1:]
+			return c, nil
+		}
+		i, err := Decode(getNext)
 		if err != nil {
 			log.Printf("Failed: %s", err)
 			t.Fail()
@@ -84,5 +97,6 @@ func TestDecodeLDBasic(t *testing.T) {
 			log.Printf("Wrong instruction: %s != %s", i, tc.str)
 			t.Fail()
 		}
+		log.Printf("Decoded %s", i)
 	}
 }
