@@ -12,11 +12,6 @@ func Single(i Instruction) func([]string) (Instruction, error) {
 	}
 }
 
-var AssemblyParser map[string]func([]string) (Instruction, error) = map[string]func([]string) (Instruction, error){
-	"LD":   ParseLD,
-	"HALT": Single(&IHalt{}),
-}
-
 var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 	"B":    B,
 	"C":    C,
@@ -27,6 +22,32 @@ var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 	"(HL)": HL_CONTENTS,
 	"A":    A,
 	"H":    H,
+}
+
+var AssemblyParser map[string]func([]string) (Instruction, error) = map[string]func([]string) (Instruction, error){
+	"LD":   ParseLD,
+	"ADD":  ParseADD,
+	"HALT": Single(&IHalt{}),
+}
+
+func ParseADD(tokens []string) (Instruction, error) {
+	// We permit (but do not require) a leading "A, "
+	if len(tokens) == 2 {
+		if tokens[0] == "A" {
+			tokens = tokens[1:]
+		} else {
+			return nil, fmt.Errorf("Must have one token (or leading A,): [%v]", tokens)
+		}
+	}
+
+	src, ok := Reg2R8Loc[tokens[0]]
+	if !ok {
+		return nil, fmt.Errorf("Can't parse [%s] as src R8Loc", tokens[0])
+	}
+
+	//	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
+	hi3 := byte(0)
+	return decodeAccumOp(hi3, byte(src))
 }
 
 func ParseLD(tokens []string) (Instruction, error) {

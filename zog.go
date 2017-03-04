@@ -418,7 +418,31 @@ func (i *IAccumOp) Execute(z *Zog) error {
 	return nil
 }
 func (i *IAccumOp) Encode() []byte {
-	panic("TODO - impl")
+	top2 := byte(2)
+	lo3 := byte(i.src)
+	var hi3 byte
+	// TODO - drive this from the same table used in the decode logic
+	switch i.name {
+	case "ADD":
+		hi3 = 0
+	case "ADC":
+		hi3 = 1
+	case "SUB":
+		hi3 = 2
+	case "SBC":
+		hi3 = 3
+	case "AND":
+		hi3 = 4
+	case "XOR":
+		hi3 = 5
+	case "OR":
+		hi3 = 6
+	case "CP":
+		hi3 = 7
+	default:
+		panic("ack")
+	}
+	return []byte{top2<<6 | hi3<<3 | lo3}
 }
 
 func AccumAdd(z *Zog, a, n byte) error {
@@ -556,7 +580,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 func (z *Zog) Run() (byte, error) {
 	getNext := func() (byte, error) {
 		n, err := z.Peek(z.reg.PC)
-		fmt.Printf("PC: %04X %02X\n", z.reg.PC, n)
+		//		fmt.Printf("PC: %04X %02X\n", z.reg.PC, n)
 		z.reg.PC++
 		return n, err
 	}

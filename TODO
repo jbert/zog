@@ -22,6 +22,8 @@ DONE - test code needs to:
     - peek reg A or something
   - testcases {"LD A, 10", 10}
 
+- pull out a general "hi3" string <-> num for logic ops etc
+
 DONE - add the arithmetic stuff
    - but parameterise the operation
    - so we don't have a type per instr
