@@ -1,8 +1,8 @@
 package zog
 
 import (
+	"errors"
 	"fmt"
-	"log"
 )
 
 type Registers struct {
@@ -373,6 +373,15 @@ func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, er
 	return &ILD8Immediate{dst: dst, n: n}, nil
 }
 
+type IHalt struct{}
+
+func (i *IHalt) String() string {
+	return "HALT"
+}
+func (i *IHalt) Execute(z *Zog) error {
+	return errors.New("Attempt to execute HALT")
+}
+
 type IAccumOp struct {
 	src  R8Loc
 	op   func(z *Zog, a, n byte) error
@@ -504,6 +513,11 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 
 		case 1:
 			// Main part of 8bit load group
+
+			// In place of LD (HL), (HL) we have HALT
+			if n == 0x76 {
+				return &IHalt{}, nil
+			}
 			return decodeLD8(hi3, lo3)
 
 		case 2:
@@ -516,9 +530,10 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 	return nil, fmt.Errorf("Failed to decode: %02x", n)
 }
 
-func (z *Zog) Run() error {
+func (z *Zog) Run() (byte, error) {
 	getNext := func() (byte, error) {
 		n, err := z.Peek(z.reg.PC)
+		fmt.Printf("PC: %04X %02X\n", z.reg.PC, n)
 		z.reg.PC++
 		return n, err
 	}
@@ -527,10 +542,13 @@ func (z *Zog) Run() error {
 		// TODO - decoder with state for multiple-byte instructions
 		i, err := Decode(getNext)
 		if err != nil {
-			return err
+			return 0, err
 		}
-		log.Printf("I: %s\n", i)
+		fmt.Printf("I: %s\n", i)
+		if _, ok := i.(*IHalt); ok {
+			// HALT instruction - return A reg to caller
+			return z.reg.A, nil
+		}
 		i.Execute(z)
-		z.reg.PC++
 	}
 }
