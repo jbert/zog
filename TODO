@@ -10,6 +10,32 @@ DONE - Add a LD8 instruction which copies a single byte
   DONE - register to register
   DONE - and immediate constant
 
+- Add basic assembler
+  - no need for labels yet
+  - can we use a real parser?
+  - or just trim of opcode and dispatch on that?
+
+- test code needs to:
+  - run emulator with "exit on halt" debug flag set
+    - or run one instruction at a time
+    - and have an IsHalted() method (interrupts could unhalt?)
+    - peek reg A or something
+  - testcases {"LD A, 10", 10}
+
+DONE - add the arithmetic stuff
+   - but parameterise the operation
+   - so we don't have a type per instr
+   - just a "two arg 8 bit"
+   - and make LD an instance of it
+   - pass in a func() to do the work on the ops?
+
+- add some ad hoc tests for logic and arith ops
+  - include desired flag outputs
+    (set, cleared, unchanged (two tests needed!)) for all relephant flags
+
+- add more complete flag handling
+  - and some tests
+
 - Add a RST16 hack which debug-prints contents of A?
   - need a way to run until test
 

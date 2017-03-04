@@ -53,6 +53,39 @@ func (z *Zog) Write8(l Location8, n byte) {
 	return
 }
 
+// F flag register:
+// S Z X H  X P/V N C
+type flag int
+
+const (
+	F_C flag = iota
+	F_N
+	F_PV
+	F_X1
+	F_H
+	F_X2
+	F_Z
+	F_S
+)
+
+func (z *Zog) SetFlag(f flag, new bool) {
+	mask := byte(1) << uint(f)
+	flags := z.Read8(F)
+	if new {
+		flags = flags | mask
+	} else {
+		mask = ^mask
+		flags = flags & mask
+	}
+	z.Write8(F, flags)
+}
+func (z *Zog) GetFlag(f flag) bool {
+	mask := byte(1) << uint(f)
+	flags := z.Read8(F)
+	flag := flags & mask
+	return flag != 0
+}
+
 func (z *Zog) Read16(l Location16) uint16 {
 	return l.Read16(z)
 }
@@ -340,6 +373,110 @@ func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, er
 	return &ILD8Immediate{dst: dst, n: n}, nil
 }
 
+type IAccumOp struct {
+	src  R8Loc
+	op   func(z *Zog, a, n byte) error
+	name string
+}
+
+func (i *IAccumOp) String() string {
+	return fmt.Sprintf("%s A, %s", i.name, i.src)
+}
+func (i *IAccumOp) Execute(z *Zog) error {
+	a := z.Read8(A)
+	n := z.Read8(i.src)
+	i.op(z, a, n)
+	return nil
+}
+
+func AccumAdd(z *Zog, a, n byte) error {
+	ret := int(a) + int(n)
+	// TODO: consider other flags, add helpers
+	z.SetFlag(F_C, ret > 0xff)
+	z.Write8(A, byte(ret))
+	return nil
+}
+
+func AccumAdc(z *Zog, a, n byte) error {
+	ret := int(a) + int(n)
+	carry := z.GetFlag(F_C)
+	if carry {
+		ret++
+	}
+	// TODO: consider other flags, add helpers
+	z.SetFlag(F_C, ret > 0xff)
+	z.Write8(A, byte(ret))
+	return nil
+}
+
+func AccumSub(z *Zog, a, n byte) error {
+	ret := int(a) - int(n)
+	// TODO: consider other flags, add helpers
+	z.SetFlag(F_C, ret < 0x00)
+	z.Write8(A, byte(ret))
+	return nil
+}
+
+func AccumSbc(z *Zog, a, n byte) error {
+	ret := int(a) - int(n)
+	carry := z.GetFlag(F_C)
+	if carry {
+		ret--
+	}
+	// TODO: consider other flags, add helpers
+	z.SetFlag(F_C, ret < 0x00)
+	z.Write8(A, byte(ret))
+	return nil
+}
+
+func AccumAnd(z *Zog, a, n byte) error {
+	ret := a & n
+	z.SetFlag(F_C, false)
+	z.Write8(A, ret)
+	return nil
+}
+
+func AccumXor(z *Zog, a, n byte) error {
+	ret := a ^ n
+	z.SetFlag(F_C, false)
+	z.Write8(A, ret)
+	return nil
+}
+
+func AccumOr(z *Zog, a, n byte) error {
+	ret := a | n
+	z.SetFlag(F_C, false)
+	z.Write8(A, ret)
+	return nil
+}
+
+func AccumCp(z *Zog, a, n byte) error {
+	ret := int(a) - int(n)
+	// TODO: consider other flags, add helpers
+	z.SetFlag(F_C, ret < 0x00)
+	return nil
+}
+
+func decodeAccumOp(hi3, lo3 byte) (Instruction, error) {
+	// Arithmetic and logical with accumulator.
+	ops := []struct {
+		name string
+		op   func(z *Zog, a, n byte) error
+	}{
+		{"ADD", AccumAdd},
+		{"ADC", AccumAdc},
+		{"SUB", AccumSub},
+		{"SBC", AccumSbc},
+		{"AND", AccumAnd},
+		{"XOR", AccumXor},
+		{"OR", AccumOr},
+		{"CP", AccumCp},
+	}
+
+	src := R8Loc(lo3)
+	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
+}
+
 func Decode(getNext func() (byte, error)) (Instruction, error) {
 	var n byte
 	var err error
@@ -355,12 +492,24 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 
 		//		fmt.Printf("top2 %x, hi3 %x, lo3 %x\n", top2, hi3, lo3)
 
-		if top2 == 0x01 {
+		switch top2 {
+
+		case 0x00:
+			switch lo3 {
+			case 6:
+				return decodeLD8Immediate(hi3, getNext)
+			default:
+				break
+			}
+
+		case 0x01:
 			// Main part of 8bit load group
 			return decodeLD8(hi3, lo3)
-		} else if top2 == 0x00 && lo3 == 6 {
-			return decodeLD8Immediate(hi3, getNext)
-		} else {
+
+		case 0x10:
+			return decodeAccumOp(hi3, lo3)
+
+		default:
 			break
 		}
 	}
