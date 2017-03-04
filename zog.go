@@ -494,7 +494,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 
 		switch top2 {
 
-		case 0x00:
+		case 0:
 			switch lo3 {
 			case 6:
 				return decodeLD8Immediate(hi3, getNext)
@@ -502,11 +502,11 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 				break
 			}
 
-		case 0x01:
+		case 1:
 			// Main part of 8bit load group
 			return decodeLD8(hi3, lo3)
 
-		case 0x10:
+		case 2:
 			return decodeAccumOp(hi3, lo3)
 
 		default:
