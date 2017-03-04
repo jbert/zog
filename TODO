@@ -23,6 +23,11 @@ DONE - test code needs to:
   - testcases {"LD A, 10", 10}
 
 - pull out a general "hi3" string <-> num for logic ops etc
+  - and use it to initialise the MakeParseAccum in AssemblyParser
+
+- factor out common helper functions for assembler
+- support more ops than ADD
+- add tests for logic ops using assembler
 
 DONE - add the arithmetic stuff
    - but parameterise the operation

@@ -11,9 +11,9 @@ func main() {
 	memSize := uint16(16 * 1024)
 	z := zog.New(memSize)
 	instructions, err := zog.Assemble(`
-			LD C, 0x11
+			LD C, 0x33
 			LD A, 0x22
-			ADD A, C
+			XOR C
 			HALT
 		`)
 	if err != nil {

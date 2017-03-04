@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func Single(i Instruction) func([]string) (Instruction, error) {
+func MakeNoArgs(i Instruction) func([]string) (Instruction, error) {
 	return func([]string) (Instruction, error) {
 		return i, nil
 	}
@@ -26,28 +26,35 @@ var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 
 var AssemblyParser map[string]func([]string) (Instruction, error) = map[string]func([]string) (Instruction, error){
 	"LD":   ParseLD,
-	"ADD":  ParseADD,
-	"HALT": Single(&IHalt{}),
+	"ADD":  MakeParseAccum(0),
+	"ADC":  MakeParseAccum(1),
+	"SUB":  MakeParseAccum(2),
+	"SBC":  MakeParseAccum(3),
+	"AND":  MakeParseAccum(4),
+	"XOR":  MakeParseAccum(5),
+	"OR":   MakeParseAccum(6),
+	"CP":   MakeParseAccum(7),
+	"HALT": MakeNoArgs(&IHalt{}),
 }
 
-func ParseADD(tokens []string) (Instruction, error) {
-	// We permit (but do not require) a leading "A, "
-	if len(tokens) == 2 {
-		if tokens[0] == "A" {
-			tokens = tokens[1:]
-		} else {
-			return nil, fmt.Errorf("Must have one token (or leading A,): [%v]", tokens)
+func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
+	return func(tokens []string) (Instruction, error) {
+		// We permit (but do not require) a leading "A, "
+		if len(tokens) == 2 {
+			if tokens[0] == "A" {
+				tokens = tokens[1:]
+			} else {
+				return nil, fmt.Errorf("Must have one token (or leading A,): [%v]", tokens)
+			}
 		}
-	}
 
-	src, ok := Reg2R8Loc[tokens[0]]
-	if !ok {
-		return nil, fmt.Errorf("Can't parse [%s] as src R8Loc", tokens[0])
-	}
+		src, ok := Reg2R8Loc[tokens[0]]
+		if !ok {
+			return nil, fmt.Errorf("Can't parse [%s] as src R8Loc", tokens[0])
+		}
 
-	//	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
-	hi3 := byte(0)
-	return decodeAccumOp(hi3, byte(src))
+		return decodeAccumOp(hi3, byte(src))
+	}
 }
 
 func ParseLD(tokens []string) (Instruction, error) {
