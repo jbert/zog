@@ -12,11 +12,11 @@ DONE - Add a LD8 instruction which copies a single byte
 
 - Add basic assembler
   - no need for labels yet
-  - can we use a real parser?
-  - or just trim of opcode and dispatch on that?
+  - need to expand instruction types with some kind of r, n, nn helpers
+  - instructions need to be able to Encode themselves
 
-- test code needs to:
-  - run emulator with "exit on halt" debug flag set
+DONE - test code needs to:
+  DONE - run emulator with "exit on halt" debug flag set
     - or run one instruction at a time
     - and have an IsHalted() method (interrupts could unhalt?)
     - peek reg A or something

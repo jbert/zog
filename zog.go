@@ -326,6 +326,7 @@ func (l R16Loc) String() string {
 type Instruction interface {
 	Execute(z *Zog) error
 	String() string
+	Encode() []byte
 }
 
 type ILD8 struct {
@@ -339,6 +340,16 @@ func (ld *ILD8) Execute(z *Zog) error {
 	n := z.Read8(ld.src)
 	z.Write8(ld.dst, n)
 	return nil
+}
+func (ld *ILD8) Encode() []byte {
+	hi3 := byte(ld.dst)
+	// Can read F, but not write to it
+	if ld.dst == H {
+		hi3 = byte(4)
+	}
+	lo3 := byte(ld.src)
+	top2 := byte(1)
+	return []byte{top2<<6 | hi3<<3 | lo3}
 }
 
 func decodeLD8(hi3, lo3 byte) (*ILD8, error) {
@@ -363,6 +374,12 @@ func (ld *ILD8Immediate) Execute(z *Zog) error {
 	z.Write8(ld.dst, ld.n)
 	return nil
 }
+func (ld *ILD8Immediate) Encode() []byte {
+	hi3 := byte(ld.dst)
+	lo3 := byte(6)
+	top2 := byte(0)
+	return []byte{top2<<6 | hi3<<3 | lo3, ld.n}
+}
 
 func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, error) {
 	dst := R8Loc(hi3)
@@ -381,6 +398,9 @@ func (i *IHalt) String() string {
 func (i *IHalt) Execute(z *Zog) error {
 	return errors.New("Attempt to execute HALT")
 }
+func (i *IHalt) Encode() []byte {
+	return []byte{0x76}
+}
 
 type IAccumOp struct {
 	src  R8Loc
@@ -396,6 +416,9 @@ func (i *IAccumOp) Execute(z *Zog) error {
 	n := z.Read8(i.src)
 	i.op(z, a, n)
 	return nil
+}
+func (i *IAccumOp) Encode() []byte {
+	panic("TODO - impl")
 }
 
 func AccumAdd(z *Zog, a, n byte) error {
@@ -551,4 +574,16 @@ func (z *Zog) Run() (byte, error) {
 		}
 		i.Execute(z)
 	}
+}
+
+func (z *Zog) Encode(addr uint16, instructions []Instruction) error {
+	// The i here is the instruction, not the loop var
+	for _, i := range instructions {
+		buf := i.Encode()
+		for _, b := range buf {
+			z.Poke(addr, b)
+			addr++
+		}
+	}
+	return nil
 }
