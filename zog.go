@@ -68,6 +68,30 @@ const (
 	F_S
 )
 
+func (f flag) String() string {
+	switch f {
+	case F_C:
+		return "C"
+	case F_N:
+		return "N"
+	case F_PV:
+		return "PV"
+	case F_X1:
+		return "X1"
+	case F_H:
+		return "H"
+	case F_X2:
+		return "X2"
+	case F_Z:
+		return "Z"
+	case F_S:
+		return "S"
+	default:
+		panic(fmt.Sprintf("Unknown flag: %d", f))
+	}
+
+}
+
 func (z *Zog) SetFlag(f flag, new bool) {
 	mask := byte(1) << uint(f)
 	flags := z.Read8(F)

@@ -73,9 +73,9 @@ func ParseLD(tokens []string) (Instruction, error) {
 	}
 
 	// Maybe 8 bit immediate?
-	num, err := strconv.ParseInt(tokens[1], 0, 8)
+	num, err := strconv.ParseUint(tokens[1], 0, 8)
 	if err != nil {
-		return nil, fmt.Errorf("Can't parse [%s]", tokens[1])
+		return nil, fmt.Errorf("Can't parse [%s]:  %s", tokens[1], err)
 	}
 	return &ILD8Immediate{dst: dst, n: byte(num)}, nil
 }
