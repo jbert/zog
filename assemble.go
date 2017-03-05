@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -65,6 +66,9 @@ func ParseLD(tokens []string) (Instruction, error) {
 	dst, ok := Reg2R8Loc[tokens[0]]
 	if !ok {
 		return nil, fmt.Errorf("Can't parse [%s] as dst R8Loc", tokens[0])
+	}
+	if dst == H {
+		return nil, errors.New("Can't LD to H")
 	}
 
 	src, ok := Reg2R8Loc[tokens[1]]
