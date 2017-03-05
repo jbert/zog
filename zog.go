@@ -611,3 +611,19 @@ func (z *Zog) Encode(addr uint16, instructions []Instruction) error {
 	}
 	return nil
 }
+
+func (z *Zog) Execute(addr uint16, program string) (byte, error) {
+	instructions, err := Assemble(program)
+	if err != nil {
+		return 0, fmt.Errorf("Failed to assemble: %s", err)
+	}
+	err = z.Encode(addr, instructions)
+	if err != nil {
+		return 0, fmt.Errorf("Failed to encode: %s", err)
+	}
+	a, err := z.Run()
+	if err != nil {
+		return 0, fmt.Errorf("Failed to run: %s", err)
+	}
+	return a, nil
+}

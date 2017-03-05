@@ -115,6 +115,8 @@ func AssembleOne(s string) (Instruction, error) {
 }
 
 func Assemble(s string) ([]Instruction, error) {
+	// Support ; for single-line assembly
+	s = strings.Replace(s, ";", "\n", -1)
 	strs := strings.Split(s, "\n")
 	var tStrs []string
 	for _, s := range strs {
