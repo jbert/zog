@@ -41,8 +41,15 @@ func TestLD8(t *testing.T) {
 
 func TestAccum(t *testing.T) {
 	testCases := []testCase{
-		{"LD A, 10",
-			10, nil},
+		{"LD A, 0x10; LD B, 0x20; ADD A, B",
+			0x30, []ef{{F_C, false}}},
+		{"LD A, 0xFF; LD B, 0x00; ADD A, B",
+			0xff, []ef{{F_C, false}}},
+		{"LD A, 0xFF; LD B, 0x01; ADD A, B",
+			0x00, []ef{{F_C, true}}},
+		{"LD A, 0xFF; LD B, 0x02; ADD A, B",
+			0x01, []ef{{F_C, true}}},
+
 		{"LD A, 0x10; LD B, 0x20; ADD A, B",
 			0x30, []ef{{F_C, false}}},
 		{"LD A, 0xFF; LD B, 0x02; ADD A, B",

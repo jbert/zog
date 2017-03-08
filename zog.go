@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -414,17 +413,57 @@ func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, er
 	return &ILD8Immediate{dst: dst, n: n}, nil
 }
 
-type IHalt struct{}
+type IVarious int
+const (
+	V_HALT IVarious = iota
+	V_SCF
+	V_CCF
+)
+func (i IVarious) String() string {
+	switch i {
+		case V_HALT:
+			return "HALT"
 
-func (i *IHalt) String() string {
-	return "HALT"
+		case V_SCF:
+			return "SCF"
+		case V_CCF:
+			return "CCF"
+
+		default:
+			panic("Unrecognised various instruction")
+		}
 }
-func (i *IHalt) Execute(z *Zog) error {
-	return errors.New("Attempt to execute HALT")
+func (i IVarious) Execute(z *Zog) error {
+	switch i {
+		case V_HALT:
+			panic("Attempt to execute HALT")
+
+		case V_SCF:
+			z.SetFlag(F_C, true)
+		case V_CCF:
+			f := z.GetFlag(F_C)
+			z.SetFlag(F_C, !f)
+
+		default:
+			panic("Unrecognised various instruction")
+		}
+		return nil
 }
-func (i *IHalt) Encode() []byte {
-	return []byte{0x76}
+func (i IVarious) Encode() []byte {
+	switch i {
+	case V_HALT:
+		return []byte{0x76}
+
+	case V_SCF:
+		return []byte{0x37}
+	case V_CCF:
+		return []byte{0x3f}
+
+	default:
+		panic("Unrecognised various instruction")
+	}
 }
+
 
 type IAccumOp struct {
 	src  R8Loc
@@ -587,7 +626,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 
 			// In place of LD (HL), (HL) we have HALT
 			if n == 0x76 {
-				return &IHalt{}, nil
+				return V_HALT, nil
 			}
 			return decodeLD8(hi3, lo3)
 
@@ -616,7 +655,7 @@ func (z *Zog) Run() (byte, error) {
 			return 0, err
 		}
 		fmt.Printf("I: %s\n", i)
-		if _, ok := i.(*IHalt); ok {
+		if v, ok := i.(IVarious); ok && v == V_HALT  {
 			// HALT instruction - return A reg to caller
 			return z.reg.A, nil
 		}

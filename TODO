@@ -22,17 +22,16 @@ DONE - test code needs to:
     - peek reg A or something
   - testcases {"LD A, 10", 10}
 
-
 - Have one LD8 type, which has a src and a dst
   - encode the src/dst part in a type (or closure!)
   - have a NewLD8 ctor which disallows the invalid combinations
   - rewrite decodeILD8 and ParseLD in terms of this
   - then move onto LD16
 
-- some structure around tests:
-  - assembly
-  - expected result in accum
-  - also want flags
+DONE - some structure around tests:
+  DONE - assembly
+  DONE - expected result in accum
+  DONE - also want flags
     - return those?
     - or put in A?
       - return all regs from HALT?
