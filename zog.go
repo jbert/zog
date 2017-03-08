@@ -413,48 +413,6 @@ func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, er
 	return &ILD8Immediate{dst: dst, n: n}, nil
 }
 
-type ISimple int
-
-const (
-	I_HALT ISimple = iota
-	I_SCF
-	I_CCF
-)
-
-func (i ISimple) String() string {
-	ss, ok := findSimpleByInstruction(i)
-	if !ok {
-		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
-	}
-
-	return ss.name
-}
-
-func (i ISimple) Execute(z *Zog) error {
-	switch i {
-	case I_HALT:
-		panic("Attempt to execute HALT")
-
-	case I_SCF:
-		z.SetFlag(F_C, true)
-	case I_CCF:
-		f := z.GetFlag(F_C)
-		z.SetFlag(F_C, !f)
-
-	default:
-		panic("Unrecognised various instruction")
-	}
-	return nil
-}
-func (i ISimple) Encode() []byte {
-	ss, ok := findSimpleByInstruction(i)
-	if !ok {
-		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
-	}
-
-	return []byte{ss.encoding}
-}
-
 type IAccumOp struct {
 	src  R8Loc
 	op   func(z *Zog, a, n byte) error
@@ -615,6 +573,48 @@ func findSimpleByInstruction(i ISimple) (simpleSingle, bool) {
 		}
 	}
 	return simpleSingle{}, false
+}
+
+type ISimple int
+
+const (
+	I_HALT ISimple = iota
+	I_SCF
+	I_CCF
+)
+
+func (i ISimple) String() string {
+	ss, ok := findSimpleByInstruction(i)
+	if !ok {
+		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
+	}
+
+	return ss.name
+}
+
+func (i ISimple) Execute(z *Zog) error {
+	switch i {
+	case I_HALT:
+		panic("Attempt to execute HALT")
+
+	case I_SCF:
+		z.SetFlag(F_C, true)
+	case I_CCF:
+		f := z.GetFlag(F_C)
+		z.SetFlag(F_C, !f)
+
+	default:
+		panic("Unrecognised various instruction")
+	}
+	return nil
+}
+func (i ISimple) Encode() []byte {
+	ss, ok := findSimpleByInstruction(i)
+	if !ok {
+		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
+	}
+
+	return []byte{ss.encoding}
 }
 
 func Decode(getNext func() (byte, error)) (Instruction, error) {
