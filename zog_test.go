@@ -16,7 +16,7 @@ type testCase struct {
 	flags     []ef
 }
 
-func TestLD(t *testing.T) {
+func TestLD8(t *testing.T) {
 	testCases := []testCase{
 		{"LD A, 10", 10, nil},
 		{"LD A, 0x10", 0x10, nil},
@@ -26,11 +26,18 @@ func TestLD(t *testing.T) {
 		{"LD C, 0x34; LD A, C", 0x34, nil},
 		{"LD D, 0x34; LD A, D", 0x34, nil},
 		{"LD E, 0x34; LD A, E", 0x34, nil},
-//		{"LD HL, 0x100; LD (HL), 0x34; LD A, (HL)", 0x34, nil},
 	}
 
 	zogTest(t, testCases)
 }
+
+//func TestLD(t *testing.T) {
+//	testCases := []testCase{
+//		{"LD HL, 0x100; LD (HL), 0x34; LD A, (HL)", 0x34, nil},
+//	}
+//
+//	zogTest(t, testCases)
+//}
 
 func TestAccum(t *testing.T) {
 	testCases := []testCase{
