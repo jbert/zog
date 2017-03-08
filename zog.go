@@ -596,6 +596,14 @@ func decodeAccumOp(hi3, lo3 byte) (Instruction, error) {
 	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
 }
 
+// Gaps in this table are handled programattically
+var decode map[byte]Instruction = map[byte]Instruction{
+	0x37: V_SCF,
+	0x3f: V_CCF,
+
+	0x76: V_HALT,
+}
+
 func Decode(getNext func() (byte, error)) (Instruction, error) {
 	var n byte
 	var err error
@@ -605,11 +613,17 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 			return nil, err
 		}
 
+		// Table lookup has precedence
+		i, ok := decode[n]
+		if ok {
+			return i, nil
+		}
+
 		lo3 := n & 0x07
 		hi3 := (n & 0x38) >> 3
 		top2 := (n & 0xc0) >> 6
 
-		//		fmt.Printf("top2 %x, hi3 %x, lo3 %x\n", top2, hi3, lo3)
+		// fmt.Printf("top2 %x, hi3 %x, lo3 %x\n", top2, hi3, lo3)
 
 		switch top2 {
 
@@ -618,7 +632,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 			case 6:
 				return decodeLD8Immediate(hi3, getNext)
 			default:
-				break
+				panic(fmt.Sprintf("Failed to decode top0 instruction: 0x%02X", n))
 			}
 
 		case 1:
@@ -634,7 +648,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 			return decodeAccumOp(hi3, lo3)
 
 		default:
-			break
+			panic(fmt.Sprintf("Failed to decode instruction: 0x%02X", n))
 		}
 	}
 	return nil, fmt.Errorf("Failed to decode: %02x", n)

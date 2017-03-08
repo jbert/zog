@@ -39,6 +39,25 @@ func TestLD8(t *testing.T) {
 //	zogTest(t, testCases)
 //}
 
+func TestFlag(t *testing.T) {
+	testCases := []testCase{
+		{"",
+		0x00, []ef{{F_C, false}}},
+		{"SCF",
+		0x00, []ef{{F_C, true}}},
+		{"SCF; CCF",
+		0x00, []ef{{F_C, false}}},
+		{"SCF; OR A",
+		0x00, []ef{{F_C, false}}},
+		{"SCF; AND A",
+		0x00, []ef{{F_C, false}}},
+		{"SCF; XOR A",
+		0x00, []ef{{F_C, false}}},
+	}
+
+	zogTest(t, testCases)
+}
+
 func TestAccum(t *testing.T) {
 	testCases := []testCase{
 		{"LD A, 0x10; LD B, 0x20; ADD A, B",

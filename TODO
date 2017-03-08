@@ -28,6 +28,13 @@ DONE - test code needs to:
   - rewrite decodeILD8 and ParseLD in terms of this
   - then move onto LD16
 
+- rename IVarious to "INoArg" and make it entirely table driven
+  - assembly name
+  - encode bytes
+  - decoder (once called from main decoder)
+    - and actually, have the main decoder consult tables first too
+  - execution (can use named functions or closures in table)
+
 DONE - some structure around tests:
   DONE - assembly
   DONE - expected result in accum
