@@ -551,7 +551,7 @@ type simpleSingle struct {
 	name     string
 }
 
-var decodeSimple []simpleSingle = []simpleSingle{
+var simpleSingles []simpleSingle = []simpleSingle{
 	{0x37, I_SCF, "SCF"},
 	{0x3f, I_CCF, "CCF"},
 
@@ -559,7 +559,7 @@ var decodeSimple []simpleSingle = []simpleSingle{
 }
 
 func findSimpleInstructionByEncoding(n byte) (Instruction, bool) {
-	for _, ss := range decodeSimple {
+	for _, ss := range simpleSingles {
 		if ss.encoding == n {
 			return ss.i, true
 		}
@@ -567,7 +567,7 @@ func findSimpleInstructionByEncoding(n byte) (Instruction, bool) {
 	return nil, false
 }
 func findSimpleByInstruction(i ISimple) (simpleSingle, bool) {
-	for _, ss := range decodeSimple {
+	for _, ss := range simpleSingles {
 		if ss.i == i {
 			return ss, true
 		}

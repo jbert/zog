@@ -25,11 +25,10 @@ func NewAssembler() *Assembler {
 		"XOR": MakeParseAccum(5),
 		"OR":  MakeParseAccum(6),
 		"CP":  MakeParseAccum(7),
+	}
 
-		"SCF": MakeNoArgs(I_SCF),
-		"CCF": MakeNoArgs(I_CCF),
-
-		"HALT": MakeNoArgs(I_HALT),
+	for _, ss := range simpleSingles {
+		a.lookup[ss.name] = MakeNoArgs(ss.i)
 	}
 
 	return &a
