@@ -413,57 +413,47 @@ func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, er
 	return &ILD8Immediate{dst: dst, n: n}, nil
 }
 
-type IVarious int
+type ISimple int
+
 const (
-	V_HALT IVarious = iota
-	V_SCF
-	V_CCF
+	I_HALT ISimple = iota
+	I_SCF
+	I_CCF
 )
-func (i IVarious) String() string {
-	switch i {
-		case V_HALT:
-			return "HALT"
 
-		case V_SCF:
-			return "SCF"
-		case V_CCF:
-			return "CCF"
+func (i ISimple) String() string {
+	ss, ok := findSimpleByInstruction(i)
+	if !ok {
+		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
+	}
 
-		default:
-			panic("Unrecognised various instruction")
-		}
+	return ss.name
 }
-func (i IVarious) Execute(z *Zog) error {
+
+func (i ISimple) Execute(z *Zog) error {
 	switch i {
-		case V_HALT:
-			panic("Attempt to execute HALT")
+	case I_HALT:
+		panic("Attempt to execute HALT")
 
-		case V_SCF:
-			z.SetFlag(F_C, true)
-		case V_CCF:
-			f := z.GetFlag(F_C)
-			z.SetFlag(F_C, !f)
-
-		default:
-			panic("Unrecognised various instruction")
-		}
-		return nil
-}
-func (i IVarious) Encode() []byte {
-	switch i {
-	case V_HALT:
-		return []byte{0x76}
-
-	case V_SCF:
-		return []byte{0x37}
-	case V_CCF:
-		return []byte{0x3f}
+	case I_SCF:
+		z.SetFlag(F_C, true)
+	case I_CCF:
+		f := z.GetFlag(F_C)
+		z.SetFlag(F_C, !f)
 
 	default:
 		panic("Unrecognised various instruction")
 	}
+	return nil
 }
+func (i ISimple) Encode() []byte {
+	ss, ok := findSimpleByInstruction(i)
+	if !ok {
+		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
+	}
 
+	return []byte{ss.encoding}
+}
 
 type IAccumOp struct {
 	src  R8Loc
@@ -596,12 +586,35 @@ func decodeAccumOp(hi3, lo3 byte) (Instruction, error) {
 	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
 }
 
-// Gaps in this table are handled programattically
-var decode map[byte]Instruction = map[byte]Instruction{
-	0x37: V_SCF,
-	0x3f: V_CCF,
+// Gaps in this table are handled programatically
+type simpleSingle struct {
+	encoding byte
+	i        Instruction
+	name     string
+}
 
-	0x76: V_HALT,
+var decodeSimple []simpleSingle = []simpleSingle{
+	{0x37, I_SCF, "SCF"},
+	{0x3f, I_CCF, "CCF"},
+
+	{0x76, I_HALT, "HALT"},
+}
+
+func findSimpleInstructionByEncoding(n byte) (Instruction, bool) {
+	for _, ss := range decodeSimple {
+		if ss.encoding == n {
+			return ss.i, true
+		}
+	}
+	return nil, false
+}
+func findSimpleByInstruction(i ISimple) (simpleSingle, bool) {
+	for _, ss := range decodeSimple {
+		if ss.i == i {
+			return ss, true
+		}
+	}
+	return simpleSingle{}, false
 }
 
 func Decode(getNext func() (byte, error)) (Instruction, error) {
@@ -614,7 +627,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 		}
 
 		// Table lookup has precedence
-		i, ok := decode[n]
+		i, ok := findSimpleInstructionByEncoding(n)
 		if ok {
 			return i, nil
 		}
@@ -640,7 +653,7 @@ func Decode(getNext func() (byte, error)) (Instruction, error) {
 
 			// In place of LD (HL), (HL) we have HALT
 			if n == 0x76 {
-				return V_HALT, nil
+				return I_HALT, nil
 			}
 			return decodeLD8(hi3, lo3)
 
@@ -669,7 +682,7 @@ func (z *Zog) Run() (byte, error) {
 			return 0, err
 		}
 		fmt.Printf("I: %s\n", i)
-		if v, ok := i.(IVarious); ok && v == V_HALT  {
+		if v, ok := i.(ISimple); ok && v == I_HALT {
 			// HALT instruction - return A reg to caller
 			return z.reg.A, nil
 		}

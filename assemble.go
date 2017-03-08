@@ -26,21 +26,21 @@ var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 }
 
 var AssemblyParser map[string]func([]string) (Instruction, error) = map[string]func([]string) (Instruction, error){
-	"LD":   ParseLD,
+	"LD": ParseLD,
 
-	"ADD":  MakeParseAccum(0),
-	"ADC":  MakeParseAccum(1),
-	"SUB":  MakeParseAccum(2),
-	"SBC":  MakeParseAccum(3),
-	"AND":  MakeParseAccum(4),
-	"XOR":  MakeParseAccum(5),
-	"OR":   MakeParseAccum(6),
-	"CP":   MakeParseAccum(7),
+	"ADD": MakeParseAccum(0),
+	"ADC": MakeParseAccum(1),
+	"SUB": MakeParseAccum(2),
+	"SBC": MakeParseAccum(3),
+	"AND": MakeParseAccum(4),
+	"XOR": MakeParseAccum(5),
+	"OR":  MakeParseAccum(6),
+	"CP":  MakeParseAccum(7),
 
-	"SCF": MakeNoArgs(V_SCF),
-	"CCF": MakeNoArgs(V_CCF),
+	"SCF": MakeNoArgs(I_SCF),
+	"CCF": MakeNoArgs(I_CCF),
 
-	"HALT": MakeNoArgs(V_HALT),
+	"HALT": MakeNoArgs(I_HALT),
 }
 
 func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
