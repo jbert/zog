@@ -703,7 +703,9 @@ func (z *Zog) Encode(addr uint16, instructions []Instruction) error {
 }
 
 func (z *Zog) Execute(addr uint16, program string) (byte, error) {
-	instructions, err := Assemble(program)
+	assembler := NewAssembler()
+
+	instructions, err := assembler.Assemble(program)
 	if err != nil {
 		return 0, fmt.Errorf("Failed to assemble: %s", err)
 	}

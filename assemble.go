@@ -7,6 +7,34 @@ import (
 	"strings"
 )
 
+type Assembler struct {
+	lookup map[string]func([]string) (Instruction, error)
+}
+
+func NewAssembler() *Assembler {
+	a := Assembler{}
+
+	a.lookup = map[string]func([]string) (Instruction, error){
+		"LD": ParseLD,
+
+		"ADD": MakeParseAccum(0),
+		"ADC": MakeParseAccum(1),
+		"SUB": MakeParseAccum(2),
+		"SBC": MakeParseAccum(3),
+		"AND": MakeParseAccum(4),
+		"XOR": MakeParseAccum(5),
+		"OR":  MakeParseAccum(6),
+		"CP":  MakeParseAccum(7),
+
+		"SCF": MakeNoArgs(I_SCF),
+		"CCF": MakeNoArgs(I_CCF),
+
+		"HALT": MakeNoArgs(I_HALT),
+	}
+
+	return &a
+}
+
 func MakeNoArgs(i Instruction) func([]string) (Instruction, error) {
 	return func([]string) (Instruction, error) {
 		return i, nil
@@ -23,24 +51,6 @@ var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 	"(HL)": HL_CONTENTS,
 	"A":    A,
 	"H":    H,
-}
-
-var AssemblyParser map[string]func([]string) (Instruction, error) = map[string]func([]string) (Instruction, error){
-	"LD": ParseLD,
-
-	"ADD": MakeParseAccum(0),
-	"ADC": MakeParseAccum(1),
-	"SUB": MakeParseAccum(2),
-	"SBC": MakeParseAccum(3),
-	"AND": MakeParseAccum(4),
-	"XOR": MakeParseAccum(5),
-	"OR":  MakeParseAccum(6),
-	"CP":  MakeParseAccum(7),
-
-	"SCF": MakeNoArgs(I_SCF),
-	"CCF": MakeNoArgs(I_CCF),
-
-	"HALT": MakeNoArgs(I_HALT),
 }
 
 func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
@@ -89,7 +99,7 @@ func ParseLD(tokens []string) (Instruction, error) {
 	return &ILD8Immediate{dst: dst, n: byte(num)}, nil
 }
 
-func AssembleOne(s string) (Instruction, error) {
+func (a *Assembler) AssembleOne(s string) (Instruction, error) {
 
 	tokens := strings.Split(s, " ")
 	if len(tokens) < 1 {
@@ -115,7 +125,7 @@ func AssembleOne(s string) (Instruction, error) {
 		}
 	*/
 
-	parser, ok := AssemblyParser[strings.ToUpper(iStr)]
+	parser, ok := a.lookup[strings.ToUpper(iStr)]
 	if !ok {
 		return nil, fmt.Errorf("Can't find parser for [%s]", iStr)
 	}
@@ -123,7 +133,7 @@ func AssembleOne(s string) (Instruction, error) {
 	return parser(tokens[1:])
 }
 
-func Assemble(s string) ([]Instruction, error) {
+func (a *Assembler) Assemble(s string) ([]Instruction, error) {
 	// Support ; for single-line assembly
 	s = strings.Replace(s, ";", "\n", -1)
 	strs := strings.Split(s, "\n")
@@ -135,13 +145,13 @@ func Assemble(s string) ([]Instruction, error) {
 		}
 		tStrs = append(tStrs, ts)
 	}
-	return AssembleStrings(tStrs)
+	return a.AssembleStrings(tStrs)
 }
 
-func AssembleStrings(strs []string) ([]Instruction, error) {
+func (a *Assembler) AssembleStrings(strs []string) ([]Instruction, error) {
 	var instructions []Instruction
 	for lineNumber, s := range strs {
-		i, err := AssembleOne(s)
+		i, err := a.AssembleOne(s)
 		if err != nil {
 			return nil, fmt.Errorf("line %d: %s", lineNumber, err)
 		}
