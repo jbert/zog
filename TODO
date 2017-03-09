@@ -33,6 +33,8 @@ DONE - test code needs to:
   better to call a method on decoder. If we do that, decoder probably doesn't
   need to be global
 
+- write LD8 and Accum8 methods in terms of decoder lookup
+
 - Have one LD8 type, which has a src and a dst
   - encode the src/dst part in a type (or closure!)
   - have a NewLD8 ctor which disallows the invalid combinations

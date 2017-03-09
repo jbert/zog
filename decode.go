@@ -63,14 +63,14 @@ func NewAccumOp(hi3, lo3 byte) Instruction {
 		name string
 		op   func(z *Zog, a, n byte) error
 	}{
-		{"ADD", AccumAdd},
-		{"ADC", AccumAdc},
-		{"SUB", AccumSub},
-		{"SBC", AccumSbc},
-		{"AND", AccumAnd},
-		{"XOR", AccumXor},
-		{"OR", AccumOr},
-		{"CP", AccumCp},
+		{"ADD", (*Zog).AccumAdd},
+		{"ADC", (*Zog).AccumAdc},
+		{"SUB", (*Zog).AccumSub},
+		{"SBC", (*Zog).AccumSbc},
+		{"AND", (*Zog).AccumAnd},
+		{"XOR", (*Zog).AccumXor},
+		{"OR", (*Zog).AccumOr},
+		{"CP", (*Zog).AccumCp},
 	}
 	src := R8Loc(lo3)
 
