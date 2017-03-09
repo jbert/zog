@@ -68,7 +68,7 @@ func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
 			return nil, fmt.Errorf("Can't parse [%s] as src R8Loc", tokens[0])
 		}
 
-		return decodeAccumOp(hi3, byte(src))
+		return NewAccumOp(hi3, byte(src)), nil
 	}
 }
 

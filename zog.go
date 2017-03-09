@@ -519,26 +519,6 @@ func AccumCp(z *Zog, a, n byte) error {
 	return nil
 }
 
-func decodeAccumOp(hi3, lo3 byte) (Instruction, error) {
-	// Arithmetic and logical with accumulator.
-	ops := []struct {
-		name string
-		op   func(z *Zog, a, n byte) error
-	}{
-		{"ADD", AccumAdd},
-		{"ADC", AccumAdc},
-		{"SUB", AccumSub},
-		{"SBC", AccumSbc},
-		{"AND", AccumAnd},
-		{"XOR", AccumXor},
-		{"OR", AccumOr},
-		{"CP", AccumCp},
-	}
-
-	src := R8Loc(lo3)
-	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
-}
-
 type ISimple int
 
 const (

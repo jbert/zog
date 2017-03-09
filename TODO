@@ -23,11 +23,15 @@ DONE - test code needs to:
   - testcases {"LD A, 10", 10}
 
 - have more tables (one table?!!?) for instructions
-  - instead of code to decode, have code to load the table !!!
+  DONE - instead of code to decode, have code to load the table !!!
   - want function pts in table too, for execute
     - could be closure, could be func which takes info and switches/decomposes
 
 - pass byte channel or io.Reader to d.Decode
+
+- work out if name should be a property on the type (String) or if
+  better to call a method on decoder. If we do that, decoder probably doesn't
+  need to be global
 
 - Have one LD8 type, which has a src and a dst
   - encode the src/dst part in a type (or closure!)

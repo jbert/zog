@@ -14,6 +14,12 @@ func InitialiseDecoder(d *Decoder) {
 	decoder = d
 }
 
+type InstructionInfo struct {
+	encoding byte
+	i        Instruction
+	name     string
+}
+
 type Decoder struct {
 	InstructionInfo []InstructionInfo
 }
@@ -27,7 +33,50 @@ func NewDecoder() *Decoder {
 		{0x76, I_HALT, "HALT"},
 	})
 	d.loadLD8()
+	d.loadAccum()
 	return &d
+}
+
+func (d *Decoder) loadAccum() {
+	infos := make([]InstructionInfo, 8*8)[:0]
+	top2 := 2
+
+	for hi3 := 0; hi3 < 8; hi3++ {
+		for lo3 := 0; lo3 < 8; lo3++ {
+			n := top2<<6 | hi3<<3 | lo3
+			i := NewAccumOp(byte(hi3), byte(lo3))
+
+			info := InstructionInfo{
+				encoding: byte(n),
+				i:        i,
+				name:     i.String(),
+			}
+			infos = append(infos, info)
+		}
+	}
+	d.addInfo(infos)
+}
+
+func NewAccumOp(hi3, lo3 byte) Instruction {
+	// Arithmetic and logical with accumulator.
+	ops := []struct {
+		name string
+		op   func(z *Zog, a, n byte) error
+	}{
+		{"ADD", AccumAdd},
+		{"ADC", AccumAdc},
+		{"SUB", AccumSub},
+		{"SBC", AccumSbc},
+		{"AND", AccumAnd},
+		{"XOR", AccumXor},
+		{"OR", AccumOr},
+		{"CP", AccumCp},
+	}
+	src := R8Loc(lo3)
+
+	i := &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}
+
+	return i
 }
 
 func (d *Decoder) loadLD8() {
@@ -62,13 +111,6 @@ func (d *Decoder) loadLD8() {
 func (d *Decoder) addInfo(infos []InstructionInfo) {
 	// TODO - check encoding not in use
 	d.InstructionInfo = append(d.InstructionInfo, infos...)
-}
-
-// Gaps in this table are handled programatically
-type InstructionInfo struct {
-	encoding byte
-	i        Instruction
-	name     string
 }
 
 func (d *Decoder) findInfoByEncoding(n byte) (InstructionInfo, bool) {
@@ -132,7 +174,7 @@ func (d *Decoder) Decode(getNext func() (byte, error)) (Instruction, error) {
 			*/
 
 		case 2:
-			return decodeAccumOp(hi3, lo3)
+			panic("JB - should be covered by loadAccum now")
 
 		default:
 			panic(fmt.Sprintf("Failed to decode instruction: 0x%02X", n))
