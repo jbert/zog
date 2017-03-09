@@ -121,7 +121,7 @@ func (d *Decoder) findInfoByEncoding(n byte) (InstructionInfo, bool) {
 	}
 	return InstructionInfo{}, false
 }
-func (d *Decoder) findInfoByInstruction(i ISimple) (InstructionInfo, bool) {
+func (d *Decoder) findInfoByInstruction(i Instruction) (InstructionInfo, bool) {
 	for _, info := range d.InstructionInfo {
 		if info.i == i {
 			return info, true
