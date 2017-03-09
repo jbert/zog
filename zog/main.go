@@ -10,7 +10,7 @@ import (
 func main() {
 	memSize := uint16(16 * 1024)
 	z := zog.New(memSize)
-	instructions, err := zog.Assemble(`
+	instructions, err := z.Assembler.Assemble(`
 			LD C, 0x33
 			LD A, 0x22
 			XOR C

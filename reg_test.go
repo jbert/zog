@@ -86,7 +86,7 @@ func TestDecodeLDBasic(t *testing.T) {
 			codes = codes[1:]
 			return c, nil
 		}
-		i, err := Decode(getNext)
+		i, err := decoder.Decode(getNext)
 		if err != nil {
 			t.Errorf("Failed: %s", err)
 		}

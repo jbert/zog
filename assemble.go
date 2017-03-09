@@ -27,8 +27,8 @@ func NewAssembler() *Assembler {
 		"CP":  MakeParseAccum(7),
 	}
 
-	for _, ss := range simpleSingles {
-		a.lookup[ss.name] = MakeNoArgs(ss.i)
+	for _, info := range decoder.InstructionInfo {
+		a.lookup[info.name] = MakeNoArgs(info.i)
 	}
 
 	return &a

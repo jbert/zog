@@ -18,13 +18,18 @@ type Registers struct {
 }
 
 type Zog struct {
-	mem []byte
-	reg Registers
+	mem       []byte
+	reg       Registers
+	Assembler *Assembler
 }
 
 func New(memSize uint16) *Zog {
+	d := NewDecoder()
+	InitialiseDecoder(d)
+
 	return &Zog{
-		mem: make([]byte, memSize),
+		mem:       make([]byte, memSize),
+		Assembler: NewAssembler(),
 	}
 }
 
@@ -544,37 +549,6 @@ func decodeAccumOp(hi3, lo3 byte) (Instruction, error) {
 	return &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}, nil
 }
 
-// Gaps in this table are handled programatically
-type simpleSingle struct {
-	encoding byte
-	i        Instruction
-	name     string
-}
-
-var simpleSingles []simpleSingle = []simpleSingle{
-	{0x37, I_SCF, "SCF"},
-	{0x3f, I_CCF, "CCF"},
-
-	{0x76, I_HALT, "HALT"},
-}
-
-func findSimpleInstructionByEncoding(n byte) (Instruction, bool) {
-	for _, ss := range simpleSingles {
-		if ss.encoding == n {
-			return ss.i, true
-		}
-	}
-	return nil, false
-}
-func findSimpleByInstruction(i ISimple) (simpleSingle, bool) {
-	for _, ss := range simpleSingles {
-		if ss.i == i {
-			return ss, true
-		}
-	}
-	return simpleSingle{}, false
-}
-
 type ISimple int
 
 const (
@@ -584,12 +558,12 @@ const (
 )
 
 func (i ISimple) String() string {
-	ss, ok := findSimpleByInstruction(i)
+	info, ok := decoder.findInfoByInstruction(i)
 	if !ok {
 		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
 	}
 
-	return ss.name
+	return info.name
 }
 
 func (i ISimple) Execute(z *Zog) error {
@@ -609,62 +583,12 @@ func (i ISimple) Execute(z *Zog) error {
 	return nil
 }
 func (i ISimple) Encode() []byte {
-	ss, ok := findSimpleByInstruction(i)
+	info, ok := decoder.findInfoByInstruction(i)
 	if !ok {
 		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
 	}
 
-	return []byte{ss.encoding}
-}
-
-func Decode(getNext func() (byte, error)) (Instruction, error) {
-	var n byte
-	var err error
-	for {
-		n, err = getNext()
-		if err != nil {
-			return nil, err
-		}
-
-		// Table lookup has precedence
-		i, ok := findSimpleInstructionByEncoding(n)
-		if ok {
-			return i, nil
-		}
-
-		lo3 := n & 0x07
-		hi3 := (n & 0x38) >> 3
-		top2 := (n & 0xc0) >> 6
-
-		// fmt.Printf("top2 %x, hi3 %x, lo3 %x\n", top2, hi3, lo3)
-
-		switch top2 {
-
-		case 0:
-			switch lo3 {
-			case 6:
-				return decodeLD8Immediate(hi3, getNext)
-			default:
-				panic(fmt.Sprintf("Failed to decode top0 instruction: 0x%02X", n))
-			}
-
-		case 1:
-			// Main part of 8bit load group
-
-			// In place of LD (HL), (HL) we have HALT
-			if n == 0x76 {
-				return I_HALT, nil
-			}
-			return decodeLD8(hi3, lo3)
-
-		case 2:
-			return decodeAccumOp(hi3, lo3)
-
-		default:
-			panic(fmt.Sprintf("Failed to decode instruction: 0x%02X", n))
-		}
-	}
-	return nil, fmt.Errorf("Failed to decode: %02x", n)
+	return []byte{info.encoding}
 }
 
 func (z *Zog) Run() (byte, error) {
@@ -676,8 +600,7 @@ func (z *Zog) Run() (byte, error) {
 	}
 
 	for {
-		// TODO - decoder with state for multiple-byte instructions
-		i, err := Decode(getNext)
+		i, err := decoder.Decode(getNext)
 		if err != nil {
 			return 0, err
 		}

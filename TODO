@@ -22,6 +22,13 @@ DONE - test code needs to:
     - peek reg A or something
   - testcases {"LD A, 10", 10}
 
+- have more tables (one table?!!?) for instructions
+  - instead of code to decode, have code to load the table !!!
+  - want function pts in table too, for execute
+    - could be closure, could be func which takes info and switches/decomposes
+
+- pass byte channel or io.Reader to d.Decode
+
 - Have one LD8 type, which has a src and a dst
   - encode the src/dst part in a type (or closure!)
   - have a NewLD8 ctor which disallows the invalid combinations
