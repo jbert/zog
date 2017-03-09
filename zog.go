@@ -380,16 +380,6 @@ func (ld *ILD8) Encode() []byte {
 	return []byte{top2<<6 | hi3<<3 | lo3}
 }
 
-func decodeLD8(hi3, lo3 byte) (*ILD8, error) {
-	src := R8Loc(lo3)
-	dst := R8Loc(hi3)
-	if hi3 == 4 {
-		// Can read F, but not write to it
-		dst = H
-	}
-	return &ILD8{src: src, dst: dst}, nil
-}
-
 type ILD8Immediate struct {
 	dst R8Loc
 	n   byte
