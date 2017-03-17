@@ -27,7 +27,7 @@ func NewAssembler() *Assembler {
 		"CP":  MakeParseAccum(7),
 	}
 
-	for _, info := range decoder.InstructionInfo {
+	for _, info := range decoder.SimpleInfo() {
 		a.lookup[info.name] = MakeNoArgs(info.i)
 	}
 
@@ -35,7 +35,7 @@ func NewAssembler() *Assembler {
 }
 
 func MakeNoArgs(i Instruction) func([]string) (Instruction, error) {
-	return func([]string) (Instruction, error) {
+	return func(s []string) (Instruction, error) {
 		return i, nil
 	}
 }

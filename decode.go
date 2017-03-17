@@ -26,15 +26,19 @@ type Decoder struct {
 
 func NewDecoder() *Decoder {
 	d := Decoder{}
-	d.addInfo([]InstructionInfo{
-		{0x37, I_SCF, "SCF"},
-		{0x3f, I_CCF, "CCF"},
-
-		{0x76, I_HALT, "HALT"},
-	})
+	d.addInfo(d.SimpleInfo())
 	d.loadLD8()
 	d.loadAccum()
 	return &d
+}
+
+func (d *Decoder) SimpleInfo() []InstructionInfo {
+	return []InstructionInfo{
+		{byte(I_SCF), I_SCF, "SCF"},
+		{byte(I_CCF), I_CCF, "CCF"},
+
+		{byte(I_HALT), I_HALT, "HALT"},
+	}
 }
 
 func (d *Decoder) loadAccum() {
@@ -116,14 +120,6 @@ func (d *Decoder) addInfo(infos []InstructionInfo) {
 func (d *Decoder) findInfoByEncoding(n byte) (InstructionInfo, bool) {
 	for _, info := range d.InstructionInfo {
 		if info.encoding == n {
-			return info, true
-		}
-	}
-	return InstructionInfo{}, false
-}
-func (d *Decoder) findInfoByInstruction(i Instruction) (InstructionInfo, bool) {
-	for _, info := range d.InstructionInfo {
-		if info.i == i {
 			return info, true
 		}
 	}

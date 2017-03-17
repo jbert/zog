@@ -2,6 +2,7 @@ package zog
 
 import (
 	"fmt"
+	"os"
 )
 
 type Registers struct {
@@ -448,7 +449,16 @@ func (i *IAccumOp) Encode() []byte {
 	default:
 		panic("ack")
 	}
-	return []byte{top2<<6 | hi3<<3 | lo3}
+
+	n := byte(top2<<6 | hi3<<3 | lo3)
+
+	// Sanity check this against real instructions
+	_, ok := decoder.findInfoByEncoding(n)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Can't find info for [%v]\n", n)
+	}
+
+	return []byte{n}
 }
 
 func (z *Zog) AccumAdd(a, n byte) error {
@@ -519,18 +529,19 @@ func (z *Zog) AccumCp(a, n byte) error {
 	return nil
 }
 
-type ISimple int
+type ISimple byte
 
 const (
-	I_HALT ISimple = iota
-	I_SCF
-	I_CCF
+	I_SCF ISimple = 0x37
+	I_CCF ISimple = 0x3f
+
+	I_HALT ISimple = 0x76
 )
 
 func (i ISimple) String() string {
-	info, ok := decoder.findInfoByInstruction(i)
+	info, ok := decoder.findInfoByEncoding(byte(i))
 	if !ok {
-		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
+		panic(fmt.Sprintf("Unrecognised simple instruction: %02X", byte(i)))
 	}
 
 	return info.name
@@ -553,12 +564,7 @@ func (i ISimple) Execute(z *Zog) error {
 	return nil
 }
 func (i ISimple) Encode() []byte {
-	info, ok := decoder.findInfoByInstruction(i)
-	if !ok {
-		panic(fmt.Sprintf("Unrecognised simple instruction: %v", i))
-	}
-
-	return []byte{info.encoding}
+	return []byte{byte(i)}
 }
 
 func (z *Zog) Run() (byte, error) {
