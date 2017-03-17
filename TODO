@@ -10,10 +10,10 @@ DONE - Add a LD8 instruction which copies a single byte
   DONE - register to register
   DONE - and immediate constant
 
-- Add basic assembler
-  - no need for labels yet
-  - need to expand instruction types with some kind of r, n, nn helpers
-  - instructions need to be able to Encode themselves
+DONE - Add basic assembler
+  DONE - no need for labels yet
+  DONE - need to expand instruction types with some kind of r, n, nn helpers
+  DONE - instructions need to be able to Encode themselves
 
 DONE - test code needs to:
   DONE - run emulator with "exit on halt" debug flag set
@@ -22,7 +22,7 @@ DONE - test code needs to:
     - peek reg A or something
   - testcases {"LD A, 10", 10}
 
-- have more tables (one table?!!?) for instructions
+DONE - have more tables (one table?!!?) for instructions
   DONE - instead of code to decode, have code to load the table !!!
   - want function pts in table too, for execute
     - could be closure, could be func which takes info and switches/decomposes
