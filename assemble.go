@@ -52,6 +52,13 @@ var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 	"H":    H,
 }
 
+var Reg2R16Loc map[string]R16Loc = map[string]R16Loc{
+	"BC": BC,
+	"DE": DE,
+	"HL": HL,
+	"SP": SP,
+}
+
 func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
 	return func(tokens []string) (Instruction, error) {
 		// We permit (but do not require) a leading "A, "
@@ -72,22 +79,41 @@ func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
 	}
 }
 
+func ParseLD16(tokens []string) (Instruction, error) {
+	dst16, ok := Reg2R16Loc[tokens[0]]
+	if !ok {
+		return nil, fmt.Errorf("Can't parse [%s] as dst R8Loc or R16Loc", tokens[0])
+	}
+
+	src16, ok := Reg2R16Loc[tokens[1]]
+	if ok {
+		return &ILD16{src: src16, dst: dst16}, nil
+	}
+
+	// Maybe 16 bit immediate?
+	num, err := strconv.ParseUint(tokens[1], 0, 16)
+	if err != nil {
+		return nil, fmt.Errorf("Can't parse [%s]:  %s", tokens[1], err)
+	}
+	return &ILD16Immediate{dst: dst16, nn: uint16(num)}, nil
+}
+
 func ParseLD(tokens []string) (Instruction, error) {
 	if len(tokens) != 2 {
 		return nil, fmt.Errorf("Must have two tokens for LD: [%v]", tokens)
 	}
 
-	dst, ok := Reg2R8Loc[tokens[0]]
+	dst8, ok := Reg2R8Loc[tokens[0]]
 	if !ok {
-		return nil, fmt.Errorf("Can't parse [%s] as dst R8Loc", tokens[0])
+		return ParseLD16(tokens)
 	}
-	if dst == H {
+	if dst8 == H {
 		return nil, errors.New("Can't LD to H")
 	}
 
 	src, ok := Reg2R8Loc[tokens[1]]
 	if ok {
-		return &ILD8{src: src, dst: dst}, nil
+		return &ILD8{src: src, dst: dst8}, nil
 	}
 
 	// Maybe 8 bit immediate?
@@ -95,7 +121,7 @@ func ParseLD(tokens []string) (Instruction, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Can't parse [%s]:  %s", tokens[1], err)
 	}
-	return &ILD8Immediate{dst: dst, n: byte(num)}, nil
+	return &ILD8Immediate{dst: dst8, n: byte(num)}, nil
 }
 
 func (a *Assembler) AssembleOne(s string) (Instruction, error) {

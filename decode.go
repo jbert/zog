@@ -28,6 +28,7 @@ func NewDecoder() *Decoder {
 	d := Decoder{}
 	d.addInfo(d.SimpleInfo())
 	d.loadLD8()
+	d.loadLD16()
 	d.loadAccum()
 	return &d
 }
@@ -81,6 +82,37 @@ func NewAccumOp(hi3, lo3 byte) Instruction {
 	i := &IAccumOp{src: src, name: ops[hi3].name, op: ops[hi3].op}
 
 	return i
+}
+
+func (d *Decoder) loadLD16() {
+	infos := []InstructionInfo{
+		{
+			encoding: 0xf9,
+			i:        &ILD16{src: HL, dst: SP},
+		},
+
+		{
+			encoding: 0xb1,
+			i:        &ILD16{src: SP_CONTENTS, dst: AF},
+		},
+		{
+			encoding: 0xc1,
+			i:        &ILD16{src: SP_CONTENTS, dst: BC},
+		},
+		{
+			encoding: 0xd1,
+			i:        &ILD16{src: SP_CONTENTS, dst: DE},
+		},
+		{
+			encoding: 0xe1,
+			i:        &ILD16{src: SP_CONTENTS, dst: HL},
+		},
+	}
+	for i := range infos {
+		infos[i].name = infos[i].i.String()
+	}
+
+	d.addInfo(infos)
 }
 
 func (d *Decoder) loadLD8() {
@@ -151,6 +183,8 @@ func (d *Decoder) Decode(getNext func() (byte, error)) (Instruction, error) {
 
 		case 0:
 			switch lo3 {
+			case 1:
+				return decodeLD16Immediate(hi3, getNext)
 			case 6:
 				return decodeLD8Immediate(hi3, getNext)
 			default:
@@ -177,4 +211,40 @@ func (d *Decoder) Decode(getNext func() (byte, error)) (Instruction, error) {
 		}
 	}
 	return nil, fmt.Errorf("Failed to decode: %02x", n)
+}
+
+func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, error) {
+	dst := R8Loc(hi3)
+	n, err := getNext()
+	if err != nil {
+		return nil, err
+	}
+	return &ILD8Immediate{dst: dst, n: n}, nil
+}
+
+func decodeLD16Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, error) {
+	var dst R16Loc
+	switch hi3 {
+	case 0:
+		dst = BC
+	case 2:
+		dst = DE
+	case 4:
+		dst = HL
+	case 6:
+		dst = SP
+
+	default:
+		panic(fmt.Sprintf("Unknown LD16 immediate hi3: %X", hi3))
+	}
+	l, err := getNext()
+	if err != nil {
+		return nil, err
+	}
+	h, err := getNext()
+	if err != nil {
+		return nil, err
+	}
+	nn := uint16(h)<<8 | uint16(l)
+	return &ILD16Immediate{dst: dst, nn: nn}, nil
 }

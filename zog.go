@@ -253,6 +253,7 @@ const (
 	DE
 	HL
 	SP
+	SP_CONTENTS
 	IX
 	IY
 )
@@ -283,6 +284,16 @@ func (l R16Loc) Read16(z *Zog) uint16 {
 
 	case SP:
 		return z.reg.SP
+	case SP_CONTENTS:
+		l, err := z.Peek(z.reg.SP)
+		if err != nil {
+			panic(err)
+		}
+		h, err := z.Peek(z.reg.SP + 1) // overflow correct
+		if err != nil {
+			panic(err)
+		}
+		return uint16(h)<<8 | uint16(l)
 	case IX:
 		return z.reg.IX
 	case IY:
@@ -352,6 +363,61 @@ func (l R16Loc) String() string {
 	}
 }
 
+type ILD16 struct {
+	src, dst R16Loc
+}
+
+func (ld *ILD16) String() string {
+	return fmt.Sprintf("LD %s, %s", ld.dst, ld.src)
+}
+func (ld *ILD16) Execute(z *Zog) error {
+	n := z.Read16(ld.src)
+	z.Write16(ld.dst, n)
+	return nil
+}
+func (ld *ILD16) Encode() []byte {
+	return []byte{0xf9}
+}
+
+type ILD16Immediate struct {
+	dst R16Loc
+	nn  uint16
+}
+
+func (ld *ILD16Immediate) String() string {
+	return fmt.Sprintf("LD %s, 0x%04X", ld.dst, ld.nn)
+}
+func (ld *ILD16Immediate) Execute(z *Zog) error {
+	z.Write16(ld.dst, ld.nn)
+	return nil
+}
+func (ld *ILD16Immediate) Encode() []byte {
+	buf := make([]byte, 0)
+	switch ld.dst {
+	case BC:
+		buf = append(buf, 0x01)
+	case DE:
+		buf = append(buf, 0x11)
+	case HL:
+		buf = append(buf, 0x21)
+	case SP:
+		buf = append(buf, 0x31)
+	case IX:
+		buf = append(buf, 0xdd)
+		buf = append(buf, 0x21)
+	case IY:
+		buf = append(buf, 0xfd)
+		buf = append(buf, 0x21)
+	default:
+		panic(fmt.Sprintf("Can't encode LD16 dst: %s", ld.dst))
+	}
+	l := byte(ld.nn & 0xff)
+	buf = append(buf, l)
+	h := byte(ld.nn >> 8)
+	buf = append(buf, h)
+	return buf
+}
+
 type Instruction interface {
 	Execute(z *Zog) error
 	String() string
@@ -387,7 +453,7 @@ type ILD8Immediate struct {
 }
 
 func (ld *ILD8Immediate) String() string {
-	return fmt.Sprintf("LD %s, 0x%X", ld.dst, ld.n)
+	return fmt.Sprintf("LD %s, 0x%02X", ld.dst, ld.n)
 }
 func (ld *ILD8Immediate) Execute(z *Zog) error {
 	z.Write8(ld.dst, ld.n)
@@ -398,15 +464,6 @@ func (ld *ILD8Immediate) Encode() []byte {
 	lo3 := byte(6)
 	top2 := byte(0)
 	return []byte{top2<<6 | hi3<<3 | lo3, ld.n}
-}
-
-func decodeLD8Immediate(hi3 byte, getNext func() (byte, error)) (Instruction, error) {
-	dst := R8Loc(hi3)
-	n, err := getNext()
-	if err != nil {
-		return nil, err
-	}
-	return &ILD8Immediate{dst: dst, n: n}, nil
 }
 
 type IAccumOp struct {

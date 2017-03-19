@@ -1,39 +1,23 @@
-DONE - add Read/Write16 (want it to read (PC))
+- expand assembler
+  - add label
+  - add comment-to-end-of-line
+  - add org
+  - add equ (or hardcode values?)
+  - add 'ds' to reserve bytes
+  - follow CPM/zexall.src 
 
-DONE - Add a Run loop
-  DONE- single byte instructions initially
-  DONE - fetch, then execute instrucion
-  DONE- gah. ok, look at the loc8 bit patterns for other instructions and work out categories
-  DONE (LD src, dest has different bit patterns for src and dest, work out how many funcs we need for 3bits => reg)
+- LD16
+  - LD BC, FFFF
+- PUSH+POP
+- IX and IY
+  - assembly support. yikes.
+- LDIR
+- DJNZ
 
-DONE - Add a LD8 instruction which copies a single byte
-  DONE - register to register
-  DONE - and immediate constant
 
-DONE - Add basic assembler
-  DONE - no need for labels yet
-  DONE - need to expand instruction types with some kind of r, n, nn helpers
-  DONE - instructions need to be able to Encode themselves
-
-DONE - test code needs to:
-  DONE - run emulator with "exit on halt" debug flag set
-    - or run one instruction at a time
-    - and have an IsHalted() method (interrupts could unhalt?)
-    - peek reg A or something
-  - testcases {"LD A, 10", 10}
-
-DONE - have more tables (one table?!!?) for instructions
-  DONE - instead of code to decode, have code to load the table !!!
-  - want function pts in table too, for execute
-    - could be closure, could be func which takes info and switches/decomposes
 
 - pass byte channel or io.Reader to d.Decode
-
-- work out if name should be a property on the type (String) or if
-  better to call a method on decoder. If we do that, decoder probably doesn't
-  need to be global
-
-- write LD8 and Accum8 methods in terms of decoder lookup
+  - maybe?
 
 - Have one LD8 type, which has a src and a dst
   - encode the src/dst part in a type (or closure!)
@@ -41,43 +25,8 @@ DONE - have more tables (one table?!!?) for instructions
   - rewrite decodeILD8 and ParseLD in terms of this
   - then move onto LD16
 
-- rename IVarious to "INoArg" and make it entirely table driven
-  - assembly name
-  - encode bytes
-  - decoder (once called from main decoder)
-    - and actually, have the main decoder consult tables first too
-  - execution (can use named functions or closures in table)
-
-DONE - some structure around tests:
-  DONE - assembly
-  DONE - expected result in accum
-  DONE - also want flags
-    - return those?
-    - or put in A?
-      - return all regs from HALT?
-      - or test inside the assembly?
-      - or return flags?
-
 - pull out a general "hi3" string <-> num for logic ops etc
   - and use it to initialise the MakeParseAccum in AssemblyParser
-
-- factor out common helper functions for assembler
-DONE - support more ops than ADD
-- add tests for logic ops using assembler
-
-DONE - add the arithmetic stuff
-   - but parameterise the operation
-   - so we don't have a type per instr
-   - just a "two arg 8 bit"
-   - and make LD an instance of it
-   - pass in a func() to do the work on the ops?
-
-- add some ad hoc tests for logic and arith ops
-  - include desired flag outputs
-    (set, cleared, unchanged (two tests needed!)) for all relephant flags
-
-- add more complete flag handling
-  - and some tests
 
 - Add a RST16 hack which debug-prints contents of A?
   - need a way to run until test
