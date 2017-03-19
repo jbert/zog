@@ -10,14 +10,12 @@ import (
 func main() {
 	memSize := uint16(16 * 1024)
 	z := zog.New(memSize)
+	z.MemDebug = true
 	instructions, err := z.Assembler.Assemble(`
-	; test program for assembler
-			LD HL, 0x0100		; and support end of line comments
-			LD (HL), 0xFF
-			LD B, (HL)
-			LD (HL), 0x02
-			LD A, (HL)
-			ADD A, B
+			LD SP, 0x0200
+			LD HL, 0x1234
+			PUSH HL
+			POP AF
 			HALT
 		`)
 	if err != nil {

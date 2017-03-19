@@ -22,6 +22,7 @@ type Zog struct {
 	mem       []byte
 	reg       Registers
 	Assembler *Assembler
+	MemDebug  bool
 }
 
 func New(memSize uint16) *Zog {
@@ -38,7 +39,23 @@ func (z *Zog) Peek(addr uint16) (byte, error) {
 	if int(addr) >= len(z.mem) {
 		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
 	}
-	return z.mem[addr], nil
+	n := z.mem[addr]
+	if z.MemDebug {
+		fmt.Printf("M: peek [%04X] -> %02X\n", addr, n)
+	}
+	return n, nil
+}
+
+func (z *Zog) Peek16(addr uint16) (uint16, error) {
+	l, err := z.Peek(z.reg.SP)
+	if err != nil {
+		return 0, err
+	}
+	h, err := z.Peek(z.reg.SP + 1) // overflow correct
+	if err != nil {
+		return 0, err
+	}
+	return uint16(h)<<8 | uint16(l), nil
 }
 
 func (z *Zog) Poke(addr uint16, n byte) error {
@@ -46,6 +63,23 @@ func (z *Zog) Poke(addr uint16, n byte) error {
 		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
 	}
 	z.mem[addr] = n
+	if z.MemDebug {
+		fmt.Printf("M: poke [%04X] -> %02X\n", addr, n)
+	}
+	return nil
+}
+
+func (z *Zog) Poke16(addr uint16, nn uint16) error {
+	l := byte(nn)
+	h := byte(nn >> 8)
+	err := z.Poke(addr, l)
+	if err != nil {
+		return err
+	}
+	err = z.Poke(addr+1, h)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -285,15 +319,11 @@ func (l R16Loc) Read16(z *Zog) uint16 {
 	case SP:
 		return z.reg.SP
 	case SP_CONTENTS:
-		l, err := z.Peek(z.reg.SP)
+		nn, err := z.Peek16(z.reg.SP)
 		if err != nil {
 			panic(err)
 		}
-		h, err := z.Peek(z.reg.SP + 1) // overflow correct
-		if err != nil {
-			panic(err)
-		}
-		return uint16(h)<<8 | uint16(l)
+		return nn
 	case IX:
 		return z.reg.IX
 	case IY:
@@ -330,6 +360,12 @@ func (l R16Loc) Write16(z *Zog, nn uint16) {
 
 	case SP:
 		z.reg.SP = nn
+	case SP_CONTENTS:
+		err := z.Poke16(z.reg.SP, nn)
+		if err != nil {
+			panic(err)
+		}
+
 	case IX:
 		z.reg.IX = nn
 	case IY:
@@ -377,6 +413,83 @@ func (ld *ILD16) Execute(z *Zog) error {
 }
 func (ld *ILD16) Encode() []byte {
 	return []byte{0xf9}
+}
+
+type IPush struct {
+	src R16Loc
+}
+
+func (p *IPush) String() string {
+	return fmt.Sprintf("PUSH %s", p.src)
+}
+func (p *IPush) Execute(z *Zog) error {
+	z.reg.SP++
+	z.reg.SP++
+	nn := z.Read16(p.src)
+	z.Write16(SP_CONTENTS, nn)
+	return nil
+}
+func (p *IPush) Encode() []byte {
+	buf := make([]byte, 0)
+	switch p.src {
+	case BC:
+		buf = append(buf, 0xc6)
+	case DE:
+		buf = append(buf, 0xd6)
+	case HL:
+		buf = append(buf, 0xe6)
+	case AF:
+		buf = append(buf, 0xf6)
+	case IX:
+		buf = append(buf, 0xdd)
+		buf = append(buf, 0xe6)
+	case IY:
+		buf = append(buf, 0xfd)
+		buf = append(buf, 0xe6)
+	default:
+		panic(fmt.Sprintf("Can't encode Push src: %s", p.src))
+	}
+	return buf
+}
+
+type IPop struct {
+	dst R16Loc
+}
+
+func (p *IPop) String() string {
+	return fmt.Sprintf("POP %s", p.dst)
+}
+func (p *IPop) Execute(z *Zog) error {
+	nn, err := z.Peek16(z.reg.SP)
+	if err != nil {
+		return err
+	}
+	z.Write16(p.dst, nn)
+	z.reg.SP--
+	z.reg.SP--
+	return nil
+}
+func (p *IPop) Encode() []byte {
+	buf := make([]byte, 0)
+	switch p.dst {
+	case BC:
+		buf = append(buf, 0xc1)
+	case DE:
+		buf = append(buf, 0xd1)
+	case HL:
+		buf = append(buf, 0xe1)
+	case AF:
+		buf = append(buf, 0xf1)
+	case IX:
+		buf = append(buf, 0xdd)
+		buf = append(buf, 0xe1)
+	case IY:
+		buf = append(buf, 0xfd)
+		buf = append(buf, 0xe1)
+	default:
+		panic(fmt.Sprintf("Can't encode Pop dst: %s", p.dst))
+	}
+	return buf
 }
 
 type ILD16Immediate struct {

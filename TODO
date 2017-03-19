@@ -6,7 +6,7 @@
   - add 'ds' to reserve bytes
   - follow CPM/zexall.src 
 
-- LD16
+DONE - LD16
   - LD BC, FFFF
 - PUSH+POP
 - IX and IY

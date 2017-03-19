@@ -92,20 +92,37 @@ func (d *Decoder) loadLD16() {
 		},
 
 		{
-			encoding: 0xb1,
-			i:        &ILD16{src: SP_CONTENTS, dst: AF},
-		},
-		{
 			encoding: 0xc1,
-			i:        &ILD16{src: SP_CONTENTS, dst: BC},
+			i:        &IPop{dst: BC},
 		},
 		{
 			encoding: 0xd1,
-			i:        &ILD16{src: SP_CONTENTS, dst: DE},
+			i:        &IPop{dst: DE},
 		},
 		{
 			encoding: 0xe1,
-			i:        &ILD16{src: SP_CONTENTS, dst: HL},
+			i:        &IPop{dst: HL},
+		},
+		{
+			encoding: 0xf1,
+			i:        &IPop{dst: AF},
+		},
+
+		{
+			encoding: 0xc6,
+			i:        &IPush{src: BC},
+		},
+		{
+			encoding: 0xd6,
+			i:        &IPush{src: DE},
+		},
+		{
+			encoding: 0xe6,
+			i:        &IPush{src: HL},
+		},
+		{
+			encoding: 0xf6,
+			i:        &IPush{src: AF},
 		},
 	}
 	for i := range infos {

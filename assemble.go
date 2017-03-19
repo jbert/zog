@@ -25,6 +25,9 @@ func NewAssembler() *Assembler {
 		"XOR": MakeParseAccum(5),
 		"OR":  MakeParseAccum(6),
 		"CP":  MakeParseAccum(7),
+
+		"PUSH": ParsePush,
+		"POP":  ParsePop,
 	}
 
 	for _, info := range decoder.SimpleInfo() {
@@ -53,10 +56,13 @@ var Reg2R8Loc map[string]R8Loc = map[string]R8Loc{
 }
 
 var Reg2R16Loc map[string]R16Loc = map[string]R16Loc{
+	"AF": AF,
 	"BC": BC,
 	"DE": DE,
 	"HL": HL,
 	"SP": SP,
+	"IX": IX,
+	"IY": IY,
 }
 
 func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
@@ -96,6 +102,28 @@ func ParseLD16(tokens []string) (Instruction, error) {
 		return nil, fmt.Errorf("Can't parse [%s]:  %s", tokens[1], err)
 	}
 	return &ILD16Immediate{dst: dst16, nn: uint16(num)}, nil
+}
+
+func ParsePush(tokens []string) (Instruction, error) {
+	if len(tokens) != 1 {
+		return nil, fmt.Errorf("Must have one token for Push: [%v]", tokens)
+	}
+	src16, ok := Reg2R16Loc[tokens[0]]
+	if !ok {
+		return nil, fmt.Errorf("Can't parse push r16 [%s]", tokens[0])
+	}
+	return &IPush{src: src16}, nil
+}
+
+func ParsePop(tokens []string) (Instruction, error) {
+	if len(tokens) != 1 {
+		return nil, fmt.Errorf("Must have one token for Pop: [%v]", tokens)
+	}
+	dst16, ok := Reg2R16Loc[tokens[0]]
+	if !ok {
+		return nil, fmt.Errorf("Can't parse pop r16 [%s]", tokens[0])
+	}
+	return &IPop{dst: dst16}, nil
 }
 
 func ParseLD(tokens []string) (Instruction, error) {
