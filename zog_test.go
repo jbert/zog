@@ -42,17 +42,19 @@ func TestLD8(t *testing.T) {
 func TestFlag(t *testing.T) {
 	testCases := []testCase{
 		{"",
-		0x00, []ef{{F_C, false}}},
+			0x00, []ef{{F_C, false}}},
 		{"SCF",
-		0x00, []ef{{F_C, true}}},
+			0x00, []ef{{F_C, true}}},
 		{"SCF; CCF",
-		0x00, []ef{{F_C, false}}},
+			0x00, []ef{{F_C, false}}},
+		{"SCF; CCF; CCF",
+			0x00, []ef{{F_C, true}}},
 		{"SCF; OR A",
-		0x00, []ef{{F_C, false}}},
+			0x00, []ef{{F_C, false}}},
 		{"SCF; AND A",
-		0x00, []ef{{F_C, false}}},
+			0x00, []ef{{F_C, false}}},
 		{"SCF; XOR A",
-		0x00, []ef{{F_C, false}}},
+			0x00, []ef{{F_C, false}}},
 	}
 
 	zogTest(t, testCases)
@@ -61,18 +63,52 @@ func TestFlag(t *testing.T) {
 func TestAccum(t *testing.T) {
 	testCases := []testCase{
 		{"LD A, 0x10; LD B, 0x20; ADD A, B",
-			0x30, []ef{{F_C, false}}},
+			0x30, []ef{{F_C, false}, {F_Z, false}}},
 		{"LD A, 0xFF; LD B, 0x00; ADD A, B",
-			0xff, []ef{{F_C, false}}},
+			0xff, []ef{{F_C, false}, {F_Z, false}}},
 		{"LD A, 0xFF; LD B, 0x01; ADD A, B",
-			0x00, []ef{{F_C, true}}},
+			0x00, []ef{{F_C, true}, {F_Z, true}}},
 		{"LD A, 0xFF; LD B, 0x02; ADD A, B",
-			0x01, []ef{{F_C, true}}},
+			0x01, []ef{{F_C, true}, {F_Z, false}}},
 
-		{"LD A, 0x10; LD B, 0x20; ADD A, B",
-			0x30, []ef{{F_C, false}}},
-		{"LD A, 0xFF; LD B, 0x02; ADD A, B",
-			0x01, []ef{{F_C, true}}},
+		{"LD A, 0x10; LD B, 0x20; ADC A, B",
+			0x30, []ef{{F_C, false}, {F_Z, false}}},
+		{"LD A, 0xFF; LD B, 0x02; ADC A, B",
+			0x01, []ef{{F_C, true}, {F_Z, false}}},
+		{"SCF; LD A, 0x10; LD B, 0x20; ADC A, B",
+			0x31, []ef{{F_C, false}, {F_Z, false}}},
+		{"SCF; LD A, 0xFF; LD B, 0x02; ADC A, B",
+			0x02, []ef{{F_C, true}, {F_Z, false}}},
+
+		{"LD A, 0x20; LD B, 0x10; SUB B",
+			0x10, []ef{{F_C, false}, {F_Z, false}}},
+		{"LD A, 0x20; LD B, 0x30; SUB B",
+			0xf0, []ef{{F_C, true}, {F_Z, false}}},
+		{"LD A, 0x20; LD B, 0x20; SUB B",
+			0x00, []ef{{F_C, false}, {F_Z, true}}},
+
+		{"SCF; LD A, 0x20; LD B, 0x10; SBC B",
+			0x0f, []ef{{F_C, false}, {F_Z, false}}},
+		{"SCF; LD A, 0x20; LD B, 0x30; SBC B",
+			0xef, []ef{{F_C, true}, {F_Z, false}}},
+		{"LD A, 0x20; LD B, 0x10; SBC B",
+			0x10, []ef{{F_C, false}, {F_Z, false}}},
+		{"LD A, 0x20; LD B, 0x30; SBC B",
+			0xf0, []ef{{F_C, true}, {F_Z, false}}},
+
+		{"SCF; LD A, 0x30; LD B, 0x10; AND B",
+			0x10, []ef{{F_C, false}, {F_Z, false}}},
+
+		{"SCF; LD A, 0x30; LD B, 0x10; XOR B",
+			0x20, []ef{{F_C, false}, {F_Z, false}}},
+
+		{"SCF; LD A, 0x30; LD B, 0x10; OR B",
+			0x30, []ef{{F_C, false}, {F_Z, false}}},
+
+		{"SCF; LD A, 0x30; LD B, 0x10; CP B",
+			0x30, []ef{{F_C, false}, {F_Z, false}}},
+		{"SCF; LD A, 0x30; LD B, 0x30; CP B",
+			0x30, []ef{{F_C, false}, {F_Z, true}}},
 	}
 
 	zogTest(t, testCases)

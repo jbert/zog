@@ -465,6 +465,7 @@ func (z *Zog) AccumAdd(a, n byte) error {
 	ret := int(a) + int(n)
 	// TODO: consider other flags, add helpers
 	z.SetFlag(F_C, ret > 0xff)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, byte(ret))
 	return nil
 }
@@ -477,6 +478,7 @@ func (z *Zog) AccumAdc(a, n byte) error {
 	}
 	// TODO: consider other flags, add helpers
 	z.SetFlag(F_C, ret > 0xff)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, byte(ret))
 	return nil
 }
@@ -485,6 +487,7 @@ func (z *Zog) AccumSub(a, n byte) error {
 	ret := int(a) - int(n)
 	// TODO: consider other flags, add helpers
 	z.SetFlag(F_C, ret < 0x00)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, byte(ret))
 	return nil
 }
@@ -497,6 +500,7 @@ func (z *Zog) AccumSbc(a, n byte) error {
 	}
 	// TODO: consider other flags, add helpers
 	z.SetFlag(F_C, ret < 0x00)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, byte(ret))
 	return nil
 }
@@ -504,6 +508,7 @@ func (z *Zog) AccumSbc(a, n byte) error {
 func (z *Zog) AccumAnd(a, n byte) error {
 	ret := a & n
 	z.SetFlag(F_C, false)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, ret)
 	return nil
 }
@@ -511,6 +516,7 @@ func (z *Zog) AccumAnd(a, n byte) error {
 func (z *Zog) AccumXor(a, n byte) error {
 	ret := a ^ n
 	z.SetFlag(F_C, false)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, ret)
 	return nil
 }
@@ -518,6 +524,7 @@ func (z *Zog) AccumXor(a, n byte) error {
 func (z *Zog) AccumOr(a, n byte) error {
 	ret := a | n
 	z.SetFlag(F_C, false)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	z.Write8(A, ret)
 	return nil
 }
@@ -526,6 +533,7 @@ func (z *Zog) AccumCp(a, n byte) error {
 	ret := int(a) - int(n)
 	// TODO: consider other flags, add helpers
 	z.SetFlag(F_C, ret < 0x00)
+	z.SetFlag(F_Z, byte(ret) == 0)
 	return nil
 }
 
