@@ -133,24 +133,24 @@ func (a *Assembler) AssembleOne(s string) (Instruction, error) {
 }
 
 func (a *Assembler) Assemble(s string) ([]Instruction, error) {
-	// Support ; for single-line assembly
-	s = strings.Replace(s, ";", "\n", -1)
+	// Support / for single-line assembly
+	s = strings.Replace(s, "/", "\n", -1)
 	strs := strings.Split(s, "\n")
-	var tStrs []string
-	for _, s := range strs {
+	return a.AssembleLines(strs)
+}
+
+func (a *Assembler) AssembleLines(strs []string) ([]Instruction, error) {
+	var instructions []Instruction
+	for lineNumber, s := range strs {
+		comment := strings.Index(s, ";")
+		if comment > 0 {
+			s = s[:comment]
+		}
 		ts := strings.Trim(s, " \t")
 		if ts == "" {
 			continue
 		}
-		tStrs = append(tStrs, ts)
-	}
-	return a.AssembleStrings(tStrs)
-}
-
-func (a *Assembler) AssembleStrings(strs []string) ([]Instruction, error) {
-	var instructions []Instruction
-	for lineNumber, s := range strs {
-		i, err := a.AssembleOne(s)
+		i, err := a.AssembleOne(ts)
 		if err != nil {
 			return nil, fmt.Errorf("line %d: %s", lineNumber, err)
 		}
