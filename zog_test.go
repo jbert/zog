@@ -16,6 +16,18 @@ type testCase struct {
 	flags     []ef
 }
 
+func TestLD16(t *testing.T) {
+	testCases := []testCase{
+		{"LD SP, 0x0200 / LD BC, 0x1234 / PUSH BC / POP AF", 0x12, nil},
+		{"LD SP, 0x0200 / LD DE, 0x1234 / PUSH DE / POP AF", 0x12, nil},
+		{"LD SP, 0x0200 / LD HL, 0x1234 / PUSH HL / POP AF", 0x12, nil},
+
+		{"LD SP, 0x0100 / LD DE, 0x1234 / LD (0x0100), DE / POP AF", 0x12, nil},
+	}
+
+	zogTest(t, testCases)
+}
+
 func TestLD8(t *testing.T) {
 	testCases := []testCase{
 		{"LD A, 10", 10, nil},

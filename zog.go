@@ -298,6 +298,25 @@ type Location16 interface {
 	String() string
 }
 
+type Addr16 uint16
+
+func (a Addr16) Read16(z *Zog) uint16 {
+	nn, err := z.Peek16(uint16(a))
+	if err != nil {
+		panic(err)
+	}
+	return nn
+}
+func (a Addr16) Write16(z *Zog, nn uint16) {
+	err := z.Poke16(uint16(a), nn)
+	if err != nil {
+		panic(err)
+	}
+}
+func (a Addr16) String() string {
+	return fmt.Sprintf("(0x%04X)", uint16(a))
+}
+
 func (l R16Loc) Read16(z *Zog) uint16 {
 	combine := func(h, l R8Loc) uint16 {
 		hi := z.Read8(h)
@@ -400,7 +419,7 @@ func (l R16Loc) String() string {
 }
 
 type ILD16 struct {
-	src, dst R16Loc
+	src, dst Location16
 }
 
 func (ld *ILD16) String() string {
@@ -412,6 +431,42 @@ func (ld *ILD16) Execute(z *Zog) error {
 	return nil
 }
 func (ld *ILD16) Encode() []byte {
+	addr, immediateDstAddr := ld.dst.(Addr16)
+	if immediateDstAddr {
+		buf := make([]byte, 0)
+		switch ld.src {
+		case BC:
+			buf = append(buf, 0xed)
+			buf = append(buf, 0x4b)
+		case DE:
+			buf = append(buf, 0xed)
+			buf = append(buf, 0x5b)
+		case HL:
+			buf = append(buf, 0x2a)
+		case SP:
+			buf = append(buf, 0xed)
+			buf = append(buf, 0x7b)
+		case IX:
+			buf = append(buf, 0xdd)
+			buf = append(buf, 0x2a)
+		case IY:
+			buf = append(buf, 0xfd)
+			buf = append(buf, 0x2a)
+		default:
+			panic(fmt.Sprintf("Unrecognised LD16 (nnnn), src: %s", ld.src))
+		}
+		nn := uint16(addr)
+		l := byte(nn)
+		h := byte(nn >> 8)
+		buf = append(buf, l)
+		buf = append(buf, h)
+		return buf
+	}
+
+	// Limited options for 16bit LD
+	if ld.src != HL && ld.dst != SP {
+		panic(fmt.Sprintf("Invalid LD16 [%s => %s]", ld.src, ld.dst))
+	}
 	return []byte{0xf9}
 }
 

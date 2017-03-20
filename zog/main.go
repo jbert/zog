@@ -12,12 +12,12 @@ func main() {
 	z := zog.New(memSize)
 	z.MemDebug = true
 	instructions, err := z.Assembler.Assemble(`
-			LD SP, 0x0200
-			LD HL, 0x1234
-			PUSH HL
-			POP AF
-			HALT
-		`)
+	LD SP, 0x0100
+	LD DE, 0x1234
+	LD (0x0100), DE
+	POP AF
+	HALT
+	`)
 	if err != nil {
 		log.Fatalf("Failed to assemble: %s", err)
 	}

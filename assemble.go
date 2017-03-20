@@ -86,22 +86,39 @@ func MakeParseAccum(hi3 byte) func(tokens []string) (Instruction, error) {
 }
 
 func ParseLD16(tokens []string) (Instruction, error) {
-	dst16, ok := Reg2R16Loc[tokens[0]]
-	if !ok {
-		return nil, fmt.Errorf("Can't parse [%s] as dst R8Loc or R16Loc", tokens[0])
+	var dst16 Location16
+	var ok bool
+	dstStr := tokens[0]
+	if dstStr[0] == '(' && dstStr[len(dstStr)-1] == ')' {
+		dstAddr, err := strconv.ParseUint(dstStr[1:len(dstStr)-2], 0, 16)
+		if err != nil {
+			return nil, fmt.Errorf("Can't parse [%s]:  %s", dstStr, err)
+		}
+		dst16 = Addr16(dstAddr)
+	} else {
+		dst16, ok = Reg2R16Loc[dstStr]
+		if !ok {
+			return nil, fmt.Errorf("Can't parse [%s] as dst R8Loc or R16Loc or immediate addr", dstStr)
+		}
 	}
 
-	src16, ok := Reg2R16Loc[tokens[1]]
+	srcStr := tokens[1]
+	src16, ok := Reg2R16Loc[srcStr]
 	if ok {
 		return &ILD16{src: src16, dst: dst16}, nil
 	}
 
-	// Maybe 16 bit immediate?
-	num, err := strconv.ParseUint(tokens[1], 0, 16)
-	if err != nil {
-		return nil, fmt.Errorf("Can't parse [%s]:  %s", tokens[1], err)
+	r16loc, ok := dst16.(R16Loc)
+	if !ok {
+		return nil, fmt.Errorf("Can't have immediate destination and source in LD16")
 	}
-	return &ILD16Immediate{dst: dst16, nn: uint16(num)}, nil
+
+	// Maybe 16 bit immediate?
+	num, err := strconv.ParseUint(srcStr, 0, 16)
+	if err != nil {
+		return nil, fmt.Errorf("Can't parse [%s]:  %s", srcStr, err)
+	}
+	return &ILD16Immediate{dst: r16loc, nn: uint16(num)}, nil
 }
 
 func ParsePush(tokens []string) (Instruction, error) {

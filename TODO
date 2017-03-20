@@ -1,3 +1,33 @@
+- restart:
+  - implement full decoder
+  - consume byte channel
+  - instruction channel return
+
+  - instruction.go  : types for all instructions, initially just String() in the interface
+    - requires supporting machine types
+      - Src8 : place from which we can read a byte
+      - Dst8 : place to which we can write a bute
+      - Src16 : 16bit src
+      - Dst16 : 16bit dst
+    - need register concepts for String() repr
+      - R8  : implement Src8, Dst8
+      - R16 : implement Src16, Dst16
+      - Imm8 : implement Src8
+      - Imm16 : implement Src16
+      - ImmAddr16 : implement Src16, Dst16
+        - ??? or wrap an 'addr' around any other Src16/Dst16?
+  - decode.go : consume byte stream, return instruction stream
+    - we now have a disassembler (separate binary, operates on a file .bin->.z80)
+  - assemble.go : string -> instruction
+    - add Encode() to instruction too, and we can full-test the encode
+    - new binary assemble .z80 file to .bin
+  - zog.go : machine (registers, memory)
+
+
+
+
+
+
 - expand assembler
   - add label
   - add comment-to-end-of-line
@@ -7,14 +37,19 @@
   - follow CPM/zexall.src 
 
 DONE - LD16
-  - LD BC, FFFF
-- PUSH+POP
+  DONE - LD BC, FFFF
+- Test LD16
+DONE - PUSH+POP
+- indirect load
+  - LD BC, (0x1234)
 - IX and IY
   - assembly support. yikes.
 - LDIR
 - DJNZ
 
 
+- write decoder in terms of this link:
+  http://www.z80.info/decoding.htm#ed
 
 - pass byte channel or io.Reader to d.Decode
   - maybe?
