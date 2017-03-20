@@ -22,3 +22,10 @@
     - add Encode() to instruction too, and we can full-test the encode
     - new binary assemble .z80 file to .bin
   - zog.go : machine (registers, memory)
+
+- maybe drop channel i/f to decode
+  - or at least have it in terms of something else
+  - also, don't stop decoding on decode error
+    - report error, consume correct number of bytes, continue
+
+- grab speccy book table for decode test
