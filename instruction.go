@@ -94,6 +94,22 @@ func (j *JR) String() string {
 	}
 }
 
+type JP struct {
+	l Loc16
+}
+
+func (jp *JP) String() string {
+	return fmt.Sprintf("JP %s", jp.l)
+}
+
+type POP struct {
+	dst Dst16
+}
+
+func (p *POP) String() string {
+	return fmt.Sprintf("POP %s", p.dst)
+}
+
 type AccumFunc func(a, b byte) byte
 
 type Accum struct {
@@ -107,7 +123,11 @@ type RET struct {
 }
 
 func (r *RET) String() string {
-	return fmt.Sprintf("RET %s", r.c)
+	if r.c == True {
+		return "RET"
+	} else {
+		return fmt.Sprintf("RET %s", r.c)
+	}
 }
 
 func (a Accum) String() string {
@@ -134,14 +154,18 @@ const (
 	CPL  Simple = 0x2f
 	SCF  Simple = 0x37
 	CCF  Simple = 0x3f
+
+	EXX Simple = 0xd9
 )
 
 func (s Simple) String() string {
 	switch s {
 	case NOP:
 		return "NOP"
+
 	case HALT:
 		return "HALT"
+
 	case RLCA:
 		return "RLCA"
 	case RRCA:
@@ -158,6 +182,9 @@ func (s Simple) String() string {
 		return "SCF"
 	case CCF:
 		return "CCF"
+
+	case EXX:
+		return "EXX"
 	default:
 		panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
 	}

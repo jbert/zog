@@ -231,6 +231,21 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 			switch z {
 			case 0:
 				inst = &RET{tableCC[y]}
+			case 1:
+				if q == 0 {
+					inst = &POP{tableRP2[p]}
+				} else {
+					switch p {
+					case 0:
+						inst = &RET{True}
+					case 1:
+						inst = EXX
+					case 2:
+						inst = &JP{HL}
+					case 3:
+						inst = &LD16{SP, HL}
+					}
+				}
 			}
 		}
 		fmt.Printf("D: inst [%v] err [%v]\n", inst, instErr)
