@@ -131,7 +131,7 @@ func edDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 }
 
 func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
-	var instErr error
+	var err error
 	var inst instruction
 
 	x, y, z, p, q := decomposeByte(n)
@@ -150,22 +150,16 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 				d, err := getImmd(inCh)
 				if err == nil {
 					inst = &DJNZ{d}
-				} else {
-					instErr = err
 				}
 			case 3:
 				d, err := getImmd(inCh)
 				if err == nil {
 					inst = &JR{True, d}
-				} else {
-					instErr = err
 				}
 			case 4, 5, 6, 7:
 				d, err := getImmd(inCh)
 				if err == nil {
 					inst = &JR{tableCC[y-4], d}
-				} else {
-					instErr = err
 				}
 			}
 		case 1:
@@ -173,8 +167,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 				nn, err := getImmNN(inCh)
 				if err == nil {
 					inst = &LD16{tableRP[p], nn}
-				} else {
-					instErr = err
 				}
 			} else {
 				inst = &ADD16{HL, tableRP[p]}
@@ -190,15 +182,11 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 					nn, err := getImmNN(inCh)
 					if err == nil {
 						inst = &LD16{Contents{nn}, HL}
-					} else {
-						instErr = err
 					}
 				case 3:
 					nn, err := getImmNN(inCh)
 					if err == nil {
 						inst = &LD8{Contents{nn}, A}
-					} else {
-						instErr = err
 					}
 				}
 			} else {
@@ -211,15 +199,11 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 					nn, err := getImmNN(inCh)
 					if err == nil {
 						inst = &LD16{HL, Contents{nn}}
-					} else {
-						instErr = err
 					}
 				case 3:
 					nn, err := getImmNN(inCh)
 					if err == nil {
 						inst = &LD8{A, Contents{nn}}
-					} else {
-						instErr = err
 					}
 				}
 			}
@@ -237,8 +221,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			n, err := getImmN(inCh)
 			if err == nil {
 				inst = &LD8{tableR[y], n}
-			} else {
-				instErr = err
 			}
 		case 7:
 			switch y {
@@ -292,8 +274,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			nn, err := getImmNN(inCh)
 			if err == nil {
 				inst = &JP{tableCC[y], nn}
-			} else {
-				instErr = err
 			}
 		case 3:
 			switch y {
@@ -301,8 +281,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 				nn, err := getImmNN(inCh)
 				if err == nil {
 					inst = &JP{True, nn}
-				} else {
-					instErr = err
 				}
 			case 1:
 				panic(fmt.Sprintf("Decoding CB [%02X] as instruction, not prefix", n))
@@ -310,15 +288,11 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 				n, err := getImmN(inCh)
 				if err == nil {
 					inst = &OUT{n, A}
-				} else {
-					instErr = err
 				}
 			case 3:
 				n, err := getImmN(inCh)
 				if err == nil {
 					inst = &IN{A, n}
-				} else {
-					instErr = err
 				}
 			case 4:
 				inst = &EX{Contents{SP}, HL}
@@ -333,8 +307,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			nn, err := getImmNN(inCh)
 			if err == nil {
 				inst = &CALL{tableCC[y], nn}
-			} else {
-				instErr = err
 			}
 		case 5:
 			if q == 0 {
@@ -345,8 +317,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 					nn, err := getImmNN(inCh)
 					if err == nil {
 						inst = &CALL{True, nn}
-					} else {
-						instErr = err
 					}
 				case 1:
 					panic(fmt.Sprintf("Decoding DD [%02X] as instruction, not prefix", n))
@@ -361,15 +331,13 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			if err == nil {
 				info := tableALU[y]
 				inst = &Accum{name: info.name /* f: info.f, */, src: n}
-			} else {
-				instErr = err
 			}
 		case 7:
 			inst = &RST{y * 8}
 		}
 	}
 
-	return inst, instErr
+	return inst, err
 }
 
 var tableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}
