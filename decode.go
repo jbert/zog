@@ -76,270 +76,300 @@ func getImmNN(inCh chan byte) (Imm16, error) {
 func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
 	// Set to 0 if no prefix in effect
-	var prefix byte
+	var opPrefix byte
+	var indexPrefix byte
 
 	for n := range inCh {
-		// Prefix bytes
-		switch n {
-		case 0xCB, 0xDD, 0xED, 0xFD:
-			if prefix != 0 {
-				errCh <- fmt.Errorf("Double prefix: %02% %02X", prefix, n)
+
+		if opPrefix == 0 {
+			switch n {
+			case 0xcb, 0xed:
+				opPrefix = n
+				continue
+			case 0xdd, 0xfd:
+				// Last one wins
+				indexPrefix = n
 			}
-			prefix = n
-			continue
 		}
 
 		var inst instruction
-		var instErr error
-		x, y, z, p, q := decomposeByte(n)
-		fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
-		switch x {
+		var err error
+
+		switch opPrefix {
 		case 0:
-			switch z {
-			case 0:
-				switch y {
-				case 0:
-					inst = NOP
-				case 1:
-					inst = &EX{AF, AF_PRIME}
-				case 2:
-					d, err := getImmd(inCh)
-					if err == nil {
-						inst = &DJNZ{d}
-					} else {
-						instErr = err
-					}
-				case 3:
-					d, err := getImmd(inCh)
-					if err == nil {
-						inst = &JR{True, d}
-					} else {
-						instErr = err
-					}
-				case 4, 5, 6, 7:
-					d, err := getImmd(inCh)
-					if err == nil {
-						inst = &JR{tableCC[y-4], d}
-					} else {
-						instErr = err
-					}
-				}
-			case 1:
-				if q == 0 {
-					nn, err := getImmNN(inCh)
-					if err == nil {
-						inst = &LD16{tableRP[p], nn}
-					} else {
-						instErr = err
-					}
-				} else {
-					inst = &ADD16{HL, tableRP[p]}
-				}
-			case 2:
-				if q == 0 {
-					switch p {
-					case 0:
-						inst = &LD8{Contents{BC}, A}
-					case 1:
-						inst = &LD8{Contents{DE}, A}
-					case 2:
-						nn, err := getImmNN(inCh)
-						if err == nil {
-							inst = &LD16{Contents{nn}, HL}
-						} else {
-							instErr = err
-						}
-					case 3:
-						nn, err := getImmNN(inCh)
-						if err == nil {
-							inst = &LD8{Contents{nn}, A}
-						} else {
-							instErr = err
-						}
-					}
-				} else {
-					switch p {
-					case 0:
-						inst = &LD8{A, Contents{BC}}
-					case 1:
-						inst = &LD8{A, Contents{DE}}
-					case 2:
-						nn, err := getImmNN(inCh)
-						if err == nil {
-							inst = &LD16{HL, Contents{nn}}
-						} else {
-							instErr = err
-						}
-					case 3:
-						nn, err := getImmNN(inCh)
-						if err == nil {
-							inst = &LD8{A, Contents{nn}}
-						} else {
-							instErr = err
-						}
-					}
-				}
-			case 3:
-				if q == 0 {
-					inst = &INC16{tableRP[p]}
-				} else {
-					inst = &DEC16{tableRP[p]}
-				}
-			case 4:
-				inst = &INC8{tableR[y]}
-			case 5:
-				inst = &DEC8{tableR[y]}
-			case 6:
-				n, err := getImmN(inCh)
-				if err == nil {
-					inst = &LD8{tableR[y], n}
-				} else {
-					instErr = err
-				}
-			case 7:
-				switch y {
-				case 0:
-					inst = RLCA
-				case 1:
-					inst = RRCA
-				case 2:
-					inst = RLA
-				case 3:
-					inst = RRA
-				case 4:
-					inst = DAA
-				case 5:
-					inst = CPL
-				case 6:
-					inst = SCF
-				case 7:
-					inst = CCF
-				}
-			}
-		case 1:
-			if z == 6 && y == 6 {
-				inst = HALT
-			} else {
-				inst = &LD8{tableR[y], tableR[z]}
-			}
-		case 2:
-			info := tableALU[y]
-			inst = &Accum{name: info.name /* f: info.f, */, src: tableR[z]}
-		case 3:
-			switch z {
-			case 0:
-				inst = &RET{tableCC[y]}
-			case 1:
-				if q == 0 {
-					inst = &POP{tableRP2[p]}
-				} else {
-					switch p {
-					case 0:
-						inst = &RET{True}
-					case 1:
-						inst = EXX
-					case 2:
-						inst = &JP{True, Contents{HL}}
-					case 3:
-						inst = &LD16{SP, HL}
-					}
-				}
-			case 2:
-				nn, err := getImmNN(inCh)
-				if err == nil {
-					inst = &JP{tableCC[y], nn}
-				} else {
-					instErr = err
-				}
-			case 3:
-				switch y {
-				case 0:
-					nn, err := getImmNN(inCh)
-					if err == nil {
-						inst = &JP{True, nn}
-					} else {
-						instErr = err
-					}
-				case 1:
-					panic(fmt.Sprintf("Decoding CB [%02X] as instruction, not prefix", n))
-				case 2:
-					n, err := getImmN(inCh)
-					if err == nil {
-						inst = &OUT{n, A}
-					} else {
-						instErr = err
-					}
-				case 3:
-					n, err := getImmN(inCh)
-					if err == nil {
-						inst = &IN{A, n}
-					} else {
-						instErr = err
-					}
-				case 4:
-					inst = &EX{Contents{SP}, HL}
-				case 5:
-					inst = &EX{DE, HL}
-				case 6:
-					inst = DI
-				case 7:
-					inst = EI
-				}
-			case 4:
-				nn, err := getImmNN(inCh)
-				if err == nil {
-					inst = &CALL{tableCC[y], nn}
-				} else {
-					instErr = err
-				}
-			case 5:
-				if q == 0 {
-					inst = &PUSH{tableRP2[p]}
-				} else {
-					switch p {
-					case 0:
-						nn, err := getImmNN(inCh)
-						if err == nil {
-							inst = &CALL{True, nn}
-						} else {
-							instErr = err
-						}
-					case 1:
-						panic(fmt.Sprintf("Decoding DD [%02X] as instruction, not prefix", n))
-					case 2:
-						panic(fmt.Sprintf("Decoding ED [%02X] as instruction, not prefix", n))
-					case 3:
-						panic(fmt.Sprintf("Decoding FD [%02X] as instruction, not prefix", n))
-					}
-				}
-			case 6:
-				n, err := getImmN(inCh)
-				if err == nil {
-					info := tableALU[y]
-					inst = &Accum{name: info.name /* f: info.f, */, src: n}
-				} else {
-					instErr = err
-				}
-			case 7:
-				inst = &RST{y * 8}
-			}
+			inst, err = baseDecode(inCh, indexPrefix, n)
+		case 0xcb:
+			inst, err = cbDecode(inCh, indexPrefix, n)
+		case 0xed:
+			inst, err = edDecode(inCh, indexPrefix, n)
 		}
-		fmt.Printf("D: inst [%v] err [%v]\n", inst, instErr)
+
+		fmt.Printf("D: inst [%v] err [%v]\n", inst, err)
 
 		if inst == nil {
-			err := instErr
 			if err == nil {
-				err = fmt.Errorf("TODO - impl %02X [%02X]", n, prefix)
+				err = fmt.Errorf("TODO - impl %02X [%02X] (%02X)", n, opPrefix, indexPrefix)
 			}
 			errCh <- err
 		} else {
 			iCh <- inst
 		}
 
-		prefix = 0
+		opPrefix = 0
+		indexPrefix = 0
 	}
 	close(iCh)
 	close(errCh)
+}
+
+func cbDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
+	panic("TODO - impl cb")
+}
+
+func edDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
+	panic("TODO - impl ed")
+}
+
+func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
+	var instErr error
+	var inst instruction
+
+	x, y, z, p, q := decomposeByte(n)
+	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
+
+	switch x {
+	case 0:
+		switch z {
+		case 0:
+			switch y {
+			case 0:
+				inst = NOP
+			case 1:
+				inst = &EX{AF, AF_PRIME}
+			case 2:
+				d, err := getImmd(inCh)
+				if err == nil {
+					inst = &DJNZ{d}
+				} else {
+					instErr = err
+				}
+			case 3:
+				d, err := getImmd(inCh)
+				if err == nil {
+					inst = &JR{True, d}
+				} else {
+					instErr = err
+				}
+			case 4, 5, 6, 7:
+				d, err := getImmd(inCh)
+				if err == nil {
+					inst = &JR{tableCC[y-4], d}
+				} else {
+					instErr = err
+				}
+			}
+		case 1:
+			if q == 0 {
+				nn, err := getImmNN(inCh)
+				if err == nil {
+					inst = &LD16{tableRP[p], nn}
+				} else {
+					instErr = err
+				}
+			} else {
+				inst = &ADD16{HL, tableRP[p]}
+			}
+		case 2:
+			if q == 0 {
+				switch p {
+				case 0:
+					inst = &LD8{Contents{BC}, A}
+				case 1:
+					inst = &LD8{Contents{DE}, A}
+				case 2:
+					nn, err := getImmNN(inCh)
+					if err == nil {
+						inst = &LD16{Contents{nn}, HL}
+					} else {
+						instErr = err
+					}
+				case 3:
+					nn, err := getImmNN(inCh)
+					if err == nil {
+						inst = &LD8{Contents{nn}, A}
+					} else {
+						instErr = err
+					}
+				}
+			} else {
+				switch p {
+				case 0:
+					inst = &LD8{A, Contents{BC}}
+				case 1:
+					inst = &LD8{A, Contents{DE}}
+				case 2:
+					nn, err := getImmNN(inCh)
+					if err == nil {
+						inst = &LD16{HL, Contents{nn}}
+					} else {
+						instErr = err
+					}
+				case 3:
+					nn, err := getImmNN(inCh)
+					if err == nil {
+						inst = &LD8{A, Contents{nn}}
+					} else {
+						instErr = err
+					}
+				}
+			}
+		case 3:
+			if q == 0 {
+				inst = &INC16{tableRP[p]}
+			} else {
+				inst = &DEC16{tableRP[p]}
+			}
+		case 4:
+			inst = &INC8{tableR[y]}
+		case 5:
+			inst = &DEC8{tableR[y]}
+		case 6:
+			n, err := getImmN(inCh)
+			if err == nil {
+				inst = &LD8{tableR[y], n}
+			} else {
+				instErr = err
+			}
+		case 7:
+			switch y {
+			case 0:
+				inst = RLCA
+			case 1:
+				inst = RRCA
+			case 2:
+				inst = RLA
+			case 3:
+				inst = RRA
+			case 4:
+				inst = DAA
+			case 5:
+				inst = CPL
+			case 6:
+				inst = SCF
+			case 7:
+				inst = CCF
+			}
+		}
+	case 1:
+		if z == 6 && y == 6 {
+			inst = HALT
+		} else {
+			inst = &LD8{tableR[y], tableR[z]}
+		}
+	case 2:
+		info := tableALU[y]
+		inst = &Accum{name: info.name /* f: info.f, */, src: tableR[z]}
+	case 3:
+		switch z {
+		case 0:
+			inst = &RET{tableCC[y]}
+		case 1:
+			if q == 0 {
+				inst = &POP{tableRP2[p]}
+			} else {
+				switch p {
+				case 0:
+					inst = &RET{True}
+				case 1:
+					inst = EXX
+				case 2:
+					inst = &JP{True, Contents{HL}}
+				case 3:
+					inst = &LD16{SP, HL}
+				}
+			}
+		case 2:
+			nn, err := getImmNN(inCh)
+			if err == nil {
+				inst = &JP{tableCC[y], nn}
+			} else {
+				instErr = err
+			}
+		case 3:
+			switch y {
+			case 0:
+				nn, err := getImmNN(inCh)
+				if err == nil {
+					inst = &JP{True, nn}
+				} else {
+					instErr = err
+				}
+			case 1:
+				panic(fmt.Sprintf("Decoding CB [%02X] as instruction, not prefix", n))
+			case 2:
+				n, err := getImmN(inCh)
+				if err == nil {
+					inst = &OUT{n, A}
+				} else {
+					instErr = err
+				}
+			case 3:
+				n, err := getImmN(inCh)
+				if err == nil {
+					inst = &IN{A, n}
+				} else {
+					instErr = err
+				}
+			case 4:
+				inst = &EX{Contents{SP}, HL}
+			case 5:
+				inst = &EX{DE, HL}
+			case 6:
+				inst = DI
+			case 7:
+				inst = EI
+			}
+		case 4:
+			nn, err := getImmNN(inCh)
+			if err == nil {
+				inst = &CALL{tableCC[y], nn}
+			} else {
+				instErr = err
+			}
+		case 5:
+			if q == 0 {
+				inst = &PUSH{tableRP2[p]}
+			} else {
+				switch p {
+				case 0:
+					nn, err := getImmNN(inCh)
+					if err == nil {
+						inst = &CALL{True, nn}
+					} else {
+						instErr = err
+					}
+				case 1:
+					panic(fmt.Sprintf("Decoding DD [%02X] as instruction, not prefix", n))
+				case 2:
+					panic(fmt.Sprintf("Decoding ED [%02X] as instruction, not prefix", n))
+				case 3:
+					panic(fmt.Sprintf("Decoding FD [%02X] as instruction, not prefix", n))
+				}
+			}
+		case 6:
+			n, err := getImmN(inCh)
+			if err == nil {
+				info := tableALU[y]
+				inst = &Accum{name: info.name /* f: info.f, */, src: n}
+			} else {
+				instErr = err
+			}
+		case 7:
+			inst = &RST{y * 8}
+		}
+	}
+
+	return inst, instErr
 }
 
 var tableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}

@@ -74,6 +74,8 @@ func TestAll(t *testing.T) {
 			t.Run(fmt.Sprintf("OP %02X", opPrefix), func(t *testing.T) {
 				for _, indexPrefix := range indexPrefices {
 					t.Run(fmt.Sprintf("IDX %02X", indexPrefix), func(t *testing.T) {
+						// getExpected will append the IX/IY immediate byte to buf, so must
+						// be called before expandImmediateData
 						buf, expected := tc.getExpected(indexPrefix, opPrefix, buf)
 						buf, expected = expandImmediateData(buf, expected)
 						testOne(t, tc.n, buf, expected)
