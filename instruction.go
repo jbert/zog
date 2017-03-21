@@ -15,6 +15,22 @@ func (l *LD8) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
 }
 
+type INC8 struct {
+	l Loc8
+}
+
+func (i *INC8) String() string {
+	return fmt.Sprintf("INC %s", i.l)
+}
+
+type DEC8 struct {
+	l Loc8
+}
+
+func (d *DEC8) String() string {
+	return fmt.Sprintf("DEC %s", d.l)
+}
+
 type LD16 struct {
 	dst Dst16
 	src Src16

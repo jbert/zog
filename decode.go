@@ -151,6 +151,10 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				} else {
 					inst = &DEC16{tableRP[p]}
 				}
+			case 4:
+				inst = &INC8{tableR[y]}
+			case 5:
+				inst = &DEC8{tableR[y]}
 			}
 		case 1:
 			if x == 6 && y == 6 {
