@@ -22,10 +22,10 @@ func TestAll(t *testing.T) {
 		buf, expected := mungeTestCase(buf, tc.inst)
 		insts, err := DecodeBytes(buf)
 		if err != nil {
-			t.Fatalf("Error for byte [%02X]: %s", tc.n, err)
+			t.Fatalf("Error for byte [%02X]: %s (%s)", tc.n, err, expected)
 		}
 		if len(insts) == 0 {
-			t.Fatalf("No instructions for byte [%02X]", tc.n)
+			t.Fatalf("No instructions for byte [%02X] (%s)", tc.n, expected)
 		}
 		if len(insts) != 1 {
 			t.Fatalf("More than one instruction for byte [%02X]", tc.n)
@@ -53,10 +53,14 @@ func compareOK(a, b string) bool {
 
 func mungeTestCase(buf []byte, template string) ([]byte, string) {
 	var s string = template
-	if strings.Contains(template, "NN") {
+	if strings.Contains(s, "NN") {
 		buf = append(buf, 0x34)
 		buf = append(buf, 0x12)
-		s = strings.Replace(template, "NN", "0x1234", 1)
+		s = strings.Replace(s, "NN", "0x1234", 1)
+	}
+	if strings.Contains(s, "N") {
+		buf = append(buf, 0xab)
+		s = strings.Replace(s, "N", "0xab", 1)
 	}
 	return buf, s
 }

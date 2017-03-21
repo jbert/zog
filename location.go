@@ -174,9 +174,18 @@ func (c Contents) Write16(z *Zog, nn uint16) error {
 
 type Imm16 uint16
 
-func (imm Imm16) String() string {
-	return fmt.Sprintf("0x%04X", uint16(imm))
+func (nn Imm16) String() string {
+	return fmt.Sprintf("0x%04X", uint16(nn))
 }
-func (imm Imm16) Read16(z *Zog) (uint16, error) {
-	return uint16(imm), nil
+func (nn Imm16) Read16(z *Zog) (uint16, error) {
+	return uint16(nn), nil
+}
+
+type Imm8 byte
+
+func (n Imm8) String() string {
+	return fmt.Sprintf("0x%02X", byte(n))
+}
+func (n Imm8) Read8(z *Zog) (byte, error) {
+	return byte(n), nil
 }

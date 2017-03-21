@@ -46,6 +46,14 @@ func DecodeBytes(buf []byte) ([]instruction, error) {
 	return insts, err
 }
 
+func getImmN(inCh chan byte) (Imm8, error) {
+	n, ok := <-inCh
+	if !ok {
+		return 0, fmt.Errorf("getImmN: Can't get byte")
+	}
+	return Imm8(n), nil
+}
+
 func getImmNN(inCh chan byte) (Imm16, error) {
 	l, ok := <-inCh
 	if !ok {
@@ -155,6 +163,13 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				inst = &INC8{tableR[y]}
 			case 5:
 				inst = &DEC8{tableR[y]}
+			case 6:
+				n, err := getImmN(inCh)
+				if err == nil {
+					inst = &LD8{tableR[y], n}
+				} else {
+					instErr = err
+				}
 			}
 		case 1:
 			if x == 6 && y == 6 {
