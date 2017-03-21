@@ -75,7 +75,8 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				inst = &LD8{tableR[y], tableR[z]}
 			}
 		default:
-			panic("TODO - impl")
+			errCh <- fmt.Errorf("TODO - impl %02X [%02X]", n, prefix)
+			continue
 		}
 
 		iCh <- inst
