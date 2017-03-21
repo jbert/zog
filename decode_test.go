@@ -84,7 +84,7 @@ var testCases = []testCase{
 	{0x09, "add hl,bc", "rrc c", " 	"},
 	{0x0A, "ld a,(bc)", "rrc d", " 	"},
 	{0x0B, "dec bc", "rrc e", " 	"},
-	{0x0C, "incc", "rrch", " 	"},
+	{0x0C, "inc c", "rrch", " 	"},
 	{0x0D, "dec c", "rrc", " 	"},
 	{0x0E, "ld c,N", "rrc (hl)", " 	"},
 	{0x0F, "rrca", "rrc a", " 	"},
