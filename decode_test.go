@@ -65,6 +65,25 @@ func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]by
 	return buf, expected
 }
 
+func TestOddities(t *testing.T) {
+	testCases := []struct {
+		reason   string
+		buf      []byte
+		expected string
+	}{
+		{"Multiple prefixes, last one wins",
+			[]byte{0xFD, 0xDD, 0x7e, 0x01}, "LD A, (IX+1)"},
+		{"EX DE, HL is an exception to index prefix",
+			[]byte{0xDD, 0xeb}, "EX DE, HL"},
+		{"If we index (HL), we don't index H or L",
+			[]byte{0xDD, 0x66, 0x01}, "LD H, (IX+1)"},
+	}
+
+	for _, tc := range testCases {
+		testOne(t, 0x00, tc.buf, tc.expected)
+	}
+}
+
 func TestAll(t *testing.T) {
 	opPrefices := []byte{0x00, 0xcb, 0xed}
 	indexPrefices := []byte{0x00, 0xdd, 0xfd}
