@@ -219,7 +219,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				}
 			}
 		case 1:
-			if x == 6 && y == 6 {
+			if z == 6 && y == 6 {
 				inst = HALT
 			} else {
 				inst = &LD8{tableR[y], tableR[z]}
