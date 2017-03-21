@@ -224,6 +224,9 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 			} else {
 				inst = &LD8{tableR[y], tableR[z]}
 			}
+		case 2:
+			info := tableALU[y]
+			inst = &Accum{name: info.name /* f: info.f, */, src: tableR[z]}
 		}
 		fmt.Printf("D: inst [%v] err [%v]\n", inst, instErr)
 
@@ -247,6 +250,32 @@ var tableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}
 var tableRP []Loc16 = []Loc16{BC, DE, HL, SP}
 var tableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
 var tableCC []Conditional = []Conditional{Not{FT_Z}, FT_Z, Not{FT_C}, FT_C, FT_PO, FT_PE, FT_P, FT_M}
+
+type AccumInfo struct {
+	name string
+	//	f    AccumFunc
+}
+
+var tableALU []AccumInfo = []AccumInfo{
+	/*
+		{"ADD", AccumADD8},
+		{"ADC", AccumADC8},
+		{"SUB", AccumSUB8},
+		{"SBC", AccumSBC8},
+		{"AND", AccumAND8},
+		{"XOR", AccumXOR8},
+		{"OR", AccumOR8},
+		{"CP", AccumCP8},
+	*/
+	{"ADD"},
+	{"ADC"},
+	{"SUB"},
+	{"SBC"},
+	{"AND"},
+	{"XOR"},
+	{"OR"},
+	{"CP"},
+}
 
 func decomposeByte(n byte) (byte, byte, byte, byte, byte) {
 	// We follow terminology from http://www.z80.info/decoding.htm

@@ -94,6 +94,23 @@ func (j *JR) String() string {
 	}
 }
 
+type AccumFunc func(a, b byte) byte
+
+type Accum struct {
+	//	f    AccumFunc
+	src  Src8
+	name string
+}
+
+func (a Accum) String() string {
+	switch a.name {
+	case "ADD", "ADC", "SBC":
+		return fmt.Sprintf("%s A, %s", a.name, a.src)
+	default:
+		return fmt.Sprintf("%s %s", a.name, a.src)
+	}
+}
+
 type Simple byte
 
 const (
