@@ -142,11 +142,11 @@ func (r R16) Write16(z *Zog, nn uint16) error {
 }
 
 type Contents struct {
-	l Loc16
+	addr Src16
 }
 
 func (c Contents) String() string {
-	return fmt.Sprintf("(%s)", c.l)
+	return fmt.Sprintf("(%s)", c.addr)
 }
 func (c Contents) Read8(z *Zog) (byte, error) {
 	// TODO: debug
@@ -157,6 +157,18 @@ func (c Contents) Read8(z *Zog) (byte, error) {
 func (c Contents) Write8(z *Zog, n byte) error {
 	// TODO: debug
 	fmt.Printf("Z: %s <- %02X\n", c, n)
+	return nil
+}
+
+func (c Contents) Read16(z *Zog) (uint16, error) {
+	// TODO: debug
+	var nn uint16
+	fmt.Printf("Z: %04X <- %s\n", nn, c)
+	return nn, nil
+}
+func (c Contents) Write16(z *Zog, nn uint16) error {
+	// TODO: debug
+	fmt.Printf("Z: %s <- %04X\n", c, nn)
 	return nil
 }
 

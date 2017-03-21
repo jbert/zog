@@ -94,19 +94,63 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				if q == 0 {
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD16{dst: tableRP[p], src: nn}
+						inst = &LD16{tableRP[p], nn}
 					} else {
 						instErr = err
 					}
 				} else {
-					inst = &ADD16{dst: HL, src: tableRP[p]}
+					inst = &ADD16{HL, tableRP[p]}
+				}
+			case 2:
+				if q == 0 {
+					switch p {
+					case 0:
+						inst = &LD8{Contents{BC}, A}
+					case 1:
+						inst = &LD8{Contents{DE}, A}
+					case 2:
+						nn, err := getImmNN(inCh)
+						if err == nil {
+							inst = &LD16{Contents{nn}, HL}
+						} else {
+							instErr = err
+						}
+					case 3:
+						nn, err := getImmNN(inCh)
+						if err == nil {
+							inst = &LD8{Contents{nn}, A}
+						} else {
+							instErr = err
+						}
+					}
+				} else {
+					switch p {
+					case 0:
+						inst = &LD8{A, Contents{BC}}
+					case 1:
+						inst = &LD8{A, Contents{DE}}
+					case 2:
+						nn, err := getImmNN(inCh)
+						if err == nil {
+							inst = &LD16{HL, Contents{nn}}
+						} else {
+							instErr = err
+						}
+					case 3:
+						nn, err := getImmNN(inCh)
+						if err == nil {
+							inst = &LD8{A, Contents{nn}}
+						} else {
+							instErr = err
+						}
+					}
 				}
 			}
 		case 1:
 			if x == 6 && y == 6 {
 				inst = HALT
 			} else {
-				inst = &LD8{dst: tableR[y], src: tableR[z]}
+				inst = &LD8{tableR[y], tableR[z]}
 			}
 		}
 		fmt.Printf("D: inst [%v] err [%v]\n", inst, instErr)
