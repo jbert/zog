@@ -118,10 +118,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 					} else {
 						instErr = err
 					}
-				case 4:
-				case 5:
-				case 6:
-				case 7:
+				case 4, 5, 6, 7:
 					d, err := getImmd(inCh)
 					if err == nil {
 						inst = &JR{tableCC[y-4], d}
