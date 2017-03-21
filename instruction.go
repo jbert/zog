@@ -163,14 +163,6 @@ func (r *RST) String() string {
 	return fmt.Sprintf("RST %d", r.addr)
 }
 
-type AccumFunc func(a, b byte) byte
-
-type Accum struct {
-	//	f    AccumFunc
-	src  Src8
-	name string
-}
-
 type RET struct {
 	c Conditional
 }
@@ -183,6 +175,14 @@ func (r *RET) String() string {
 	}
 }
 
+type AccumFunc func(a, b byte) byte
+
+type Accum struct {
+	//	f    AccumFunc
+	src  Src8
+	name string
+}
+
 func (a Accum) String() string {
 	switch a.name {
 	case "ADD", "ADC", "SBC":
@@ -190,6 +190,42 @@ func (a Accum) String() string {
 	default:
 		return fmt.Sprintf("%s %s", a.name, a.src)
 	}
+}
+
+type ROT struct {
+	name string
+	r    Loc8
+}
+
+func (r *ROT) String() string {
+	return fmt.Sprintf("%s %s", r.name, r.r)
+}
+
+type BIT struct {
+	num byte
+	r   Loc8
+}
+
+func (b *BIT) String() string {
+	return fmt.Sprintf("BIT %d, %s", b.num, b.r)
+}
+
+type RES struct {
+	num byte
+	r   Loc8
+}
+
+func (r *RES) String() string {
+	return fmt.Sprintf("RES %d, %s", r.num, r.r)
+}
+
+type SET struct {
+	num byte
+	r   Loc8
+}
+
+func (s *SET) String() string {
+	return fmt.Sprintf("SET %d, %s", s.num, s.r)
 }
 
 type Simple byte

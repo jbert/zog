@@ -123,7 +123,25 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 }
 
 func cbDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
-	panic("TODO - impl cb")
+	var err error
+	var inst instruction
+
+	x, y, z, p, q := decomposeByte(n)
+	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
+
+	switch x {
+	case 0:
+		info := tableROT[y]
+		inst = &ROT{name: info.name /* f: info.f, */, r: tableR[z]}
+	case 1:
+		inst = &BIT{y, tableR[z]}
+	case 2:
+		inst = &RES{y, tableR[z]}
+	case 3:
+		inst = &SET{y, tableR[z]}
+	}
+
+	return inst, err
 }
 
 func edDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
@@ -369,6 +387,22 @@ var tableALU []AccumInfo = []AccumInfo{
 	{"XOR"},
 	{"OR"},
 	{"CP"},
+}
+
+type RotInfo struct {
+	name string
+	//	f    AccumFunc
+}
+
+var tableROT []RotInfo = []RotInfo{
+	{"RLC"},
+	{"RRC"},
+	{"RL"},
+	{"RR"},
+	{"SLA"},
+	{"SRA"},
+	{"SLL"},
+	{"SRL"},
 }
 
 func decomposeByte(n byte) (byte, byte, byte, byte, byte) {

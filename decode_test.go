@@ -74,6 +74,12 @@ func TestAll(t *testing.T) {
 			t.Run(fmt.Sprintf("OP %02X", opPrefix), func(t *testing.T) {
 				for _, indexPrefix := range indexPrefices {
 					t.Run(fmt.Sprintf("IDX %02X", indexPrefix), func(t *testing.T) {
+						if opPrefix != 0 {
+							buf = append([]byte{opPrefix}, buf...)
+						}
+						if indexPrefix != 0 {
+							buf = append([]byte{indexPrefix}, buf...)
+						}
 						// getExpected will append the IX/IY immediate byte to buf, so must
 						// be called before expandImmediateData
 						buf, expected := tc.getExpected(indexPrefix, opPrefix, buf)
@@ -133,12 +139,6 @@ func expandImmediateData(buf []byte, template string) ([]byte, string) {
 	return buf, s
 }
 
-func TestDecode(t *testing.T) {
-	data := []byte{0x41}
-	insts, _ := DecodeBytes(data)
-	fmt.Printf("%v\n", insts)
-}
-
 var testCases = []testCase{
 	{0x00, "nop", "rlc b", " 	"},
 	{0x01, "ld bc,NN", "rlc c", " 	"},
@@ -152,12 +152,12 @@ var testCases = []testCase{
 	{0x09, "add hl,bc", "rrc c", " 	"},
 	{0x0A, "ld a,(bc)", "rrc d", " 	"},
 	{0x0B, "dec bc", "rrc e", " 	"},
-	{0x0C, "inc c", "rrch", " 	"},
-	{0x0D, "dec c", "rrc", " 	"},
+	{0x0C, "inc c", "rrc h", " 	"},
+	{0x0D, "dec c", "rrc l", " 	"},
 	{0x0E, "ld c,N", "rrc (hl)", " 	"},
 	{0x0F, "rrca", "rrc a", " 	"},
 	{0x10, "djnz DIS", "rl b", " 	"},
-	{0x11, "ld de,NN", "rlc", " 	"},
+	{0x11, "ld de,NN", "rl c", " 	"},
 	{0x12, "ld (de),a", "rl d", " 	"},
 	{0x13, "inc de", "rl e", " 	"},
 	{0x14, "inc d", "rl h", " 	"},
@@ -188,14 +188,14 @@ var testCases = []testCase{
 	{0x2D, "dec l", "sra l", ""},
 	{0x2E, "ld l,N", "sra (hl)", ""},
 	{0x2F, "cpl", "sra a", ""},
-	{0x30, "jr nc,DIS", " ", ""},
-	{0x31, "ld sp,NN", " ", ""},
-	{0x32, "ld (NN),a", " ", ""},
-	{0x33, "inc sp", " ", ""},
-	{0x34, "inc (hl)", " ", ""},
-	{0x35, "dec (hl)", " ", ""},
-	{0x36, "ld (hl),N", " ", ""},
-	{0x37, "scf", " ", ""},
+	{0x30, "jr nc,DIS", "sll b", ""},
+	{0x31, "ld sp,NN", "sll c", ""},
+	{0x32, "ld (NN),a", "sll d", ""},
+	{0x33, "inc sp", "sll e", ""},
+	{0x34, "inc (hl)", "sll h", ""},
+	{0x35, "dec (hl)", "sll l", ""},
+	{0x36, "ld (hl),N", "sll (hl)", ""},
+	{0x37, "scf", "sll a", ""},
 	{0x38, "jr c,DIS", "srl b", ""},
 	{0x39, "add hl,sp", "srl c", ""},
 	{0x3A, "ld a,(NN)", "srl d", ""},
@@ -209,12 +209,12 @@ var testCases = []testCase{
 	{0x42, "ld b,d", "bit 0,d", "sbc hl,bc	"},
 	{0x43, "ld b,e", "bit 0,e", "ld (NN),bc	"},
 	{0x44, "ld b,h", "bit 0,h", "neg	"},
-	{0x45, "ld b,l", "bit 0,1", "retn	"},
+	{0x45, "ld b,l", "bit 0,l", "retn	"},
 	{0x46, "ld b,(hl)", "bit 0,(hl)", "im 0	"},
 	{0x47, "ld b,a", "bit 0,a", "ld i,a	"},
 	{0x48, "ld c,b", "bit 1,b", "in c,(c)	"},
 	{0x49, "ld c,c", "bit 1,c", "out (c),c	"},
-	{0x4A, "ld c,d", "bit i,d", "adc hl,bc	"},
+	{0x4A, "ld c,d", "bit 1,d", "adc hl,bc	"},
 	{0x4B, "ld c,e", "bit 1,e", "ld bc,(NN)	"},
 	{0x4C, "ld c,h", "bit 1,h", ""},
 	{0x4D, "ld c,l", "bit 1,l", "reti	"},
@@ -241,7 +241,7 @@ var testCases = []testCase{
 	{0x62, "ld h,d", "bit 4,d", "sbc hl,hl	"},
 	{0x63, "ld h,e", "bit 4,e", "ld (NN),hl	"},
 	{0x64, "ld h,h", "bit 4,h", ""},
-	{0x65, "ld h,l", "bit 4,1", ""},
+	{0x65, "ld h,l", "bit 4,l", ""},
 	{0x66, "ld h,(hl)", "bit 4,(hl)", ""},
 	{0x67, "ld h,a", "bit 4,a", "rrd	"},
 	{0x68, "ld l,b", "bit 5,b", "in l,(c)	"},
@@ -281,7 +281,7 @@ var testCases = []testCase{
 	{0x8A, "adc a,d", "res 1,d", ""},
 	{0x8B, "adc a,e", "res 1,e", ""},
 	{0x8C, "adc a,h", "res 1,h", ""},
-	{0x8D, "adc a,l", "res 1,i", ""},
+	{0x8D, "adc a,l", "res 1,l", ""},
 	{0x8E, "adc a,(hl)", "res 1,(hl)", ""},
 	{0x8F, "adc a,a", "res 1,a", ""},
 	{0x90, "sub b", "res 2,b", ""},
@@ -313,7 +313,7 @@ var testCases = []testCase{
 	{0xAA, "xor d", "res 5,d", "ind	"},
 	{0xAB, "xor e", "res 5,e", "outd	"},
 	{0xAC, "xor h", "res 5,h", ""},
-	{0xAD, "xor l", "res 5,i", ""},
+	{0xAD, "xor l", "res 5,l", ""},
 	{0xAE, "xor (hl)", "res 5,(hl)", ""},
 	{0xAF, "xor a", "res 5,a", ""},
 	{0xB0, "or b", "res 6,b", "ldir	"},
@@ -341,10 +341,10 @@ var testCases = []testCase{
 	{0xC6, "add a,N", "set 0,(hl)", ""},
 	{0xC7, "rst 0", "set 0,a", ""},
 	{0xC8, "ret z", "set 1,b", ""},
-	{0xC9, "ret", "set l,c", ""},
-	{0xCA, "jp z,NN", "set l,d", ""},
+	{0xC9, "ret", "set 1,c", ""},
+	{0xCA, "jp z,NN", "set 1,d", ""},
 	//	{0xCB, "", "set l,e", ""},
-	{0xCC, "call z,NN", "set l,h", ""},
+	{0xCC, "call z,NN", "set 1,h", ""},
 	{0xCD, "call NN", "set 1,l", ""},
 	{0xCE, "adc a,N", "set 1,(hl)", ""},
 	{0xCF, "rst 8", "set 1,a", ""},
