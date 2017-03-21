@@ -102,6 +102,14 @@ type Accum struct {
 	name string
 }
 
+type RET struct {
+	c Conditional
+}
+
+func (r *RET) String() string {
+	return fmt.Sprintf("RET %s", r.c)
+}
+
 func (a Accum) String() string {
 	switch a.name {
 	case "ADD", "ADC", "SBC":

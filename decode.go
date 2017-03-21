@@ -227,6 +227,11 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 		case 2:
 			info := tableALU[y]
 			inst = &Accum{name: info.name /* f: info.f, */, src: tableR[z]}
+		case 3:
+			switch z {
+			case 0:
+				inst = &RET{tableCC[y]}
+			}
 		}
 		fmt.Printf("D: inst [%v] err [%v]\n", inst, instErr)
 
