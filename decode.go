@@ -241,10 +241,17 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 					case 1:
 						inst = EXX
 					case 2:
-						inst = &JP{HL}
+						inst = &JP{True, HL}
 					case 3:
 						inst = &LD16{SP, HL}
 					}
+				}
+			case 2:
+				nn, err := getImmNN(inCh)
+				if err == nil {
+					inst = &JP{tableCC[y], nn}
+				} else {
+					instErr = err
 				}
 			}
 		}

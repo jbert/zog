@@ -95,11 +95,16 @@ func (j *JR) String() string {
 }
 
 type JP struct {
-	l Loc16
+	c    Conditional
+	addr Src16
 }
 
 func (jp *JP) String() string {
-	return fmt.Sprintf("JP %s", jp.l)
+	if jp.c == True {
+		return fmt.Sprintf("JP %s", jp.addr)
+	} else {
+		return fmt.Sprintf("JP %s, %s", jp.c, jp.addr)
+	}
 }
 
 type POP struct {
