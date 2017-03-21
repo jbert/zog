@@ -16,42 +16,104 @@ type testCase struct {
 	inst_after_ed string
 }
 
+func (tc *testCase) getExpected(indexPrefix byte, opPrefix byte, buf []byte) ([]byte, string) {
+	var expected string
+	switch opPrefix {
+	case 0: // No prefix
+		expected = tc.inst
+	case 0xcb:
+		expected = tc.inst_after_cb
+	case 0xed:
+		expected = tc.inst_after_ed
+	default:
+		panic(fmt.Sprintf("Unrecognised op prefix %02X", opPrefix))
+	}
+
+	switch indexPrefix {
+	case 0xdd:
+		return indexRegisterMunge("IX", buf, expected)
+	case 0xfd:
+		return indexRegisterMunge("IY", buf, expected)
+	default:
+		return buf, expected
+	}
+}
+
+func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]byte, string) {
+	d := byte(20)
+
+	buf = append(buf, d)
+
+	hlReplace := fmt.Sprintf("%s+%02X", indexRegister, d)
+	hReplace := indexRegister + "h"
+	lReplace := indexRegister + "l"
+
+	if strings.Contains(expected, "(hl)") {
+		expected = strings.Replace(expected, "(hl)", hlReplace, -1)
+	} else {
+		// Exception
+		if expected != "ex de, hl" {
+			expected = strings.Replace(expected, "hl", indexRegister, -1)
+			expected = strings.Replace(expected, "h,", hReplace+",", -1)
+			expected = strings.Replace(expected, ",h", ","+hReplace, -1)
+			expected = strings.Replace(expected, "l,", lReplace+",", -1)
+			expected = strings.Replace(expected, ",l", ","+lReplace, -1)
+		}
+	}
+
+	return buf, expected
+}
+
 func TestAll(t *testing.T) {
+	opPrefices := []byte{0x00, 0xcb, 0xed}
+	indexPrefices := []byte{0x00, 0xdd, 0xfd}
+
 	for _, tc := range testCases {
 		buf := []byte{tc.n}
-		buf, expected := mungeTestCase(buf, tc.inst)
-		insts, err := DecodeBytes(buf)
-		if err != nil {
-			t.Fatalf("Error for byte [%02X]: %s (%s)", tc.n, err, expected)
+		for _, opPrefix := range opPrefices {
+			t.Run(fmt.Sprintf("OP %02X", opPrefix), func(t *testing.T) {
+				for _, indexPrefix := range indexPrefices {
+					t.Run(fmt.Sprintf("IDX %02X", indexPrefix), func(t *testing.T) {
+						buf, expected := tc.getExpected(indexPrefix, opPrefix, buf)
+						buf, expected = expandImmediateData(buf, expected)
+						testOne(t, tc.n, buf, expected)
+					})
+				}
+			})
 		}
-		if len(insts) == 0 {
-			t.Fatalf("No instructions for byte [%02X] (%s)", tc.n, expected)
-		}
-		if len(insts) != 1 {
-			t.Fatalf("More than one instruction for byte [%02X]", tc.n)
-		}
-		if !compareOK(insts[0].String(), expected) {
-			t.Fatalf("Wrong decode for [%02X] [%s] != [%s] (%s)", tc.n, insts[0].String(), expected, tc.inst)
-		}
-		fmt.Printf("Decoded [%02x] to [%s]\n", tc.n, insts[0].String())
-
-		// TODO: test prefixes too
 	}
+}
+
+func testOne(t *testing.T, opcode byte, buf []byte, expected string) {
+	insts, err := DecodeBytes(buf)
+	if err != nil {
+		t.Fatalf("Error for byte [%02X]: %s (%s)", opcode, err, expected)
+	}
+	if len(insts) == 0 {
+		t.Fatalf("No instructions for byte [%02X] (%s)", opcode, expected)
+	}
+	if len(insts) != 1 {
+		t.Fatalf("More than one instruction for byte [%02X]", opcode)
+	}
+	if !compareOK(insts[0].String(), expected) {
+		t.Fatalf("Wrong decode for [%02X] [%s] != [%s] (%s)", opcode, insts[0].String(), expected)
+	}
+	fmt.Printf("Decoded [%02x] to [%s]\n", opcode, insts[0].String())
+}
+
+func normaliseExpected(s string) string {
+	s = strings.ToLower(s)
+	s = strings.Replace(s, ", ", ",", -1)
+	return s
 }
 
 func compareOK(a, b string) bool {
-	munge := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.Replace(s, ", ", ",", -1)
-		s = strings.Replace(s, " ,", ",", -1)
-		return s
-	}
-	a = munge(a)
-	b = munge(b)
+	a = normaliseExpected(a)
+	b = normaliseExpected(b)
 	return a == b
 }
 
-func mungeTestCase(buf []byte, template string) ([]byte, string) {
+func expandImmediateData(buf []byte, template string) ([]byte, string) {
 	var s string = template
 	if strings.Contains(s, "NN") {
 		buf = append(buf, 0x34)
