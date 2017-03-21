@@ -95,7 +95,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 			}
 		}
 
-		t.SetPrefix(indexPrefix)
+		t.ResetPrefix(indexPrefix)
 
 		var inst instruction
 		var err error
@@ -157,6 +157,15 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 	var err error
 	var inst instruction
 
+	// We lookup this to get (HL)
+	//	hlci := byte(6)
+	hl := HL
+	if indexPrefix == 0xDD {
+		hl = IX
+	} else if indexPrefix == 0xFD {
+		hl = IY
+	}
+
 	x, y, z, p, q := decomposeByte(n)
 	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
@@ -192,7 +201,7 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 					inst = &LD16{t.LookupRP(p), nn}
 				}
 			} else {
-				inst = &ADD16{HL, t.LookupRP(p)}
+				inst = &ADD16{hl, t.LookupRP(p)}
 			}
 		case 2:
 			if q == 0 {
@@ -204,7 +213,7 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 				case 2:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD16{Contents{nn}, HL}
+						inst = &LD16{Contents{nn}, hl}
 					}
 				case 3:
 					nn, err := getImmNN(inCh)
@@ -221,7 +230,7 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 				case 2:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD16{HL, Contents{nn}}
+						inst = &LD16{hl, Contents{nn}}
 					}
 				case 3:
 					nn, err := getImmNN(inCh)
@@ -241,9 +250,11 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 		case 5:
 			inst = &DEC8{t.LookupR(y)}
 		case 6:
+			// Lookup before immmediate, so we handle IX/IY index before immediate N
+			r := t.LookupR(y)
 			n, err := getImmN(inCh)
 			if err == nil {
-				inst = &LD8{t.LookupR(y), n}
+				inst = &LD8{r, n}
 			}
 		case 7:
 			switch y {
@@ -269,7 +280,18 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 		if z == 6 && y == 6 {
 			inst = HALT
 		} else {
-			inst = &LD8{t.LookupR(y), t.LookupR(z)}
+			// Annoying prefix case, if we have (IX+d), we *don't* index-replace
+			// H or L
+			dst := t.LookupR(y)
+			src := t.LookupR(z)
+			t.ResetPrefix(0x00)
+			if _, ok := dst.(IndexedContents); ok {
+				src = t.LookupR(z)
+			}
+			if _, ok := src.(IndexedContents); ok {
+				dst = t.LookupR(y)
+			}
+			inst = &LD8{dst, src}
 		}
 	case 2:
 		info := tableALU[y]
@@ -288,9 +310,9 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 				case 1:
 					inst = EXX
 				case 2:
-					inst = &JP{True, Contents{HL}}
+					inst = &JP{True, hl}
 				case 3:
-					inst = &LD16{SP, HL}
+					inst = &LD16{SP, hl}
 				}
 			}
 		case 2:
@@ -318,8 +340,9 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, err
 					inst = &IN{A, n}
 				}
 			case 4:
-				inst = &EX{Contents{SP}, HL}
+				inst = &EX{Contents{SP}, hl}
 			case 5:
+				// We use real HL for this, it is an exception
 				inst = &EX{DE, HL}
 			case 6:
 				inst = DI

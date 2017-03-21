@@ -51,7 +51,7 @@ func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]by
 		buf = append(buf, byte(d))
 	} else {
 		// Exception
-		if expected != "ex de, hl" {
+		if expected != "ex de,hl" {
 			expected = strings.Replace(expected, "hl", indexRegister, -1)
 			expected = strings.Replace(expected, "h,", hReplace+",", -1)
 			expected = strings.Replace(expected, ",h", ","+hReplace, -1)
@@ -77,6 +77,8 @@ func TestOddities(t *testing.T) {
 			[]byte{0xDD, 0xeb}, "EX DE, HL"},
 		{"If we index (HL), we don't index H or L",
 			[]byte{0xDD, 0x66, 0x01}, "LD H, (IX+1)"},
+		{"Indxed 16bit add",
+			[]byte{0xDD, 0x09}, "ADD IX, BC"},
 	}
 
 	for _, tc := range testCases {
@@ -399,7 +401,7 @@ var testCases = []testCase{
 	{0xE6, "and N", "set 4,(hl)", ""},
 	{0xE7, "rst 32", "set 4,a", ""},
 	{0xE8, "ret pe", "set 5,b", ""},
-	{0xE9, "jp (hl)", "set 5,c", ""},
+	{0xE9, "jp hl", "set 5,c", ""},
 	{0xEA, "jp pe,NN", "set 5,d", ""},
 	{0xEB, "ex de,hl", "set 5,e", ""},
 	{0xEC, "call pe,NN", "set 5,h", ""},

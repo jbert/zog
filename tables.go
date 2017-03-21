@@ -19,7 +19,7 @@ func NewTable(inCh chan byte) *Table {
 	return &Table{inCh: inCh}
 }
 
-func (t *Table) SetPrefix(n byte) {
+func (t *Table) ResetPrefix(n byte) {
 	t.wantIX = false
 	t.wantIY = false
 	switch n {
@@ -63,11 +63,29 @@ func (t *Table) LookupR(i byte) Loc8 {
 }
 
 func (t *Table) LookupRP(i byte) Loc16 {
-	return baseTableRP[i]
+	l := baseTableRP[i]
+	if l == HL {
+		if t.wantIX {
+			l = IX
+		}
+		if t.wantIY {
+			l = IY
+		}
+	}
+	return l
 }
 
 func (t *Table) LookupRP2(i byte) Loc16 {
-	return baseTableRP2[i]
+	l := baseTableRP2[i]
+	if l == HL {
+		if t.wantIX {
+			l = IX
+		}
+		if t.wantIY {
+			l = IY
+		}
+	}
+	return l
 }
 
 type AccumInfo struct {
