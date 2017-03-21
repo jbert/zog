@@ -79,6 +79,8 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 	var opPrefix byte
 	var indexPrefix byte
 
+	t := NewTable()
+
 	for n := range inCh {
 
 		if opPrefix == 0 {
@@ -98,11 +100,11 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
 		switch opPrefix {
 		case 0:
-			inst, err = baseDecode(inCh, indexPrefix, n)
+			inst, err = baseDecode(t, inCh, indexPrefix, n)
 		case 0xcb:
-			inst, err = cbDecode(inCh, indexPrefix, n)
+			inst, err = cbDecode(t, inCh, indexPrefix, n)
 		case 0xed:
-			inst, err = edDecode(inCh, indexPrefix, n)
+			inst, err = edDecode(t, inCh, indexPrefix, n)
 		}
 
 		fmt.Printf("D: inst [%v] err [%v]\n", inst, err)
@@ -123,7 +125,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 	close(errCh)
 }
 
-func cbDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
+func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
 	var err error
 	var inst instruction
 
@@ -133,23 +135,23 @@ func cbDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 	switch x {
 	case 0:
 		info := tableROT[y]
-		inst = &ROT{name: info.name /* f: info.f, */, r: tableR[z]}
+		inst = &ROT{name: info.name /* f: info.f, */, r: t.LookupR(z)}
 	case 1:
-		inst = &BIT{y, tableR[z]}
+		inst = &BIT{y, t.LookupR(z)}
 	case 2:
-		inst = &RES{y, tableR[z]}
+		inst = &RES{y, t.LookupR(z)}
 	case 3:
-		inst = &SET{y, tableR[z]}
+		inst = &SET{y, t.LookupR(z)}
 	}
 
 	return inst, err
 }
 
-func edDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
+func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
 	panic("TODO - impl ed")
 }
 
-func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
+func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
 	var err error
 	var inst instruction
 
@@ -185,10 +187,10 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			if q == 0 {
 				nn, err := getImmNN(inCh)
 				if err == nil {
-					inst = &LD16{tableRP[p], nn}
+					inst = &LD16{t.LookupRP(p), nn}
 				}
 			} else {
-				inst = &ADD16{HL, tableRP[p]}
+				inst = &ADD16{HL, t.LookupRP(p)}
 			}
 		case 2:
 			if q == 0 {
@@ -228,18 +230,18 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			}
 		case 3:
 			if q == 0 {
-				inst = &INC16{tableRP[p]}
+				inst = &INC16{t.LookupRP(p)}
 			} else {
-				inst = &DEC16{tableRP[p]}
+				inst = &DEC16{t.LookupRP(p)}
 			}
 		case 4:
-			inst = &INC8{tableR[y]}
+			inst = &INC8{t.LookupR(y)}
 		case 5:
-			inst = &DEC8{tableR[y]}
+			inst = &DEC8{t.LookupR(y)}
 		case 6:
 			n, err := getImmN(inCh)
 			if err == nil {
-				inst = &LD8{tableR[y], n}
+				inst = &LD8{t.LookupR(y), n}
 			}
 		case 7:
 			switch y {
@@ -265,18 +267,18 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 		if z == 6 && y == 6 {
 			inst = HALT
 		} else {
-			inst = &LD8{tableR[y], tableR[z]}
+			inst = &LD8{t.LookupR(y), t.LookupR(z)}
 		}
 	case 2:
 		info := tableALU[y]
-		inst = &Accum{name: info.name /* f: info.f, */, src: tableR[z]}
+		inst = &Accum{name: info.name /* f: info.f, */, src: t.LookupR(z)}
 	case 3:
 		switch z {
 		case 0:
 			inst = &RET{tableCC[y]}
 		case 1:
 			if q == 0 {
-				inst = &POP{tableRP2[p]}
+				inst = &POP{t.LookupRP2(p)}
 			} else {
 				switch p {
 				case 0:
@@ -329,7 +331,7 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 			}
 		case 5:
 			if q == 0 {
-				inst = &PUSH{tableRP2[p]}
+				inst = &PUSH{t.LookupRP2(p)}
 			} else {
 				switch p {
 				case 0:
@@ -357,53 +359,6 @@ func baseDecode(inCh chan byte, indexPrefix, n byte) (instruction, error) {
 	}
 
 	return inst, err
-}
-
-var tableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}
-var tableRP []Loc16 = []Loc16{BC, DE, HL, SP}
-var tableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
-var tableCC []Conditional = []Conditional{Not{FT_Z}, FT_Z, Not{FT_C}, FT_C, FT_PO, FT_PE, FT_P, FT_M}
-
-type AccumInfo struct {
-	name string
-	//	f    AccumFunc
-}
-
-var tableALU []AccumInfo = []AccumInfo{
-	/*
-		{"ADD", AccumADD8},
-		{"ADC", AccumADC8},
-		{"SUB", AccumSUB8},
-		{"SBC", AccumSBC8},
-		{"AND", AccumAND8},
-		{"XOR", AccumXOR8},
-		{"OR", AccumOR8},
-		{"CP", AccumCP8},
-	*/
-	{"ADD"},
-	{"ADC"},
-	{"SUB"},
-	{"SBC"},
-	{"AND"},
-	{"XOR"},
-	{"OR"},
-	{"CP"},
-}
-
-type RotInfo struct {
-	name string
-	//	f    AccumFunc
-}
-
-var tableROT []RotInfo = []RotInfo{
-	{"RLC"},
-	{"RRC"},
-	{"RL"},
-	{"RR"},
-	{"SLA"},
-	{"SRA"},
-	{"SLL"},
-	{"SRL"},
 }
 
 func decomposeByte(n byte) (byte, byte, byte, byte, byte) {
