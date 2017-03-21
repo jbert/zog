@@ -76,8 +76,18 @@ func (ex *EX) String() string {
 type Simple byte
 
 const (
-	NOP  Simple = 0x00
+	NOP Simple = 0x00
+
 	HALT Simple = 0x76
+
+	RLCA Simple = 0x07
+	RRCA Simple = 0x0f
+	RLA  Simple = 0x17
+	RRA  Simple = 0x1f
+	DAA  Simple = 0x27
+	CPL  Simple = 0x2f
+	SCF  Simple = 0x37
+	CCF  Simple = 0x3f
 )
 
 func (s Simple) String() string {
@@ -86,6 +96,22 @@ func (s Simple) String() string {
 		return "NOP"
 	case HALT:
 		return "HALT"
+	case RLCA:
+		return "RLCA"
+	case RRCA:
+		return "RRCA"
+	case RLA:
+		return "RLA"
+	case RRA:
+		return "RRA"
+	case DAA:
+		return "DAA"
+	case CPL:
+		return "CPL"
+	case SCF:
+		return "SCF"
+	case CCF:
+		return "CCF"
 	default:
 		panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
 	}

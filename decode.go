@@ -170,6 +170,25 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				} else {
 					instErr = err
 				}
+			case 7:
+				switch y {
+				case 0:
+					inst = RLCA
+				case 1:
+					inst = RRCA
+				case 2:
+					inst = RLA
+				case 3:
+					inst = RRA
+				case 4:
+					inst = DAA
+				case 5:
+					inst = CPL
+				case 6:
+					inst = SCF
+				case 7:
+					inst = CCF
+				}
 			}
 		case 1:
 			if x == 6 && y == 6 {
