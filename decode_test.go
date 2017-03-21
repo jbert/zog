@@ -93,6 +93,11 @@ func TestAll(t *testing.T) {
 }
 
 func testOne(t *testing.T, opcode byte, buf []byte, expected string) {
+	expected = normaliseExpected(expected)
+	if expected == "" {
+		t.Skip("No instruction")
+	}
+
 	insts, err := DecodeBytes(buf)
 	if err != nil {
 		t.Fatalf("Error for byte [%02X]: %s (%s)", opcode, err, expected)
@@ -112,6 +117,7 @@ func testOne(t *testing.T, opcode byte, buf []byte, expected string) {
 func normaliseExpected(s string) string {
 	s = strings.ToLower(s)
 	s = strings.Replace(s, ", ", ",", -1)
+	s = strings.Trim(s, " ")
 	return s
 }
 
@@ -343,7 +349,7 @@ var testCases = []testCase{
 	{0xC8, "ret z", "set 1,b", ""},
 	{0xC9, "ret", "set 1,c", ""},
 	{0xCA, "jp z,NN", "set 1,d", ""},
-	//	{0xCB, "", "set l,e", ""},
+	{0xCB, "", "set l,e", ""},
 	{0xCC, "call z,NN", "set 1,h", ""},
 	{0xCD, "call NN", "set 1,l", ""},
 	{0xCE, "adc a,N", "set 1,(hl)", ""},
@@ -361,7 +367,7 @@ var testCases = []testCase{
 	{0xDA, "jp c,NN", "set 3,d", ""},
 	{0xDB, "in a,(N)", "set 3,e", ""},
 	{0xDC, "call c,NN", "set 3,h", ""},
-	//	{0xDD, "", "set 3,l", ""},
+	{0xDD, "", "set 3,l", ""},
 	{0xDE, "sbc a,N", "set 3,(hl)", ""},
 	{0xDF, "rst 24", "set 3,a", ""},
 	{0xE0, "ret po", "set 4,b", ""},
@@ -377,7 +383,7 @@ var testCases = []testCase{
 	{0xEA, "jp pe,NN", "set 5,d", ""},
 	{0xEB, "ex de,hl", "set 5,e", ""},
 	{0xEC, "call pe,NN", "set 5,h", ""},
-	//	{0xED, " ", "set 5,l", ""},
+	{0xED, "", "set 5,l", ""},
 	{0xEE, "xor N", "set 5,(hl)", ""},
 	{0xEF, "rst 40", "set 5,a", ""},
 	{0xF0, "ret p", "set 6,b", ""},
@@ -393,7 +399,7 @@ var testCases = []testCase{
 	{0xFA, "jp m,NN", "set 7,d", ""},
 	{0xFB, "ei", "set 7,e", ""},
 	{0xFC, "call m,NN", "set 7,h", ""},
-	//{0xFD, "", "set 7,l", ""},
+	{0xFD, "", "set 7,l", ""},
 	{0xFE, "cp N", "set 7,(hl)", ""},
 	{0xFF, "rst 56", "set 7,a", " 	"},
 }
