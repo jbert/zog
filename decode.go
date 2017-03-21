@@ -89,6 +89,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 			case 0xdd, 0xfd:
 				// Last one wins
 				indexPrefix = n
+				continue
 			}
 		}
 
