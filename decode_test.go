@@ -62,6 +62,10 @@ func mungeTestCase(buf []byte, template string) ([]byte, string) {
 		buf = append(buf, 0xab)
 		s = strings.Replace(s, "N", "0xab", 1)
 	}
+	if strings.Contains(s, "DIS") {
+		buf = append(buf, 0xf0)
+		s = strings.Replace(s, "DIS", "-16", 1)
+	}
 	return buf, s
 }
 

@@ -73,6 +73,27 @@ func (ex *EX) String() string {
 	return fmt.Sprintf("EX %s, %s", ex.a, ex.b)
 }
 
+type DJNZ struct {
+	d Disp
+}
+
+func (d *DJNZ) String() string {
+	return fmt.Sprintf("DJNZ %s", d.d)
+}
+
+type JR struct {
+	c Conditional
+	d Disp
+}
+
+func (j *JR) String() string {
+	if j.c == True {
+		return fmt.Sprintf("JR %s", j.d)
+	} else {
+		return fmt.Sprintf("JR %s, %s", j.c, j.d)
+	}
+}
+
 type Simple byte
 
 const (

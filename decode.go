@@ -46,6 +46,13 @@ func DecodeBytes(buf []byte) ([]instruction, error) {
 	return insts, err
 }
 
+func getImmd(inCh chan byte) (Disp, error) {
+	d, ok := <-inCh
+	if !ok {
+		return 0, fmt.Errorf("getImmd: Can't get byte")
+	}
+	return Disp(d), nil
+}
 func getImmN(inCh chan byte) (Imm8, error) {
 	n, ok := <-inCh
 	if !ok {
@@ -97,6 +104,30 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 					inst = NOP
 				case 1:
 					inst = &EX{a: AF, b: AF_PRIME}
+				case 2:
+					d, err := getImmd(inCh)
+					if err == nil {
+						inst = &DJNZ{d}
+					} else {
+						instErr = err
+					}
+				case 3:
+					d, err := getImmd(inCh)
+					if err == nil {
+						inst = &JR{True, d}
+					} else {
+						instErr = err
+					}
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+					d, err := getImmd(inCh)
+					if err == nil {
+						inst = &JR{tableCC[y-4], d}
+					} else {
+						instErr = err
+					}
 				}
 			case 1:
 				if q == 0 {
@@ -218,6 +249,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 var tableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}
 var tableRP []Loc16 = []Loc16{BC, DE, HL, SP}
 var tableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
+var tableCC []Conditional = []Conditional{Not{FT_Z}, FT_Z, Not{FT_C}, FT_C, FT_PO, FT_PE, FT_P, FT_M}
 
 func decomposeByte(n byte) (byte, byte, byte, byte, byte) {
 	// We follow terminology from http://www.z80.info/decoding.htm

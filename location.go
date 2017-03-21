@@ -189,3 +189,59 @@ func (n Imm8) String() string {
 func (n Imm8) Read8(z *Zog) (byte, error) {
 	return byte(n), nil
 }
+
+type Conditional interface {
+	String() string
+}
+
+type FlagTest int
+
+const (
+	FT_Z FlagTest = iota
+	FT_C
+	FT_PO
+	FT_PE
+	FT_P
+	FT_M
+)
+
+func (ft FlagTest) String() string {
+	switch ft {
+	case FT_Z:
+		return "Z"
+	case FT_C:
+		return "C"
+	case FT_PO:
+		return "PO"
+	case FT_PE:
+		return "PE"
+	case FT_P:
+		return "P"
+	case FT_M:
+		return "M"
+	default:
+		panic(fmt.Sprintf("Unknown flag test [%d]", int(ft)))
+	}
+}
+
+type LogicConstant struct{}
+
+var True LogicConstant
+
+func (l LogicConstant) String() string {
+	panic("Attempt to render 'true' as string")
+}
+
+type Not struct {
+	ft FlagTest
+}
+
+func (n Not) String() string {
+	return fmt.Sprintf("N%s", n.ft)
+}
+
+type Disp int8
+
+func (d Disp) String() string {
+	return fmt.Sprintf("%d", d)
+}
