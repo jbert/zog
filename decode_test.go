@@ -349,7 +349,7 @@ var testCases = []testCase{
 	{0xC8, "ret z", "set 1,b", ""},
 	{0xC9, "ret", "set 1,c", ""},
 	{0xCA, "jp z,NN", "set 1,d", ""},
-	{0xCB, "", "set l,e", ""},
+	{0xCB, "", "set 1,e", ""},
 	{0xCC, "call z,NN", "set 1,h", ""},
 	{0xCD, "call NN", "set 1,l", ""},
 	{0xCE, "adc a,N", "set 1,(hl)", ""},
