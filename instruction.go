@@ -66,11 +66,12 @@ func (d *DEC16) String() string {
 }
 
 type EX struct {
-	a, b R16
+	dst Dst16
+	src Src16
 }
 
 func (ex *EX) String() string {
-	return fmt.Sprintf("EX %s, %s", ex.a, ex.b)
+	return fmt.Sprintf("EX %s, %s", ex.dst, ex.src)
 }
 
 type DJNZ struct {
@@ -107,12 +108,59 @@ func (jp *JP) String() string {
 	}
 }
 
+type CALL struct {
+	c    Conditional
+	addr Src16
+}
+
+func (c *CALL) String() string {
+	if c.c == True {
+		return fmt.Sprintf("CALL %s", c.addr)
+	} else {
+		return fmt.Sprintf("CALL %s, %s", c.c, c.addr)
+	}
+}
+
+type OUT struct {
+	port  Src8
+	value Src8
+}
+
+func (o *OUT) String() string {
+	return fmt.Sprintf("OUT (%s), %s", o.port, o.value)
+}
+
+type IN struct {
+	dst  Dst8
+	port Src8
+}
+
+func (i *IN) String() string {
+	return fmt.Sprintf("IN %s, (%s)", i.dst, i.port)
+}
+
+type PUSH struct {
+	src Src16
+}
+
+func (p *PUSH) String() string {
+	return fmt.Sprintf("PUSH %s", p.src)
+}
+
 type POP struct {
 	dst Dst16
 }
 
 func (p *POP) String() string {
 	return fmt.Sprintf("POP %s", p.dst)
+}
+
+type RST struct {
+	addr byte
+}
+
+func (r *RST) String() string {
+	return fmt.Sprintf("RST %d", r.addr)
 }
 
 type AccumFunc func(a, b byte) byte
@@ -161,6 +209,9 @@ const (
 	CCF  Simple = 0x3f
 
 	EXX Simple = 0xd9
+
+	DI Simple = 0xf3
+	EI Simple = 0xfb
 )
 
 func (s Simple) String() string {
@@ -190,6 +241,11 @@ func (s Simple) String() string {
 
 	case EXX:
 		return "EXX"
+
+	case DI:
+		return "DI"
+	case EI:
+		return "EI"
 	default:
 		panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
 	}
