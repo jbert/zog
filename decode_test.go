@@ -120,7 +120,7 @@ var testCases = []testCase{
 	{0x29, "add hl,hl", "sra c", " 	"},
 	{0x2A, "ld hl,(NN)", "sra d", ""},
 	{0x2B, "dec hl", "sra e", ""},
-	{0x2C, "inc ll", "sra h", ""},
+	{0x2C, "inc l", "sra h", ""},
 	{0x2D, "dec l", "sra l", ""},
 	{0x2F, "ld l,N", "sra (hl)", ""},
 	{0x2F, "cpl", "sra a", ""},
