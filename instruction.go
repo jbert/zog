@@ -46,7 +46,7 @@ type ADD16 struct {
 }
 
 func (a *ADD16) String() string {
-	return fmt.Sprintf("ADD %s, %s", a.src, a.dst)
+	return fmt.Sprintf("ADD %s, %s", a.dst, a.src)
 }
 
 type INC16 struct {
