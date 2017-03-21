@@ -42,14 +42,13 @@ func (tc *testCase) getExpected(indexPrefix byte, opPrefix byte, buf []byte) ([]
 func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]byte, string) {
 	d := byte(20)
 
-	buf = append(buf, d)
-
 	hlReplace := fmt.Sprintf("%s+%02X", indexRegister, d)
 	hReplace := indexRegister + "h"
 	lReplace := indexRegister + "l"
 
 	if strings.Contains(expected, "(hl)") {
 		expected = strings.Replace(expected, "(hl)", hlReplace, -1)
+		buf = append(buf, d)
 	} else {
 		// Exception
 		if expected != "ex de, hl" {
@@ -106,10 +105,10 @@ func testOne(t *testing.T, opcode byte, buf []byte, expected string) {
 		t.Fatalf("No instructions for byte [%02X] (%s)", opcode, expected)
 	}
 	if len(insts) != 1 {
-		t.Fatalf("More than one instruction for byte [%02X]", opcode)
+		t.Fatalf("More than one instruction (%d) for byte [%02X]: %v", len(insts), opcode, insts)
 	}
 	if !compareOK(insts[0].String(), expected) {
-		t.Fatalf("Wrong decode for [%02X] [%s] != [%s] (%s)", opcode, insts[0].String(), expected)
+		t.Fatalf("Wrong decode for [%02X] [%s] != [%s]", opcode, insts[0].String(), expected)
 	}
 	fmt.Printf("Decoded [%02x] to [%s]\n", opcode, insts[0].String())
 }
