@@ -33,6 +33,22 @@ func (a *ADD16) String() string {
 	return fmt.Sprintf("ADD %s, %s", a.src, a.dst)
 }
 
+type INC16 struct {
+	l Loc16
+}
+
+func (i *INC16) String() string {
+	return fmt.Sprintf("INC %s", i.l)
+}
+
+type DEC16 struct {
+	l Loc16
+}
+
+func (d *DEC16) String() string {
+	return fmt.Sprintf("DEC %s", d.l)
+}
+
 type EX struct {
 	a, b R16
 }
