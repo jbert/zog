@@ -95,6 +95,7 @@ const (
 	IX
 	IY
 	SP
+	AF_PRIME
 )
 
 func (r R16) String() string {
@@ -102,6 +103,8 @@ func (r R16) String() string {
 
 	case AF:
 		return "AF"
+	case AF_PRIME:
+		return "AF'"
 
 	case BC:
 		return "BC"

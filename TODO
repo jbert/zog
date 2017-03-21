@@ -23,6 +23,10 @@
     - new binary assemble .z80 file to .bin
   - zog.go : machine (registers, memory)
 
+
+- need a better structure for decode.go
+  - need "unknown" to be default for everything?
+
 - maybe drop channel i/f to decode
   - or at least have it in terms of something else
   - also, don't stop decoding on decode error

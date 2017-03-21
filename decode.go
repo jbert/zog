@@ -50,7 +50,6 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
 	// Set to 0 if no prefix in effect
 	var prefix byte
-	var inst instruction
 
 	for n := range inCh {
 		// Prefix bytes
@@ -65,25 +64,38 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
 		}
 
+		var inst instruction
 		x, y, z, _, _ := decomposeByte(n)
 		fmt.Printf("D: N %02X, x %d y %d z %d\n", n, x, y, z)
 		switch x {
+		case 0:
+			switch z {
+			case 0:
+				switch y {
+				case 0:
+					inst = NOP
+				case 1:
+					inst = &EX{a: AF, b: AF_PRIME}
+				}
+			}
 		case 1:
 			if x == 6 && y == 6 {
 				inst = HALT
 			} else {
 				inst = &LD8{tableR[y], tableR[z]}
 			}
-		default:
-			errCh <- fmt.Errorf("TODO - impl %02X [%02X]", n, prefix)
-			continue
 		}
 
-		iCh <- inst
+		if inst == nil {
+			err := fmt.Errorf("TODO - impl %02X [%02X]", n, prefix)
+			errCh <- err
+		} else {
+			iCh <- inst
+		}
 
 		prefix = 0
 	}
-	//	close(iCh)
+	close(iCh)
 	close(errCh)
 }
 

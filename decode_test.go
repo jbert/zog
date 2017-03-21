@@ -279,16 +279,20 @@ func TestAll(t *testing.T) {
 	for _, tc := range testCases {
 		buf := []byte{tc.n}
 		insts, err := DecodeBytes(buf)
-		if len(insts) != 1 {
-			t.Fatalf("More than one instruction for byte [%02X]", tc.n)
-		}
 		if err != nil {
 			t.Fatalf("Error for byte [%02X]: %s", tc.n, err)
+		}
+		if len(insts) == 0 {
+			t.Fatalf("No instructions for byte [%02X]", tc.n)
+		}
+		if len(insts) != 1 {
+			t.Fatalf("More than one instruction for byte [%02X]", tc.n)
 		}
 		lowInstStr := strings.ToLower(insts[0].String())
 		if lowInstStr != tc.inst {
 			t.Fatalf("Wrong decode for [%02X] [%s] != [%s]", tc.n, lowInstStr, tc.inst)
 		}
+		fmt.Printf("Decoded [%02x] to [%s]\n", tc.n, insts[0].String())
 
 		// TODO: test prefixes too
 	}

@@ -15,14 +15,25 @@ func (l *LD8) String() string {
 	return fmt.Sprintf("LD %s, %s", l.src, l.dst)
 }
 
+type EX struct {
+	a, b R16
+}
+
+func (ex *EX) String() string {
+	return fmt.Sprintf("EX %s, %s", ex.a, ex.b)
+}
+
 type Simple byte
 
 const (
+	NOP  Simple = 0x00
 	HALT Simple = 0x76
 )
 
 func (s Simple) String() string {
 	switch s {
+	case NOP:
+		return "NOP"
 	case HALT:
 		return "HALT"
 	default:
