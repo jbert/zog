@@ -9,15 +9,50 @@ func Decode(inCh chan byte) (chan instruction, chan error) {
 	return iCh, errCh
 }
 
+func DecodeBytes(buf []byte) ([]instruction, error) {
+
+	ch := make(chan byte)
+
+	go func() {
+		for _, n := range buf {
+			ch <- n
+		}
+		close(ch)
+	}()
+
+	var insts []instruction
+	var err error
+	var ok bool
+
+	instCh, errCh := Decode(ch)
+	looping := true
+	for looping {
+		select {
+		case inst, ok := <-instCh:
+			if !ok {
+				looping = false
+				break
+			}
+			insts = append(insts, inst)
+		case err, ok = <-errCh:
+			if !ok {
+				looping = false
+				break
+			}
+			break
+		}
+	}
+
+	return insts, err
+}
+
 func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
-	fmt.Printf("JB0\n")
 	// Set to 0 if no prefix in effect
 	var prefix byte
 	var inst instruction
 
 	for n := range inCh {
-		fmt.Printf("JB1 - %02X\n", n)
 		// Prefix bytes
 		switch n {
 		case 0xDD:
