@@ -43,6 +43,10 @@ const (
 	E
 	H
 	L
+	IXL
+	IXH
+	IYL
+	IYH
 )
 
 func (r R8) String() string {
@@ -67,6 +71,15 @@ func (r R8) String() string {
 		return "H"
 	case L:
 		return "L"
+
+	case IXL:
+		return "IXL"
+	case IXH:
+		return "IXH"
+	case IYL:
+		return "IYL"
+	case IYH:
+		return "IYH"
 
 	default:
 		panic(fmt.Errorf("Unrecognised R8 : %d", int(r)))
@@ -151,24 +164,56 @@ func (c Contents) String() string {
 func (c Contents) Read8(z *Zog) (byte, error) {
 	// TODO: debug
 	var n byte
-	fmt.Printf("Z: %02X <- %s\n", n, c)
+	fmt.Printf("Z: %02X <- %s\n", n, c.addr)
 	return n, nil
 }
 func (c Contents) Write8(z *Zog, n byte) error {
 	// TODO: debug
-	fmt.Printf("Z: %s <- %02X\n", c, n)
+	fmt.Printf("Z: %s <- %02X\n", c.addr, n)
 	return nil
 }
 
 func (c Contents) Read16(z *Zog) (uint16, error) {
 	// TODO: debug
 	var nn uint16
-	fmt.Printf("Z: %04X <- %s\n", nn, c)
+	fmt.Printf("Z: %04X <- %s\n", nn, c.addr)
 	return nn, nil
 }
 func (c Contents) Write16(z *Zog, nn uint16) error {
 	// TODO: debug
-	fmt.Printf("Z: %s <- %04X\n", c, nn)
+	fmt.Printf("Z: %s <- %04X\n", c.addr, nn)
+	return nil
+}
+
+type IndexedContents struct {
+	addr Src16
+	d    Disp
+}
+
+func (ic IndexedContents) String() string {
+	return fmt.Sprintf("(%s%+02X)", ic.addr, int8(ic.d))
+}
+func (ic IndexedContents) Read8(z *Zog) (byte, error) {
+	// TODO: debug
+	var n byte
+	fmt.Printf("Z: %02X <- %s\n", n, ic.addr)
+	return n, nil
+}
+func (ic IndexedContents) Write8(z *Zog, n byte) error {
+	// TODO: debug
+	fmt.Printf("Z: %s <- %02X\n", ic.addr, n)
+	return nil
+}
+
+func (ic IndexedContents) Read16(z *Zog) (uint16, error) {
+	// TODO: debug
+	var nn uint16
+	fmt.Printf("Z: %04X <- %s\n", nn, ic.addr)
+	return nn, nil
+}
+func (ic IndexedContents) Write16(z *Zog, nn uint16) error {
+	// TODO: debug
+	fmt.Printf("Z: %s <- %04X\n", ic.addr, nn)
 	return nil
 }
 

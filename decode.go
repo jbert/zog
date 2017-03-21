@@ -79,7 +79,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 	var opPrefix byte
 	var indexPrefix byte
 
-	t := NewTable()
+	t := NewTable(inCh)
 
 	for n := range inCh {
 
@@ -94,6 +94,8 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				continue
 			}
 		}
+
+		t.SetPrefix(indexPrefix)
 
 		var inst instruction
 		var err error

@@ -40,23 +40,25 @@ func (tc *testCase) getExpected(indexPrefix byte, opPrefix byte, buf []byte) ([]
 }
 
 func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]byte, string) {
-	d := byte(20)
+	d := int8(-20)
 
-	hlReplace := fmt.Sprintf("%s+%02X", indexRegister, d)
+	hlReplace := fmt.Sprintf("(%s%+02X)", indexRegister, d)
 	hReplace := indexRegister + "h"
 	lReplace := indexRegister + "l"
 
 	if strings.Contains(expected, "(hl)") {
 		expected = strings.Replace(expected, "(hl)", hlReplace, -1)
-		buf = append(buf, d)
+		buf = append(buf, byte(d))
 	} else {
 		// Exception
 		if expected != "ex de, hl" {
 			expected = strings.Replace(expected, "hl", indexRegister, -1)
 			expected = strings.Replace(expected, "h,", hReplace+",", -1)
 			expected = strings.Replace(expected, ",h", ","+hReplace, -1)
+			expected = strings.Replace(expected, " h", " "+hReplace, -1)
 			expected = strings.Replace(expected, "l,", lReplace+",", -1)
 			expected = strings.Replace(expected, ",l", ","+lReplace, -1)
+			expected = strings.Replace(expected, " l", " "+lReplace, -1)
 		}
 	}
 
