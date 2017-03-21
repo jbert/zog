@@ -16,6 +16,57 @@ type testCase struct {
 	inst_after_ed string
 }
 
+func TestAll(t *testing.T) {
+	for _, tc := range testCases {
+		buf := []byte{tc.n}
+		buf, expected := mungeTestCase(buf, tc.inst)
+		insts, err := DecodeBytes(buf)
+		if err != nil {
+			t.Fatalf("Error for byte [%02X]: %s", tc.n, err)
+		}
+		if len(insts) == 0 {
+			t.Fatalf("No instructions for byte [%02X]", tc.n)
+		}
+		if len(insts) != 1 {
+			t.Fatalf("More than one instruction for byte [%02X]", tc.n)
+		}
+		if !compareOK(insts[0].String(), expected) {
+			t.Fatalf("Wrong decode for [%02X] [%s] != [%s] (%s)", tc.n, insts[0].String(), expected, tc.inst)
+		}
+		fmt.Printf("Decoded [%02x] to [%s]\n", tc.n, insts[0].String())
+
+		// TODO: test prefixes too
+	}
+}
+
+func compareOK(a, b string) bool {
+	munge := func(s string) string {
+		s = strings.ToLower(s)
+		s = strings.Replace(s, ", ", ",", -1)
+		s = strings.Replace(s, " ,", ",", -1)
+		return s
+	}
+	a = munge(a)
+	b = munge(b)
+	return a == b
+}
+
+func mungeTestCase(buf []byte, template string) ([]byte, string) {
+	var s string = template
+	if strings.Contains(template, "NN") {
+		buf = append(buf, 0x34)
+		buf = append(buf, 0x12)
+		s = strings.Replace(template, "NN", "0x1234", 1)
+	}
+	return buf, s
+}
+
+func TestDecode(t *testing.T) {
+	data := []byte{0x41}
+	insts, _ := DecodeBytes(data)
+	fmt.Printf("%v\n", insts)
+}
+
 var testCases = []testCase{
 	{0x00, "nop", "rlc b", " 	"},
 	{0x01, "ld bc,NN", "rlc c", " 	"},
@@ -273,33 +324,4 @@ var testCases = []testCase{
 	{0xFD, "", "set 7,l", ""},
 	{0xFE, "cp N", "set 7,(hl)", ""},
 	{0xFF, "rst 56", "set 7,a", " 	"},
-}
-
-func TestAll(t *testing.T) {
-	for _, tc := range testCases {
-		buf := []byte{tc.n}
-		insts, err := DecodeBytes(buf)
-		if err != nil {
-			t.Fatalf("Error for byte [%02X]: %s", tc.n, err)
-		}
-		if len(insts) == 0 {
-			t.Fatalf("No instructions for byte [%02X]", tc.n)
-		}
-		if len(insts) != 1 {
-			t.Fatalf("More than one instruction for byte [%02X]", tc.n)
-		}
-		lowInstStr := strings.ToLower(insts[0].String())
-		if lowInstStr != tc.inst {
-			t.Fatalf("Wrong decode for [%02X] [%s] != [%s]", tc.n, lowInstStr, tc.inst)
-		}
-		fmt.Printf("Decoded [%02x] to [%s]\n", tc.n, insts[0].String())
-
-		// TODO: test prefixes too
-	}
-}
-
-func TestDecode(t *testing.T) {
-	data := []byte{0x41}
-	insts, _ := DecodeBytes(data)
-	fmt.Printf("%v\n", insts)
 }

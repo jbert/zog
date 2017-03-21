@@ -7,12 +7,30 @@ type instruction interface {
 }
 
 type LD8 struct {
-	src Src8
 	dst Dst8
+	src Src8
 }
 
 func (l *LD8) String() string {
-	return fmt.Sprintf("LD %s, %s", l.src, l.dst)
+	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
+}
+
+type LD16 struct {
+	dst Dst16
+	src Src16
+}
+
+func (l *LD16) String() string {
+	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
+}
+
+type ADD16 struct {
+	dst Dst16
+	src Src16
+}
+
+func (a *ADD16) String() string {
+	return fmt.Sprintf("ADD %s, %s", a.src, a.dst)
 }
 
 type EX struct {

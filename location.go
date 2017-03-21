@@ -159,3 +159,12 @@ func (c Contents) Write8(z *Zog, n byte) error {
 	fmt.Printf("Z: %s <- %02X\n", c, n)
 	return nil
 }
+
+type Imm16 uint16
+
+func (imm Imm16) String() string {
+	return fmt.Sprintf("0x%04X", uint16(imm))
+}
+func (imm Imm16) Read16(z *Zog) (uint16, error) {
+	return uint16(imm), nil
+}

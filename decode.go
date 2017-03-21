@@ -46,6 +46,18 @@ func DecodeBytes(buf []byte) ([]instruction, error) {
 	return insts, err
 }
 
+func getImmNN(inCh chan byte) (Imm16, error) {
+	l, ok := <-inCh
+	if !ok {
+		return 0, fmt.Errorf("getImmNN: Can't get lo byte")
+	}
+	h, ok := <-inCh
+	if !ok {
+		return 0, fmt.Errorf("getImmNN: Can't get hi byte")
+	}
+	return Imm16(uint16(h)<<8 | uint16(l)), nil
+}
+
 func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
 	// Set to 0 if no prefix in effect
@@ -65,8 +77,9 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 		}
 
 		var inst instruction
-		x, y, z, _, _ := decomposeByte(n)
-		fmt.Printf("D: N %02X, x %d y %d z %d\n", n, x, y, z)
+		var instErr error
+		x, y, z, p, q := decomposeByte(n)
+		fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 		switch x {
 		case 0:
 			switch z {
@@ -77,17 +90,32 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 				case 1:
 					inst = &EX{a: AF, b: AF_PRIME}
 				}
+			case 1:
+				if q == 0 {
+					nn, err := getImmNN(inCh)
+					if err == nil {
+						inst = &LD16{dst: tableRP[p], src: nn}
+					} else {
+						instErr = err
+					}
+				} else {
+					inst = &ADD16{dst: HL, src: tableRP[p]}
+				}
 			}
 		case 1:
 			if x == 6 && y == 6 {
 				inst = HALT
 			} else {
-				inst = &LD8{tableR[y], tableR[z]}
+				inst = &LD8{dst: tableR[y], src: tableR[z]}
 			}
 		}
+		fmt.Printf("D: inst [%v] err [%v]\n", inst, instErr)
 
 		if inst == nil {
-			err := fmt.Errorf("TODO - impl %02X [%02X]", n, prefix)
+			err := instErr
+			if err == nil {
+				err = fmt.Errorf("TODO - impl %02X [%02X]", n, prefix)
+			}
 			errCh <- err
 		} else {
 			iCh <- inst
@@ -100,6 +128,8 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 }
 
 var tableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}
+var tableRP []Loc16 = []Loc16{BC, DE, HL, SP}
+var tableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
 
 func decomposeByte(n byte) (byte, byte, byte, byte, byte) {
 	// We follow terminology from http://www.z80.info/decoding.htm
