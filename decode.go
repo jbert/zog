@@ -1,6 +1,9 @@
 package zog
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func Decode(inCh chan byte) (chan instruction, chan error) {
 	errCh := make(chan error)
@@ -156,7 +159,7 @@ func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error
 	x, y, z, p, q := decomposeByte(n)
 	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
-	panic("TODO -impl")
+	err = errors.New("TODO - impl")
 	return inst, err
 }
 
