@@ -250,39 +250,31 @@ const (
 	EI Simple = 0xfb
 )
 
+var simpleName map[Simple]string = map[Simple]string{
+	NOP: "NOP",
+
+	HALT: "HALT",
+
+	RLCA: "RLCA",
+	RRCA: "RRCA",
+	RLA:  "RLA",
+	RRA:  "RRA",
+	DAA:  "DAA",
+	CPL:  "CPL",
+	SCF:  "SCF",
+	CCF:  "CCF",
+
+	EXX: "EXX",
+
+	DI: "DI",
+	EI: "EI",
+}
+
 func (s Simple) String() string {
-	switch s {
-	case NOP:
-		return "NOP"
-
-	case HALT:
-		return "HALT"
-
-	case RLCA:
-		return "RLCA"
-	case RRCA:
-		return "RRCA"
-	case RLA:
-		return "RLA"
-	case RRA:
-		return "RRA"
-	case DAA:
-		return "DAA"
-	case CPL:
-		return "CPL"
-	case SCF:
-		return "SCF"
-	case CCF:
-		return "CCF"
-
-	case EXX:
-		return "EXX"
-
-	case DI:
-		return "DI"
-	case EI:
-		return "EI"
-	default:
+	name, ok := simpleName[s]
+	if !ok {
 		panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
 	}
+
+	return name
 }
