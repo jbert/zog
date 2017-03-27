@@ -87,15 +87,19 @@ func TestOddities(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	opPrefices := []byte{0x00, 0xcb, 0xed}
-	indexPrefices := []byte{0x00, 0xdd, 0xfd}
+	// One day
+	//opPrefices := []byte{0x00, 0xcb, 0xed}
+	//indexPrefices := []byte{0x00, 0xdd, 0xfd}
+
+	opPrefices := []byte{0x00, 0xcb}
+	indexPrefices := []byte{0x00, 0xfd, 0xdd}
 
 	for _, tc := range testCases {
-		buf := []byte{tc.n}
 		for _, opPrefix := range opPrefices {
-			t.Run(fmt.Sprintf("OP %02X", opPrefix), func(t *testing.T) {
+			t.Run(fmt.Sprintf("OP%02X", opPrefix), func(t *testing.T) {
 				for _, indexPrefix := range indexPrefices {
-					t.Run(fmt.Sprintf("IDX %02X", indexPrefix), func(t *testing.T) {
+					t.Run(fmt.Sprintf("IDX%02X", indexPrefix), func(t *testing.T) {
+						buf := []byte{tc.n}
 						if opPrefix != 0 {
 							buf = append([]byte{opPrefix}, buf...)
 						}
@@ -114,7 +118,16 @@ func TestAll(t *testing.T) {
 	}
 }
 
+func bufToHex(buf []byte) string {
+	s := ""
+	for _, b := range buf {
+		s += fmt.Sprintf("%02X", b)
+	}
+	return s
+}
+
 func testOne(t *testing.T, opcode byte, buf []byte, expected string) {
+	fmt.Printf("== TO: opcode [%02X] buf [%s] expected [%s]", opcode, bufToHex(buf), expected)
 	expected = normaliseExpected(expected)
 	if expected == "" {
 		t.Skip("No instruction")
