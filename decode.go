@@ -150,7 +150,14 @@ func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error
 }
 
 func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
-	panic("TODO - impl ed")
+	var err error
+	var inst instruction
+
+	x, y, z, p, q := decomposeByte(n)
+	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
+
+	panic("TODO -impl")
+	return inst, err
 }
 
 func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
