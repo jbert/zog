@@ -94,16 +94,6 @@ type AccumInfo struct {
 }
 
 var tableALU []AccumInfo = []AccumInfo{
-	/*
-		{"ADD", AccumADD8},
-		{"ADC", AccumADC8},
-		{"SUB", AccumSUB8},
-		{"SBC", AccumSBC8},
-		{"AND", AccumAND8},
-		{"XOR", AccumXOR8},
-		{"OR", AccumOR8},
-		{"CP", AccumCP8},
-	*/
 	{"ADD"},
 	{"ADC"},
 	{"SUB"},
