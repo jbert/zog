@@ -5,14 +5,14 @@ import (
 	"fmt"
 )
 
-func Decode(inCh chan byte) (chan instruction, chan error) {
+func Decode(inCh chan byte) (chan Instruction, chan error) {
 	errCh := make(chan error)
-	iCh := make(chan instruction)
+	iCh := make(chan Instruction)
 	go decode(inCh, iCh, errCh)
 	return iCh, errCh
 }
 
-func DecodeBytes(buf []byte) ([]instruction, error) {
+func DecodeBytes(buf []byte) ([]Instruction, error) {
 
 	ch := make(chan byte)
 
@@ -23,7 +23,7 @@ func DecodeBytes(buf []byte) ([]instruction, error) {
 		close(ch)
 	}()
 
-	var insts []instruction
+	var insts []Instruction
 	var err error
 	var ok bool
 
@@ -76,7 +76,7 @@ func getImmNN(inCh chan byte) (Imm16, error) {
 	return Imm16(uint16(h)<<8 | uint16(l)), nil
 }
 
-func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
+func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 
 	// Set to 0 if no prefix in effect
 	var opPrefix byte
@@ -100,7 +100,7 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 
 		t.ResetPrefix(indexPrefix)
 
-		var inst instruction
+		var inst Instruction
 		var err error
 
 		switch opPrefix {
@@ -130,9 +130,9 @@ func decode(inCh chan byte, iCh chan instruction, errCh chan error) {
 	close(errCh)
 }
 
-func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
+func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
 	var err error
-	var inst instruction
+	var inst Instruction
 
 	x, y, z, p, q := decomposeByte(n)
 	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
@@ -152,9 +152,9 @@ func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error
 	return inst, err
 }
 
-func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
+func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
 	var err error
-	var inst instruction
+	var inst Instruction
 
 	x, y, z, p, q := decomposeByte(n)
 	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
@@ -163,9 +163,9 @@ func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error
 	return inst, err
 }
 
-func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (instruction, error) {
+func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
 	var err error
-	var inst instruction
+	var inst Instruction
 
 	// We lookup this to get (HL)
 	//	hlci := byte(6)

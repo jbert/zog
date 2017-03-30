@@ -2,7 +2,7 @@ package zog
 
 import "fmt"
 
-type instruction interface {
+type Instruction interface {
 	String() string
 }
 
