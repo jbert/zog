@@ -49,41 +49,46 @@ const (
 	IYH
 )
 
-func (r R8) String() string {
-	switch r {
+type r8name struct {
+	r    R8
+	name string
+}
 
-	case A:
-		return "A"
-	case F:
-		return "F"
+var R8Names []r8name = []r8name{
+	{A, "A"},
+	{F, "F"},
 
-	case B:
-		return "B"
-	case C:
-		return "C"
+	{B, "B"},
+	{C, "C"},
 
-	case D:
-		return "D"
-	case E:
-		return "E"
+	{D, "D"},
+	{E, "E"},
 
-	case H:
-		return "H"
-	case L:
-		return "L"
+	{H, "H"},
+	{L, "L"},
 
-	case IXL:
-		return "IXL"
-	case IXH:
-		return "IXH"
-	case IYL:
-		return "IYL"
-	case IYH:
-		return "IYH"
+	{IXL, "IXL"},
+	{IXH, "IXH"},
+	{IYL, "IYL"},
+	{IYH, "IYH"},
+}
 
-	default:
-		panic(fmt.Errorf("Unrecognised R8 : %d", int(r)))
+func LookupR8Name(name string) R8 {
+	for _, r8name := range R8Names {
+		if r8name.name == name {
+			return r8name.r
+		}
 	}
+	panic(fmt.Errorf("Unrecognised R8 name : %s", name))
+}
+
+func (r R8) String() string {
+	for _, r8name := range R8Names {
+		if r8name.r == r {
+			return r8name.name
+		}
+	}
+	panic(fmt.Errorf("Unrecognised R8 : %d", int(r)))
 }
 
 func (r R8) Read8(z *Zog) (byte, error) {
@@ -111,35 +116,38 @@ const (
 	AF_PRIME
 )
 
-func (r R16) String() string {
-	switch r {
+type r16name struct {
+	r    R16
+	name string
+}
 
-	case AF:
-		return "AF"
-	case AF_PRIME:
-		return "AF'"
+var R16Names []r16name = []r16name{
+	{AF, "AF"},
+	{AF_PRIME, "AF'"},
+	{BC, "BC"},
+	{DE, "DE"},
+	{HL, "HL"},
+	{IX, "IX"},
+	{IY, "IY"},
+	{SP, "SP"},
+}
 
-	case BC:
-		return "BC"
-
-	case DE:
-		return "DE"
-
-	case HL:
-		return "HL"
-
-	case IX:
-		return "IX"
-
-	case IY:
-		return "IY"
-
-	case SP:
-		return "SP"
-
-	default:
-		panic(fmt.Errorf("Unrecognised R16 : %d", int(r)))
+func LookupR16Name(name string) R16 {
+	for _, r16name := range R16Names {
+		if r16name.name == name {
+			return r16name.r
+		}
 	}
+	panic(fmt.Errorf("Unrecognised R16 name : %s", name))
+}
+
+func (r R16) String() string {
+	for _, r16name := range R16Names {
+		if r16name.r == r {
+			return r16name.name
+		}
+	}
+	panic(fmt.Errorf("Unrecognised R16 : %d", int(r)))
 }
 
 func (r R16) Read16(z *Zog) (uint16, error) {
