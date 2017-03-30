@@ -36,6 +36,6 @@ func main() {
 		fmt.Printf("%s\n", inst)
 	}
 
-	//	assembler.Print()
-	//	assembler.PrintSyntaxTree()
+	// assembler.Print()
+	// assembler.PrintSyntaxTree()
 }

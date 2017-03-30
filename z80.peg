@@ -4,45 +4,105 @@ type Assembler Peg {
   Current
 }
 
-Program <- Line+
+Program <- (BlankLine / Line)+
 
+BlankLine <- ws* "\n"
 Line <- Instruction "\n"                                    { p.Emit() }
 
-Instruction <- Assignment / Alu
+Instruction <- ws* ( Assignment / Inc / Dec / Add16 / Alu / BitOp / Simple / Jump / IO )
 
-Assignment <- Load / Push / Pop
-
-Alu <- Add / Adc
+Assignment <- Load / Push / Pop / Ex
 
 Load <- Load8 / Load16
+Load8 <- "LD" ws Dst8 sep Src8                            { p.LD8() }
+Load16 <- "LD" ws Dst16 sep Src16                         { p.LD16() }
 
-Load8 <- "LD" ws Dst8 sep Src8                             { p.LD8() }
-Load16 <- "LD" ws Dst16 sep Src16                          { p.LD16() }
+Push <- "PUSH" ws Src16                                   { p.Push() }
+Pop <- "POP" ws Dst16                                     { p.Pop() }
+Ex <- "EX" ws Dst16 sep Src16                             { p.Ex() }
 
-Dst8 <- <Reg8> { p.Dst8() }
-Dst16 <- <Reg16>                                            { p.R16(buffer[begin:end]) }
-Src8 <- Reg8 / n  { p.Src8() }
-Src16 <- Reg16
+Inc <- Inc16 / Inc8
+Inc8 <- "INC" ws Loc8                                     { p.Inc8() }
+Inc16 <- "INC" ws Loc16                                   { p.Inc16() }
+
+Dec <- Dec16 / Dec8
+Dec8 <- "INC" ws Loc8                                     { p.Dec8() }
+Dec16 <- "INC" ws Loc16                                   { p.Dec16() }
+
+Add16 <- "ADD" ws Dst16 sep Src16                         { p.Add16() }
+
+
+
+Dst8 <- Reg8        { p.Dst8() }
+Src8 <- (n / Reg8)  { p.Src8() }
+Loc8 <- Reg8        { p.Loc8() }
 
 Reg8 <- <A / F / B / C / D / E / H / L / IXH / IXL / IYH / IYL>   { p.R8(buffer[begin:end]) }
 
-Reg16 <- AF / BC / DE / HL / IX / IY / SP
+Dst16 <- Reg16      { p.Dst16() }
+Src16 <- (Reg16 / n)  { p.Src16() }
+Loc16 <- Reg16      { p.Loc16() }
 
-n <- hexByteH / hexByte0x
+Reg16 <- <AF_PRIME / AF / BC / DE / HL / IX / IY / SP>                       { p.R16(buffer[begin:end]) }
 
-hexByteH <- <hexdigit hexdigit> "h"                         { p.N(buffer[begin:end]) }
-hexByte0x <- "0x" <hexdigit hexdigit>                       { p.N(buffer[begin:end]) }
+n <- hexByteH / hexByte0x / decimalByte
 
-hexdigit <- [0-9] / [[a-f]]
+Alu <- Add / Adc / Sub / Sbc / And / Xor / Or / Cp
 
-Add <- "ADD"
+Add <- "ADD" ws "A" sep Src8    { p.Accum("ADD") }
+Adc <- "ADC" ws "A" sep Src8    { p.Accum("ADC") }
+Sub <- "SUB" ws Src8            { p.Accum("SUB") }
+Sbc <- "SBC" ws "A" sep Src8    { p.Accum("SBC") }
+And <- "AND" ws Src8            { p.Accum("AND") }
+Xor <- "XOR" ws Src8            { p.Accum("XOR") }
+Or  <- "OR"  ws Src8            { p.Accum("OR") }
+Cp  <- "CP"  ws Src8            { p.Accum("CP") }
 
-Adc <- "ADC"
+BitOp <- Rot / Bit / Res / Set
+Rot <- Rlc / Rrc / Rl / Rr / Sla / Sra / Sll / Srl
+Rlc <- "RLC" ws Loc8            { p.Rot("RLC") }
+Rrc <- "RRC" ws Loc8            { p.Rot("RRC") }
+Rl  <- "RL"  ws Loc8            { p.Rot("RL") }
+Rr  <- "RR"  ws Loc8            { p.Rot("RR") }
+Sla <- "SLA" ws Loc8            { p.Rot("SLA") }
+Sra <- "SRA" ws Loc8            { p.Rot("SRA") }
+Sll <- "SLL" ws Loc8            { p.Rot("SLL") }
+Srl <- "SRL" ws Loc8            { p.Rot("SRL") }
 
-Push <- "PUSH"
+Bit <- "BIT" ws octaldigit sep Loc8       { p.Bit() }
+Res <- "RES" ws octaldigit sep Loc8       { p.Res() }
+Set <- "SET" ws octaldigit sep Loc8       { p.Set() }
 
-Pop <- "POP"
+Simple <- Nop / Halt / Rlca / Rrca / Rla / Rra / Daa / Cpl / Scf / Ccf / Exx / Di / Ei
 
+Nop  <- <"NOP">         { p.Simple(buffer[begin:end]) }
+Halt <- <"HALT">        { p.Simple(buffer[begin:end]) }
+Rlca <- <"RLCA">        { p.Simple(buffer[begin:end]) }
+Rrca <- <"RRCA">        { p.Simple(buffer[begin:end]) }
+Rla  <- <"RLA">         { p.Simple(buffer[begin:end]) }
+Rra  <- <"RRA">         { p.Simple(buffer[begin:end]) }
+Daa  <- <"DAA">         { p.Simple(buffer[begin:end]) }
+Cpl  <- <"CPL">         { p.Simple(buffer[begin:end]) }
+Scf  <- <"SCF">         { p.Simple(buffer[begin:end]) }
+Ccf  <- <"CCF">         { p.Simple(buffer[begin:end]) }
+Exx  <- <"EXX">         { p.Simple(buffer[begin:end]) }
+Di   <- <"DI">          { p.Simple(buffer[begin:end]) }
+Ei   <- <"EI">          { p.Simple(buffer[begin:end]) }
+
+Jump <- Rst / Call / Ret / Jp / Jr / Djnz
+
+Rst   <- "RST" ws n                       { p.Rst() }
+Call  <- "CALL" ws (cc sep)? Src16        { p.Call() }
+Ret   <- "RET" (ws cc)?                   { p.Ret() }
+Jp    <- "JP" ws (cc sep)? Src16          { p.Jp() }
+Jr    <- "JR" ws (cc sep)? disp           { p.Jr() }
+Djnz  <- "DJNZ" ws disp                   { p.Djnz() }
+disp  <- signedDecimalByte
+
+IO <- IN / OUT
+
+IN    <- "IN" ws dst8 sep port            { p.In() }
+OUT   <- "OUT" ws port sep src8           { p.Out() }
 
 sep <- ws? ',' ws?
 
@@ -62,9 +122,31 @@ IYH <- "IYH"
 IYL <- "IYL"
 
 AF <- "AF"
+AF_PRIME <- "AF'"
 BC <- "BC"
 DE <- "DE"
 HL <- "HL"
 IX <- "IX"
 IY <- "IY"
 SP <- "SP"
+
+
+hexByteH    <- <hexdigit hexdigit> "h"                        { p.Nhex(buffer[begin:end]) }
+hexByte0x   <- "0x" <hexdigit hexdigit>                       { p.Nhex(buffer[begin:end]) }
+decimalByte <- <[0-9]+>                                       { p.Ndec(buffer[begin:end]) }
+
+hexdigit <- [0-9] / [[a-f]]
+
+octaldigit <- <[0-7]>                                       { p.ODigit(buffer[begin:end]) }
+
+signedDecimalByte <- <'-'?[0-9]+>                               { p.SignedDecimalByte(buffer[begin:end]) }
+
+cc <- FT_NZ / FT_Z / FT_NC / FT_C / FT_PO / FT_PE / FT_P / FT_M
+FT_NZ <-   "NZ" { p.Conditional(Not{FT_Z}) }
+FT_Z  <-   "Z" { p.Conditional(FT_Z) }
+FT_NC <-   "NC" { p.Conditional(Not{FT_C}) }
+FT_C  <-   "C" { p.Conditional(FT_C) }
+FT_PO <-   "PO" { p.Conditional(FT_PO) }
+FT_PE <-   "PE" { p.Conditional(FT_PE) }
+FT_P  <-   "P" { p.Conditional(FT_P) }
+FT_M  <-   "M" { p.Conditional(FT_M) }
