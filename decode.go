@@ -140,7 +140,7 @@ func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error
 	switch x {
 	case 0:
 		info := tableROT[y]
-		inst = &ROT{name: info.name /* f: info.f, */, r: t.LookupR(z)}
+		inst = NewRot(info.name, t.LookupR(z))
 	case 1:
 		inst = &BIT{y, t.LookupR(z)}
 	case 2:
@@ -305,7 +305,7 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, err
 		}
 	case 2:
 		info := tableALU[y]
-		inst = &Accum{name: info.name /* f: info.f, */, src: t.LookupR(z)}
+		inst = NewAccum(info.name, t.LookupR(z))
 	case 3:
 		switch z {
 		case 0:
@@ -386,7 +386,7 @@ func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, err
 			n, err := getImmN(inCh)
 			if err == nil {
 				info := tableALU[y]
-				inst = &Accum{name: info.name /* f: info.f, */, src: n}
+				inst = NewAccum(info.name, n)
 			}
 		case 7:
 			inst = &RST{y * 8}

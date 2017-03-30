@@ -114,7 +114,7 @@ type CALL struct {
 }
 
 func (c *CALL) String() string {
-	if c.c == True {
+	if c.c == True || c.c == nil {
 		return fmt.Sprintf("CALL %s", c.addr)
 	} else {
 		return fmt.Sprintf("CALL %s, %s", c.c, c.addr)
@@ -175,15 +175,19 @@ func (r *RET) String() string {
 	}
 }
 
-type AccumFunc func(a, b byte) byte
+func NewAccum(name string, src Src8) *accum {
+	// TODO: lookup func by name, panic on unknown
+	return &accum{name: name, src: src}
+}
 
-type Accum struct {
+type accumFunc func(a, b byte) byte
+type accum struct {
 	//	f    AccumFunc
 	src  Src8
 	name string
 }
 
-func (a Accum) String() string {
+func (a accum) String() string {
 	switch a.name {
 	case "ADD", "ADC", "SBC":
 		return fmt.Sprintf("%s A, %s", a.name, a.src)
@@ -192,12 +196,16 @@ func (a Accum) String() string {
 	}
 }
 
-type ROT struct {
+type rot struct {
 	name string
 	r    Loc8
 }
 
-func (r *ROT) String() string {
+func NewRot(name string, r Loc8) *rot {
+	return &rot{name: name, r: r}
+}
+
+func (r *rot) String() string {
 	return fmt.Sprintf("%s %s", r.name, r.r)
 }
 
@@ -250,31 +258,46 @@ const (
 	EI Simple = 0xfb
 )
 
-var simpleName map[Simple]string = map[Simple]string{
-	NOP: "NOP",
+type simpleName struct {
+	inst Simple
+	name string
+}
 
-	HALT: "HALT",
+var simpleNames []simpleName = []simpleName{
+	{NOP, "NOP"},
 
-	RLCA: "RLCA",
-	RRCA: "RRCA",
-	RLA:  "RLA",
-	RRA:  "RRA",
-	DAA:  "DAA",
-	CPL:  "CPL",
-	SCF:  "SCF",
-	CCF:  "CCF",
+	{HALT, "HALT"},
 
-	EXX: "EXX",
+	{RLCA, "RLCA"},
+	{RRCA, "RRCA"},
+	{RLA, "RLA"},
+	{RRA, "RRA"},
+	{DAA, "DAA"},
+	{CPL, "CPL"},
+	{SCF, "SCF"},
+	{CCF, "CCF"},
 
-	DI: "DI",
-	EI: "EI",
+	{EXX, "EXX"},
+
+	{DI, "DI"},
+	{EI, "EI"},
 }
 
 func (s Simple) String() string {
-	name, ok := simpleName[s]
-	if !ok {
-		panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
-	}
 
-	return name
+	for _, simpleName := range simpleNames {
+		if simpleName.inst == s {
+			return simpleName.name
+		}
+	}
+	panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
+}
+
+func LookupSimpleName(name string) Simple {
+	for _, simpleName := range simpleNames {
+		if simpleName.name == name {
+			return simpleName.inst
+		}
+	}
+	panic(fmt.Errorf("Unrecognised simple instruction name : %s", name))
 }
