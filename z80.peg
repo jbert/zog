@@ -1,0 +1,70 @@
+package zog
+
+type Assembler Peg {
+  Current
+}
+
+Program <- Line+
+
+Line <- Instruction "\n"                                    { p.Emit() }
+
+Instruction <- Assignment / Alu
+
+Assignment <- Load / Push / Pop
+
+Alu <- Add / Adc
+
+Load <- Load8 / Load16
+
+Load8 <- "LD" ws Dst8 sep Src8                             { p.LD8() }
+Load16 <- "LD" ws Dst16 sep Src16                          { p.LD16() }
+
+Dst8 <- <Reg8> { p.Dst8() }
+Dst16 <- <Reg16>                                            { p.R16(buffer[begin:end]) }
+Src8 <- Reg8 / n  { p.Src8() }
+Src16 <- Reg16
+
+Reg8 <- <A / F / B / C / D / E / H / L / IXH / IXL / IYH / IYL>   { p.R8(buffer[begin:end]) }
+
+Reg16 <- AF / BC / DE / HL / IX / IY / SP
+
+n <- hexByteH / hexByte0x
+
+hexByteH <- <hexdigit hexdigit> "h"                         { p.N(buffer[begin:end]) }
+hexByte0x <- "0x" <hexdigit hexdigit>                       { p.N(buffer[begin:end]) }
+
+hexdigit <- [0-9] / [[a-f]]
+
+Add <- "ADD"
+
+Adc <- "ADC"
+
+Push <- "PUSH"
+
+Pop <- "POP"
+
+
+sep <- ws? ',' ws?
+
+ws <- ' '+
+
+A <- "A"
+F <- "F"
+B <- "B"
+C <- "C"
+D <- "D"
+E <- "E"
+H <- "H"
+L <- "L"
+IXH <- "IXH"
+IXL <- "IXL"
+IYH <- "IYH"
+IYL <- "IYL"
+
+AF <- "AF"
+BC <- "BC"
+DE <- "DE"
+HL <- "HL"
+IX <- "IX"
+IY <- "IY"
+SP <- "SP"
