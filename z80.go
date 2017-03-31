@@ -19,6 +19,7 @@ type Current struct {
 	odigit     byte
 	signedByte int8
 	cc         Conditional
+	nn         Src16
 
 	inst Instruction
 
@@ -142,11 +143,11 @@ func (c *Current) NNhex(s string) {
 	if err != nil {
 		panic(fmt.Errorf("Invalid byte: %s", s))
 	}
-	c.src16 = Imm16(nn)
+	c.nn = Imm16(nn)
 }
 
 func (c *Current) NNContents() {
-	c.src16 = Contents{c.src16}
+	c.nn = Contents{c.nn}
 }
 
 func (c *Current) Ndec(s string) {
@@ -206,14 +207,21 @@ func (c *Current) Loc16() {
 }
 
 func (c *Current) Dst16() {
-	if c.dst16 != nil {
+	if c.nn != nil {
+		nn_contents, ok := c.nn.(Dst16)
+		if !ok {
+			panic("Dst16 set to NN but not contents")
+		}
+		c.dst16 = nn_contents
+		c.nn = nil
 		return
 	}
 	c.dst16 = c.r16
 }
 
 func (c *Current) Src16() {
-	if c.src16 != nil {
+	if c.nn != nil {
+		c.src16 = c.nn
 		return
 	}
 	c.src16 = c.r16

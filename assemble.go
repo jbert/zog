@@ -10,12 +10,11 @@ func Assemble(s string) ([]Instruction, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Can't parse: %s", err)
 	}
+	// assembler.Print()
+	//assembler.PrintSyntaxTree()
 	assembler.Execute()
 
 	insts := assembler.GetInstructions()
-
-	// assembler.Print()
-	// assembler.PrintSyntaxTree()
 
 	return insts, nil
 }

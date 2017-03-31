@@ -9,6 +9,7 @@ import (
 
 func TestAssembleBasic(t *testing.T) {
 	testCases := []string{
+
 		"LD A, B",
 		"LD A, 0x10",
 		"LD A, 10h",
