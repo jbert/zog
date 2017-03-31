@@ -52,6 +52,24 @@ func (a *ADD16) String() string {
 	return fmt.Sprintf("ADD %s, %s", a.dst, a.src)
 }
 
+type ADC16 struct {
+	dst Dst16
+	src Src16
+}
+
+func (a *ADC16) String() string {
+	return fmt.Sprintf("ADC %s, %s", a.dst, a.src)
+}
+
+type SBC16 struct {
+	dst Dst16
+	src Src16
+}
+
+func (s *SBC16) String() string {
+	return fmt.Sprintf("SBC %s, %s", s.dst, s.src)
+}
+
 type INC16 struct {
 	l Loc16
 }

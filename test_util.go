@@ -9,11 +9,8 @@ import (
 
 func testUtilRunAll(t *testing.T, f func(t *testing.T, byteForm []byte, stringForm string)) {
 	// One day
-	//opPrefices := []byte{0x00, 0xcb, 0xed}
-	//indexPrefices := []byte{0x00, 0xdd, 0xfd}
-
-	opPrefices := []byte{0x00, 0xcb}
-	indexPrefices := []byte{0x00, 0xfd, 0xdd}
+	opPrefices := []byte{0x00, 0xcb, 0xed}
+	indexPrefices := []byte{0x00, 0xdd, 0xfd}
 
 	for _, ti := range allInstructions {
 		t.Run(fmt.Sprintf("%02X", ti.n), func(t *testing.T) {

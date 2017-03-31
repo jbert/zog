@@ -59,6 +59,8 @@ const (
 	IXH
 	IYL
 	IYH
+	I
+	R
 )
 
 type r8name struct {
@@ -83,6 +85,9 @@ var R8Names []r8name = []r8name{
 	{IXH, "IXH"},
 	{IYL, "IYL"},
 	{IYH, "IYH"},
+
+	{I, "I"},
+	{R, "R"},
 }
 
 func LookupR8Name(name string) R8 {

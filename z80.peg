@@ -9,7 +9,7 @@ Program <- (BlankLine / Line)+
 BlankLine <- ws* "\n"
 Line <- Instruction "\n"?                                   { p.Emit() }
 
-Instruction <- ws* ( Assignment / Inc / Dec / Add16 / Alu / BitOp / Simple / Jump / IO )
+Instruction <- ws* ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / Simple / Jump / IO )
 
 Assignment <- Load / Push / Pop / Ex
 
@@ -35,15 +35,17 @@ Dec16Indexed8 <- "DEC" ws ILoc8                           { p.Dec8() }
 Dec8 <- "DEC" ws Loc8                                     { p.Dec8() }
 Dec16 <- "DEC" ws Loc16                                   { p.Dec16() }
 
+Alu16 <- Add16 / Adc16 / Sbc16
 Add16 <- "ADD" ws Dst16 sep Src16                         { p.Add16() }
-
+Adc16 <- "ADC" ws Dst16 sep Src16                         { p.Adc16() }
+Sbc16 <- "SBC" ws Dst16 sep Src16                         { p.Sbc16() }
 
 Dst8 <- (Reg8 / Reg16Contents / nn_contents)              { p.Dst8() }
 Src8 <- (n / Reg8 / Reg16Contents / nn_contents)          { p.Src8() }
 Loc8 <- (Reg8 / Reg16Contents)                            { p.Loc8() }
 ILoc8 <- IReg8                                            { p.Loc8() }
 
-Reg8  <- <A / F / B / C / D / E / H / L / IReg8>          { p.R8(buffer[begin:end]) }
+Reg8  <- <A / F / B / C / D / E / H / L / IReg8 / I / R>  { p.R8(buffer[begin:end]) }
 IReg8 <- <IXH / IXL / IYH / IYL>                          { p.R8(buffer[begin:end]) }
 
 Dst16 <- (Reg16 / nn_contents / Reg16Contents)            { p.Dst16() }
@@ -138,6 +140,8 @@ IXH <- "IXH"
 IXL <- "IXL"
 IYH <- "IYH"
 IYL <- "IYL"
+I <- "I"
+R <- "R"
 
 AF <- "AF"
 AF_PRIME <- "AF'"

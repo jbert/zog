@@ -67,6 +67,14 @@ func (c *Current) Add16() {
 	c.inst = &ADD16{c.dst16, c.src16}
 }
 
+func (c *Current) Adc16() {
+	c.inst = &ADC16{c.dst16, c.src16}
+}
+
+func (c *Current) Sbc16() {
+	c.inst = &SBC16{c.dst16, c.src16}
+}
+
 func (c *Current) Accum(name string) {
 	c.inst = NewAccum(name, c.src8)
 }
