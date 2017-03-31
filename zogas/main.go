@@ -21,21 +21,9 @@ func main() {
 	}
 	f.Close()
 
-	assembler := &zog.Assembler{Buffer: string(buf)}
-	assembler.Init()
-	err = assembler.Parse()
-	if err != nil {
-		log.Fatalf("Can't parse: %s", err)
-	}
-	assembler.Execute()
-
-	insts := assembler.GetInstructions()
-
+	insts, err := zog.Assemble(string(buf))
 	fmt.Printf("Got %d instructions\n", len(insts))
 	for _, inst := range insts {
 		fmt.Printf("%s\n", inst)
 	}
-
-	// assembler.Print()
-	// assembler.PrintSyntaxTree()
 }
