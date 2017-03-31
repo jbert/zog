@@ -1,3 +1,9 @@
+- for assembler
+  - create ALU by string name
+  - pass in captured name
+  - use same ctor for decode (we already look up name)
+  - i.e. *don't* put the func in the aluInfo, infer it from the string name
+
 - restart:
   - implement full decoder
   - consume byte channel
@@ -24,12 +30,20 @@
   - zog.go : machine (registers, memory)
 
 
-- need a better structure for decode.go
+DONE - need a better structure for decode.go
   - need "unknown" to be default for everything?
 
-- maybe drop channel i/f to decode
+DONE - maybe drop channel i/f to decode
   - or at least have it in terms of something else
   - also, don't stop decoding on decode error
     - report error, consume correct number of bytes, continue
+
+- add cmdline disassembler
+  - try on some big files
+  - add (made up) labels for jump targets in disassembler
+
+- implement ED
+
+- implement DDCB+FDCB
 
 - grab speccy book table for decode test
