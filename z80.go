@@ -121,8 +121,12 @@ func (c *Current) In() {
 	c.inst = &IN{dst: c.dst8, port: c.src8}
 }
 
-func (c *Current) Out() {
-	c.inst = &OUT{... two src8s ? ... what is allowed here, can we use immediate type assetion as for rst? }
+func (c *Current) OutC() {
+	c.inst = &OUT{port: C, value: c.src8}
+}
+
+func (c *Current) OutN() {
+	c.inst = &OUT{port: C, value: c.src8}
 }
 
 func (c *Current) Nhex(s string) {
@@ -131,6 +135,18 @@ func (c *Current) Nhex(s string) {
 		panic(fmt.Errorf("Invalid byte: %s", s))
 	}
 	c.src8 = Imm8(n)
+}
+
+func (c *Current) NNhex(s string) {
+	nn, err := strconv.ParseUint(s, 16, 16)
+	if err != nil {
+		panic(fmt.Errorf("Invalid byte: %s", s))
+	}
+	c.src16 = Imm16(nn)
+}
+
+func (c *Current) NNContents() {
+	c.src16 = Contents{c.src16}
 }
 
 func (c *Current) Ndec(s string) {

@@ -1,15 +1,15 @@
 package zog
 
-type Assembler Peg {
+type PegAssembler Peg {
   Current
 }
 
 Program <- (BlankLine / Line)+
 
 BlankLine <- ws* "\n"
-Line <- Instruction "\n"                                    { p.Emit() }
+Line <- Instruction "\n"?                                   { p.Emit() }
 
-Instruction <- ws* ( Assignment / Inc / Dec / Add16 / Alu / BitOp / Simple / Jump / IO )
+Instruction <- ws* ( Assignment / Inc / Dec / Add16 / Alu / BitOp / Simple / Jump )
 
 Assignment <- Load / Push / Pop / Ex
 
@@ -39,13 +39,17 @@ Loc8 <- Reg8        { p.Loc8() }
 
 Reg8 <- <A / F / B / C / D / E / H / L / IXH / IXL / IYH / IYL>   { p.R8(buffer[begin:end]) }
 
-Dst16 <- Reg16      { p.Dst16() }
-Src16 <- (Reg16 / n)  { p.Src16() }
-Loc16 <- Reg16      { p.Loc16() }
+Dst16 <- (Reg16 / nn_contents)        { p.Dst16() }
+Src16 <- (Reg16 / nn / nn_contents)   { p.Src16() }
+Loc16 <- Reg16                        { p.Loc16() }
 
-Reg16 <- <AF_PRIME / AF / BC / DE / HL / IX / IY / SP>                       { p.R16(buffer[begin:end]) }
+Reg16 <- <AF_PRIME / AF / BC / DE / HL / IX / IY / SP>    { p.R16(buffer[begin:end]) }
 
 n <- hexByteH / hexByte0x / decimalByte
+
+nn <- hexWordH / hexWord0x
+
+nn_contents <- '(' nn ')'                                 { p.NNContents() }
 
 Alu <- Add / Adc / Sub / Sbc / And / Xor / Or / Cp
 
@@ -99,10 +103,11 @@ Jr    <- "JR" ws (cc sep)? disp           { p.Jr() }
 Djnz  <- "DJNZ" ws disp                   { p.Djnz() }
 disp  <- signedDecimalByte
 
-IO <- IN / OUT
 
-IN    <- "IN" ws dst8 sep port            { p.In() }
-OUT   <- "OUT" ws port sep src8           { p.Out() }
+#IO <- IN / OUT
+#
+#IN   <- "IN" ws Dst8 sep Port                  { p.In() }
+#OUT  <- "OUT" ws Port sep Src8                { p.Out() }
 
 sep <- ws? ',' ws?
 
@@ -134,6 +139,9 @@ SP <- "SP"
 hexByteH    <- <hexdigit hexdigit> "h"                        { p.Nhex(buffer[begin:end]) }
 hexByte0x   <- "0x" <hexdigit hexdigit>                       { p.Nhex(buffer[begin:end]) }
 decimalByte <- <[0-9]+>                                       { p.Ndec(buffer[begin:end]) }
+
+hexWordH    <- <hexdigit hexdigit hexdigit hexdigit> "h"      { p.NNhex(buffer[begin:end]) }
+hexWord0x   <- "0x" <hexdigit hexdigit hexdigit hexdigit>     { p.NNhex(buffer[begin:end]) }
 
 hexdigit <- [0-9] / [[a-f]]
 
