@@ -1,8 +1,14 @@
+
 - for assembler
   - create ALU by string name
   - pass in captured name
   - use same ctor for decode (we already look up name)
   - i.e. *don't* put the func in the aluInfo, infer it from the string name
+
+- assembler/decode
+  - add ED prefix to both sets of tests
+  - or (better) use a single wrapper (test_util.go) to walk over all
+  instructions
 
 - restart:
   - implement full decoder

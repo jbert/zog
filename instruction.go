@@ -1,6 +1,9 @@
 package zog
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Instruction interface {
 	String() string
@@ -88,7 +91,7 @@ type JR struct {
 }
 
 func (j *JR) String() string {
-	if j.c == True {
+	if j.c == True || j.c == nil {
 		return fmt.Sprintf("JR %s", j.d)
 	} else {
 		return fmt.Sprintf("JR %s, %s", j.c, j.d)
@@ -101,7 +104,7 @@ type JP struct {
 }
 
 func (jp *JP) String() string {
-	if jp.c == True {
+	if jp.c == True || jp.c == nil {
 		return fmt.Sprintf("JP %s", jp.addr)
 	} else {
 		return fmt.Sprintf("JP %s, %s", jp.c, jp.addr)
@@ -168,7 +171,7 @@ type RET struct {
 }
 
 func (r *RET) String() string {
-	if r.c == True {
+	if r.c == True || r.c == nil {
 		return "RET"
 	} else {
 		return fmt.Sprintf("RET %s", r.c)
@@ -294,10 +297,11 @@ func (s Simple) String() string {
 }
 
 func LookupSimpleName(name string) Simple {
+	name = strings.ToUpper(name)
 	for _, simpleName := range simpleNames {
 		if simpleName.name == name {
 			return simpleName.inst
 		}
 	}
-	panic(fmt.Errorf("Unrecognised simple instruction name : %s", name))
+	panic(fmt.Errorf("Unrecognised simple instruction name : [%s]", name))
 }

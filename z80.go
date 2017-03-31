@@ -14,12 +14,14 @@ type Current struct {
 	dst16 Dst16
 	src16 Src16
 
-	r8         R8
-	r16        R16
-	odigit     byte
-	signedByte int8
-	cc         Conditional
-	nn         Src16
+	r8          R8
+	r16         R16
+	r16Contents Loc
+	odigit      byte
+	signedByte  int8
+	cc          Conditional
+	nn          Src16
+	n           Src8
 
 	inst Instruction
 
@@ -90,8 +92,8 @@ func (c *Current) Simple(name string) {
 }
 
 func (c *Current) Rst() {
-	// n is in src8 and must be a byte
-	imm8, ok := c.src8.(Imm8)
+	// n is in  must be a byte
+	imm8, ok := c.n.(Imm8)
 	if !ok {
 		panic("RST without immediate byte")
 	}
@@ -119,15 +121,19 @@ func (c *Current) Djnz() {
 }
 
 func (c *Current) In() {
-	c.inst = &IN{dst: c.dst8, port: c.src8}
+	port := c.n
+	if port == nil {
+		port = C
+	}
+	c.inst = &IN{dst: c.r8, port: port}
 }
 
-func (c *Current) OutC() {
-	c.inst = &OUT{port: C, value: c.src8}
-}
-
-func (c *Current) OutN() {
-	c.inst = &OUT{port: C, value: c.src8}
+func (c *Current) Out() {
+	port := c.n
+	if port == nil {
+		port = C
+	}
+	c.inst = &OUT{port: port, value: c.r8}
 }
 
 func (c *Current) Nhex(s string) {
@@ -135,7 +141,7 @@ func (c *Current) Nhex(s string) {
 	if err != nil {
 		panic(fmt.Errorf("Invalid byte: %s", s))
 	}
-	c.src8 = Imm8(n)
+	c.n = Imm8(n)
 }
 
 func (c *Current) NNhex(s string) {
@@ -155,7 +161,7 @@ func (c *Current) Ndec(s string) {
 	if err != nil {
 		panic(fmt.Errorf("Invalid byte: %s", s))
 	}
-	c.src8 = Imm8(n)
+	c.n = Imm8(n)
 }
 
 func (c *Current) ODigit(s string) {
@@ -182,6 +188,11 @@ func (c *Current) Loc8() {
 	if c.loc8 != nil {
 		return
 	}
+	if c.r16Contents != nil {
+		c.loc8 = c.r16Contents
+		c.r16Contents = nil
+		return
+	}
 	c.loc8 = c.r8
 }
 
@@ -189,11 +200,44 @@ func (c *Current) Dst8() {
 	if c.dst8 != nil {
 		return
 	}
+	if c.nn != nil {
+		nn_contents, ok := c.nn.(Dst8)
+		if !ok {
+			panic("Dst8 set to NN but not contents")
+		}
+		c.dst8 = nn_contents
+		c.nn = nil
+		return
+	}
+	if c.r16Contents != nil {
+		c.dst8 = c.r16Contents
+		c.r16Contents = nil
+		return
+	}
 	c.dst8 = c.r8
 }
 
 func (c *Current) Src8() {
 	if c.src8 != nil {
+		return
+	}
+	if c.n != nil {
+		c.src8 = c.n
+		c.n = nil
+		return
+	}
+	if c.nn != nil {
+		nn_contents, ok := c.nn.(Src8)
+		if !ok {
+			panic("Dst16 set to NN but not contents")
+		}
+		c.src8 = nn_contents
+		c.nn = nil
+		return
+	}
+	if c.r16Contents != nil {
+		c.src8 = c.r16Contents
+		c.r16Contents = nil
 		return
 	}
 	c.src8 = c.r8
@@ -216,15 +260,34 @@ func (c *Current) Dst16() {
 		c.nn = nil
 		return
 	}
+	if c.r16Contents != nil {
+		c.dst16 = c.r16Contents
+		c.r16Contents = nil
+		return
+	}
 	c.dst16 = c.r16
 }
 
 func (c *Current) Src16() {
 	if c.nn != nil {
 		c.src16 = c.nn
+		c.nn = nil
+		return
+	}
+	if c.r16Contents != nil {
+		c.src16 = c.r16Contents
+		c.r16Contents = nil
 		return
 	}
 	c.src16 = c.r16
+}
+
+func (c *Current) R16Contents() {
+	c.r16Contents = Contents{c.r16}
+}
+
+func (c *Current) IR16Contents() {
+	c.r16Contents = IndexedContents{c.r16, Disp(c.signedByte)}
 }
 
 func (c *Current) R8(s string) {

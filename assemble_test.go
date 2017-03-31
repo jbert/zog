@@ -1,14 +1,33 @@
 package zog
 
-import (
-	"fmt"
-	"regexp"
-	"strings"
-	"testing"
-)
+import "testing"
+
+func TestAssembleAll(t *testing.T) {
+	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
+		testAssembleOne(t, stringForm)
+	})
+}
 
 func TestAssembleBasic(t *testing.T) {
 	testCases := []string{
+		"OUT (0xff), A",
+		"IN A, (0xff)",
+		"OUT (c), A",
+		"IN A, (c)",
+
+		"EX (SP), HL",
+
+		"LD (0x1234), A",
+
+		"inc iy",
+		"inc iyh",
+
+		"add iy, bc",
+
+		"LD A, (IX+10)",
+
+		"INC B",
+		"DEC B",
 
 		"LD A, B",
 		"LD A, 0x10",
@@ -33,7 +52,11 @@ func TestAssembleBasic(t *testing.T) {
 		"LD DE, 0x1234",
 		"LD DE, (0x1234)",
 		"LD (0x1234), HL",
+
+		"LD (0x1234), H",
+
 		"LD A, (HL)",
+		"LD (HL), A",
 	}
 
 	for _, s := range testCases {
@@ -54,31 +77,4 @@ func testAssembleOne(t *testing.T, s string) {
 	if !compareAssembly(assembledStr, s) {
 		t.Fatalf("Assembled str not equal [%s] != [%s]", assembledStr, s)
 	}
-}
-
-func normaliseWhiteSpace(s string) string {
-	collapseSpaces := regexp.MustCompile(" +")
-	s = collapseSpaces.ReplaceAllString(s, " ")
-	commaSpace := regexp.MustCompile(", ")
-	s = commaSpace.ReplaceAllString(s, ",")
-	return s
-}
-func normaliseHex(s string) string {
-	re := regexp.MustCompile("0x([[:xdigit:]]{1,4})")
-	s = re.ReplaceAllString(s, "${1}h")
-	return s
-}
-
-func normaliseAssembly(s string) string {
-	s = strings.TrimSpace(s)
-	s = normaliseHex(s)
-	s = normaliseWhiteSpace(s)
-	return s
-}
-
-func compareAssembly(a, b string) bool {
-	a = normaliseAssembly(a)
-	b = normaliseAssembly(b)
-	fmt.Printf("a [%s] b [%s]\n", a, b)
-	return a == b
 }

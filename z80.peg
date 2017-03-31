@@ -9,11 +9,11 @@ Program <- (BlankLine / Line)+
 BlankLine <- ws* "\n"
 Line <- Instruction "\n"?                                   { p.Emit() }
 
-Instruction <- ws* ( Assignment / Inc / Dec / Add16 / Alu / BitOp / Simple / Jump )
+Instruction <- ws* ( Assignment / Inc / Dec / Add16 / Alu / BitOp / Simple / Jump / IO )
 
 Assignment <- Load / Push / Pop / Ex
 
-Load <- Load8 / Load16
+Load <- Load16 / Load8
 Load8 <- "LD" ws Dst8 sep Src8                            { p.LD8() }
 Load16 <- "LD" ws Dst16 sep Src16                         { p.LD16() }
 
@@ -21,29 +21,41 @@ Push <- "PUSH" ws Src16                                   { p.Push() }
 Pop <- "POP" ws Dst16                                     { p.Pop() }
 Ex <- "EX" ws Dst16 sep Src16                             { p.Ex() }
 
-Inc <- Inc16 / Inc8
+# Annoying parse ordering case, we can't have 8->16 or 16->8
+# "INC IXY" and "INC IX"
+# "INC C" and "INC BC"
+# Ditto DEC
+Inc <- Inc16Indexed8 / Inc16 / Inc8
+Inc16Indexed8 <- "INC" ws ILoc8                           { p.Inc8() }
 Inc8 <- "INC" ws Loc8                                     { p.Inc8() }
 Inc16 <- "INC" ws Loc16                                   { p.Inc16() }
 
-Dec <- Dec16 / Dec8
-Dec8 <- "INC" ws Loc8                                     { p.Dec8() }
-Dec16 <- "INC" ws Loc16                                   { p.Dec16() }
+Dec <- Dec16Indexed8 / Dec16 / Dec8
+Dec16Indexed8 <- "DEC" ws ILoc8                           { p.Dec8() }
+Dec8 <- "DEC" ws Loc8                                     { p.Dec8() }
+Dec16 <- "DEC" ws Loc16                                   { p.Dec16() }
 
 Add16 <- "ADD" ws Dst16 sep Src16                         { p.Add16() }
 
 
+Dst8 <- (Reg8 / Reg16Contents / nn_contents)              { p.Dst8() }
+Src8 <- (n / Reg8 / Reg16Contents / nn_contents)          { p.Src8() }
+Loc8 <- (Reg8 / Reg16Contents)                            { p.Loc8() }
+ILoc8 <- IReg8                                            { p.Loc8() }
 
-Dst8 <- Reg8        { p.Dst8() }
-Src8 <- (n / Reg8)  { p.Src8() }
-Loc8 <- Reg8        { p.Loc8() }
+Reg8  <- <A / F / B / C / D / E / H / L / IReg8>          { p.R8(buffer[begin:end]) }
+IReg8 <- <IXH / IXL / IYH / IYL>                          { p.R8(buffer[begin:end]) }
 
-Reg8 <- <A / F / B / C / D / E / H / L / IXH / IXL / IYH / IYL>   { p.R8(buffer[begin:end]) }
+Dst16 <- (Reg16 / nn_contents / Reg16Contents)            { p.Dst16() }
+Src16 <- (Reg16 / nn / nn_contents)                       { p.Src16() }
+Loc16 <- Reg16                                            { p.Loc16() }
 
-Dst16 <- (Reg16 / nn_contents)        { p.Dst16() }
-Src16 <- (Reg16 / nn / nn_contents)   { p.Src16() }
-Loc16 <- Reg16                        { p.Loc16() }
+Reg16 <- <AF_PRIME / AF / BC / DE / HL / SP / IReg16>       { p.R16(buffer[begin:end]) }
+IReg16 <- <IX / IY>                                         { p.R16(buffer[begin:end]) }
 
-Reg16 <- <AF_PRIME / AF / BC / DE / HL / IX / IY / SP>    { p.R16(buffer[begin:end]) }
+Reg16Contents <- ( IndexedR16C / PlainR16C )              
+PlainR16C <-    '(' Reg16 ')'                               { p.R16Contents() }
+IndexedR16C <-  '(' IReg16 ws? signedDecimalByte ws? ')'    { p.IR16Contents() }
 
 n <- hexByteH / hexByte0x / decimalByte
 
@@ -103,11 +115,12 @@ Jr    <- "JR" ws (cc sep)? disp           { p.Jr() }
 Djnz  <- "DJNZ" ws disp                   { p.Djnz() }
 disp  <- signedDecimalByte
 
+IO <- IN / OUT
 
-#IO <- IN / OUT
-#
-#IN   <- "IN" ws Dst8 sep Port                  { p.In() }
-#OUT  <- "OUT" ws Port sep Src8                { p.Out() }
+IN   <- "IN" ws Reg8 sep Port                   { p.In() }
+OUT  <- "OUT" ws Port sep Reg8                  { p.Out() }
+
+Port <- "(C)" / '(' n ')'
 
 sep <- ws? ',' ws?
 
@@ -147,7 +160,7 @@ hexdigit <- [0-9] / [[a-f]]
 
 octaldigit <- <[0-7]>                                       { p.ODigit(buffer[begin:end]) }
 
-signedDecimalByte <- <'-'?[0-9]+>                               { p.SignedDecimalByte(buffer[begin:end]) }
+signedDecimalByte <- <[-+]?[0-9]+>                               { p.SignedDecimalByte(buffer[begin:end]) }
 
 cc <- FT_NZ / FT_Z / FT_NC / FT_C / FT_PO / FT_PE / FT_P / FT_M
 FT_NZ <-   "NZ" { p.Conditional(Not{FT_Z}) }

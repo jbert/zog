@@ -1,6 +1,9 @@
 package zog
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Src8 interface {
 	Read8(z *Zog) (byte, error)
@@ -27,6 +30,15 @@ type Loc8 interface {
 }
 
 type Loc16 interface {
+	Read16(z *Zog) (uint16, error)
+	Write16(z *Zog, nn uint16) error
+	String() string
+}
+
+// (HL), (BC), (SP) could refer to a byte addr or a word addr
+type Loc interface {
+	Read8(z *Zog) (byte, error)
+	Write8(z *Zog, n byte) error
 	Read16(z *Zog) (uint16, error)
 	Write16(z *Zog, nn uint16) error
 	String() string
@@ -74,6 +86,7 @@ var R8Names []r8name = []r8name{
 }
 
 func LookupR8Name(name string) R8 {
+	name = strings.ToUpper(name)
 	for _, r8name := range R8Names {
 		if r8name.name == name {
 			return r8name.r
@@ -133,6 +146,7 @@ var R16Names []r16name = []r16name{
 }
 
 func LookupR16Name(name string) R16 {
+	name = strings.ToUpper(name)
 	for _, r16name := range R16Names {
 		if r16name.name == name {
 			return r16name.r
@@ -199,7 +213,7 @@ type IndexedContents struct {
 }
 
 func (ic IndexedContents) String() string {
-	return fmt.Sprintf("(%s%+02X)", ic.addr, int8(ic.d))
+	return fmt.Sprintf("(%s%+d)", ic.addr, int8(ic.d))
 }
 func (ic IndexedContents) Read8(z *Zog) (byte, error) {
 	// TODO: debug
