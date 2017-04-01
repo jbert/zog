@@ -7,6 +7,7 @@ import (
 
 type Instruction interface {
 	String() string
+	Encode() []byte
 }
 
 type LD8 struct {
@@ -17,6 +18,9 @@ type LD8 struct {
 func (l *LD8) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
 }
+func (l *LD8) Encode() []byte {
+	return []byte{}
+}
 
 type INC8 struct {
 	l Loc8
@@ -25,6 +29,9 @@ type INC8 struct {
 func (i *INC8) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
+func (i *INC8) Encode() []byte {
+	return []byte{}
+}
 
 type DEC8 struct {
 	l Loc8
@@ -32,6 +39,9 @@ type DEC8 struct {
 
 func (d *DEC8) String() string {
 	return fmt.Sprintf("DEC %s", d.l)
+}
+func (d *DEC8) Encode() []byte {
+	return []byte{}
 }
 
 type LD16 struct {
@@ -42,6 +52,9 @@ type LD16 struct {
 func (l *LD16) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
 }
+func (l *LD16) Encode() []byte {
+	return []byte{}
+}
 
 type ADD16 struct {
 	dst Dst16
@@ -50,6 +63,9 @@ type ADD16 struct {
 
 func (a *ADD16) String() string {
 	return fmt.Sprintf("ADD %s, %s", a.dst, a.src)
+}
+func (a *ADD16) Encode() []byte {
+	return []byte{}
 }
 
 type ADC16 struct {
@@ -60,6 +76,9 @@ type ADC16 struct {
 func (a *ADC16) String() string {
 	return fmt.Sprintf("ADC %s, %s", a.dst, a.src)
 }
+func (a *ADC16) Encode() []byte {
+	return []byte{}
+}
 
 type SBC16 struct {
 	dst Dst16
@@ -69,6 +88,9 @@ type SBC16 struct {
 func (s *SBC16) String() string {
 	return fmt.Sprintf("SBC %s, %s", s.dst, s.src)
 }
+func (s *SBC16) Encode() []byte {
+	return []byte{}
+}
 
 type INC16 struct {
 	l Loc16
@@ -77,6 +99,9 @@ type INC16 struct {
 func (i *INC16) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
+func (i *INC16) Encode() []byte {
+	return []byte{}
+}
 
 type DEC16 struct {
 	l Loc16
@@ -84,6 +109,9 @@ type DEC16 struct {
 
 func (d *DEC16) String() string {
 	return fmt.Sprintf("DEC %s", d.l)
+}
+func (d *DEC16) Encode() []byte {
+	return []byte{}
 }
 
 type EX struct {
@@ -94,6 +122,9 @@ type EX struct {
 func (ex *EX) String() string {
 	return fmt.Sprintf("EX %s, %s", ex.dst, ex.src)
 }
+func (ex *EX) Encode() []byte {
+	return []byte{}
+}
 
 type DJNZ struct {
 	d Disp
@@ -101,6 +132,9 @@ type DJNZ struct {
 
 func (d *DJNZ) String() string {
 	return fmt.Sprintf("DJNZ %s", d.d)
+}
+func (d *DJNZ) Encode() []byte {
+	return []byte{}
 }
 
 type JR struct {
@@ -115,6 +149,9 @@ func (j *JR) String() string {
 		return fmt.Sprintf("JR %s, %s", j.c, j.d)
 	}
 }
+func (jr *JR) Encode() []byte {
+	return []byte{}
+}
 
 type JP struct {
 	c    Conditional
@@ -127,6 +164,9 @@ func (jp *JP) String() string {
 	} else {
 		return fmt.Sprintf("JP %s, %s", jp.c, jp.addr)
 	}
+}
+func (jp *JP) Encode() []byte {
+	return []byte{}
 }
 
 type CALL struct {
@@ -141,6 +181,9 @@ func (c *CALL) String() string {
 		return fmt.Sprintf("CALL %s, %s", c.c, c.addr)
 	}
 }
+func (c *CALL) Encode() []byte {
+	return []byte{}
+}
 
 type OUT struct {
 	port  Src8
@@ -149,6 +192,9 @@ type OUT struct {
 
 func (o *OUT) String() string {
 	return fmt.Sprintf("OUT (%s), %s", o.port, o.value)
+}
+func (o *OUT) Encode() []byte {
+	return []byte{}
 }
 
 type IN struct {
@@ -159,6 +205,9 @@ type IN struct {
 func (i *IN) String() string {
 	return fmt.Sprintf("IN %s, (%s)", i.dst, i.port)
 }
+func (i *IN) Encode() []byte {
+	return []byte{}
+}
 
 type PUSH struct {
 	src Src16
@@ -166,6 +215,9 @@ type PUSH struct {
 
 func (p *PUSH) String() string {
 	return fmt.Sprintf("PUSH %s", p.src)
+}
+func (p *PUSH) Encode() []byte {
+	return []byte{}
 }
 
 type POP struct {
@@ -175,6 +227,9 @@ type POP struct {
 func (p *POP) String() string {
 	return fmt.Sprintf("POP %s", p.dst)
 }
+func (p *POP) Encode() []byte {
+	return []byte{}
+}
 
 type RST struct {
 	addr byte
@@ -182,6 +237,9 @@ type RST struct {
 
 func (r *RST) String() string {
 	return fmt.Sprintf("RST %d", r.addr)
+}
+func (r *RST) Encode() []byte {
+	return []byte{}
 }
 
 type RET struct {
@@ -194,6 +252,9 @@ func (r *RET) String() string {
 	} else {
 		return fmt.Sprintf("RET %s", r.c)
 	}
+}
+func (r *RET) Encode() []byte {
+	return []byte{}
 }
 
 func NewAccum(name string, src Src8) *accum {
@@ -216,6 +277,9 @@ func (a accum) String() string {
 		return fmt.Sprintf("%s %s", a.name, a.src)
 	}
 }
+func (a accum) Encode() []byte {
+	return []byte{}
+}
 
 type rot struct {
 	name string
@@ -229,6 +293,9 @@ func NewRot(name string, r Loc8) *rot {
 func (r *rot) String() string {
 	return fmt.Sprintf("%s %s", r.name, r.r)
 }
+func (r *rot) Encode() []byte {
+	return []byte{}
+}
 
 type BIT struct {
 	num byte
@@ -237,6 +304,9 @@ type BIT struct {
 
 func (b *BIT) String() string {
 	return fmt.Sprintf("BIT %d, %s", b.num, b.r)
+}
+func (b *BIT) Encode() []byte {
+	return []byte{}
 }
 
 type RES struct {
@@ -247,6 +317,9 @@ type RES struct {
 func (r *RES) String() string {
 	return fmt.Sprintf("RES %d, %s", r.num, r.r)
 }
+func (r *RES) Encode() []byte {
+	return []byte{}
+}
 
 type SET struct {
 	num byte
@@ -255,6 +328,9 @@ type SET struct {
 
 func (s *SET) String() string {
 	return fmt.Sprintf("SET %d, %s", s.num, s.r)
+}
+func (s *SET) Encode() []byte {
+	return []byte{}
 }
 
 type Simple byte
@@ -312,6 +388,9 @@ func (s Simple) String() string {
 		}
 	}
 	panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
+}
+func (s Simple) Encode() []byte {
+	return []byte{byte(s)}
 }
 
 func LookupSimpleName(name string) Simple {
@@ -399,6 +478,10 @@ func (s EDSimple) String() string {
 		}
 	}
 	panic(fmt.Sprintf("Unknown EDSimple instruction: %02X", byte(s)))
+}
+
+func (s EDSimple) Encode() []byte {
+	return []byte{byte(s)}
 }
 
 func LookupEDSimpleName(name string) EDSimple {
