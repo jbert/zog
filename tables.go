@@ -14,6 +14,12 @@ var baseTableRP []Loc16 = []Loc16{BC, DE, HL, SP}
 var baseTableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
 
 var tableCC []Conditional = []Conditional{Not{FT_Z}, FT_Z, Not{FT_C}, FT_C, FT_PO, FT_PE, FT_P, FT_M}
+var tableBLI [][]Instruction = [][]Instruction{
+	[]Instruction{LDI, CPI, INI, OUTI},
+	[]Instruction{LDD, CPD, IND, OUTD},
+	[]Instruction{LDIR, CPIR, INIR, OTIR},
+	[]Instruction{LDDR, CPDR, INDR, OTDR},
+}
 
 func NewTable(inCh chan byte) *Table {
 	return &Table{inCh: inCh}
@@ -86,6 +92,10 @@ func (t *Table) LookupRP2(i byte) Loc16 {
 		}
 	}
 	return l
+}
+
+func (t *Table) LookupBLI(a, b byte) Instruction {
+	return tableBLI[a][b]
 }
 
 type AccumInfo struct {

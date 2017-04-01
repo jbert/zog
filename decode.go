@@ -1,8 +1,8 @@
 package zog
 
 import (
-	"errors"
 	"fmt"
+	"log"
 )
 
 func Decode(inCh chan byte) (chan Instruction, chan error) {
@@ -156,10 +156,99 @@ func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error
 	var err error
 	var inst Instruction
 
+	hl := HL
+	if indexPrefix == 0xDD {
+		hl = IX
+	} else if indexPrefix == 0xFD {
+		hl = IY
+	}
+
 	x, y, z, p, q := decomposeByte(n)
 	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
-	err = errors.New("TODO - impl")
+	switch x {
+	case 0, 3:
+		// Invalid instruction, equivalent to NONI followed by NOP
+		log.Printf("Invalid instruction: [%02X]\n", n)
+		inst = NOP
+	case 1:
+		switch z {
+		case 0:
+			if y == 6 {
+				// This would be (HL), it's unclear what this should be
+				log.Printf("IN (C)? or 'set flag'?")
+				inst = &IN{dst: F, port: C}
+			} else {
+				inst = &IN{dst: t.LookupR(y), port: C}
+			}
+		case 1:
+			if y == 6 {
+				inst = &OUT{port: C, value: Imm8(0)}
+			} else {
+				inst = &OUT{port: C, value: t.LookupR(y)}
+			}
+		case 2:
+			if q == 0 {
+				inst = &SBC16{hl, t.LookupRP(p)}
+			} else {
+				inst = &ADC16{hl, t.LookupRP(p)}
+			}
+		case 3:
+			nn, err := getImmNN(inCh)
+			if err == nil {
+				if q == 0 {
+					inst = &LD16{Contents{nn}, t.LookupRP(p)}
+				} else {
+					inst = &LD16{t.LookupRP(p), Contents{nn}}
+				}
+			}
+		case 4:
+			inst = NEG
+		case 5:
+			if y == 1 {
+				inst = RETI
+			} else {
+				inst = RETN
+			}
+		case 6:
+			switch y {
+			case 0, 1, 4, 5:
+				inst = IM0
+			case 2, 6:
+				inst = IM1
+			case 3, 7:
+				inst = IM2
+			}
+		case 7:
+			switch y {
+			case 0:
+				inst = &LD8{I, A}
+			case 1:
+				inst = &LD8{R, A}
+			case 2:
+				inst = &LD8{A, I}
+			case 3:
+				inst = &LD8{A, R}
+			case 4:
+				inst = RRD
+			case 5:
+				inst = RLD
+			case 6:
+				inst = NOP
+			case 7:
+				inst = NOP
+			}
+		}
+	case 2:
+		if z <= 3 && y >= 4 {
+			inst = t.LookupBLI(y-4, z)
+		} else {
+			log.Printf("Invalid instruction: [%02X]\n", n)
+			inst = NOP
+		}
+	}
+
+	//	err = errors.New("TODO - impl")
 	return inst, err
 }
 

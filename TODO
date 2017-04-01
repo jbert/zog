@@ -10,6 +10,9 @@
   - or (better) use a single wrapper (test_util.go) to walk over all
   instructions
 
+  - consider making the block instructions take the various flags (up/down, repeat/not-repeat) as ctor
+    args for a composite type
+
 - restart:
   - implement full decoder
   - consume byte channel
