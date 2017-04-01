@@ -46,6 +46,89 @@ func testUtilRunAll(t *testing.T, f func(t *testing.T, byteForm []byte, stringFo
 	}
 }
 
+func expandImmediateData(buf []byte, template string) ([]byte, string) {
+	var s string = template
+	if strings.Contains(s, "NN") {
+		buf = append(buf, 0x34)
+		buf = append(buf, 0x12)
+		s = strings.Replace(s, "NN", "0x1234", 1)
+	}
+	if strings.Contains(s, "N") {
+		buf = append(buf, 0xab)
+		s = strings.Replace(s, "N", "0xab", 1)
+	}
+	if strings.Contains(s, "DIS") {
+		buf = append(buf, 0xf0)
+		s = strings.Replace(s, "DIS", "-16", 1)
+	}
+	return buf, s
+}
+
+func bufToHex(buf []byte) string {
+	s := ""
+	for _, b := range buf {
+		s += fmt.Sprintf("%02X", b)
+	}
+	return s
+}
+
+type testInstruction struct {
+	n             byte
+	inst          string
+	inst_after_cb string
+	inst_after_ed string
+}
+
+func (tc *testInstruction) getExpected(indexPrefix byte, opPrefix byte, buf []byte) ([]byte, string) {
+	var expected string
+	switch opPrefix {
+	case 0: // No prefix
+		expected = tc.inst
+	case 0xcb:
+		expected = tc.inst_after_cb
+	case 0xed:
+		expected = tc.inst_after_ed
+	default:
+		panic(fmt.Sprintf("Unrecognised op prefix %02X", opPrefix))
+	}
+
+	switch indexPrefix {
+	case 0xdd:
+		return indexRegisterMunge("IX", buf, expected)
+	case 0xfd:
+		return indexRegisterMunge("IY", buf, expected)
+	default:
+		return buf, expected
+	}
+}
+
+func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]byte, string) {
+	d := int8(-20)
+
+	// Must match location.go:func (ic IndexedContents) String() format
+	hlReplace := fmt.Sprintf("(%s%+d)", indexRegister, d)
+	hReplace := indexRegister + "h"
+	lReplace := indexRegister + "l"
+
+	if strings.Contains(expected, "(hl)") {
+		expected = strings.Replace(expected, "(hl)", hlReplace, -1)
+		buf = append(buf, byte(d))
+	} else {
+		// Exception
+		if expected != "ex de,hl" {
+			expected = strings.Replace(expected, "hl", indexRegister, -1)
+			expected = strings.Replace(expected, "h,", hReplace+",", -1)
+			expected = strings.Replace(expected, ",h", ","+hReplace, -1)
+			expected = strings.Replace(expected, " h", " "+hReplace, -1)
+			expected = strings.Replace(expected, "l,", lReplace+",", -1)
+			expected = strings.Replace(expected, ",l", ","+lReplace, -1)
+			expected = strings.Replace(expected, " l", " "+lReplace, -1)
+		}
+	}
+
+	return buf, expected
+}
+
 func normaliseWhiteSpace(s string) string {
 	collapseSpaces := regexp.MustCompile(" +")
 	s = collapseSpaces.ReplaceAllString(s, " ")
