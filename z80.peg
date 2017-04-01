@@ -9,7 +9,7 @@ Program <- (BlankLine / Line)+
 BlankLine <- ws* "\n"
 Line <- Instruction "\n"?                                   { p.Emit() }
 
-Instruction <- ws* ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / Simple / Jump / IO )
+Instruction <- ws* ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / EDSimple / Simple / Jump / IO )
 
 Assignment <- Load / Push / Pop / Ex
 
@@ -106,6 +106,35 @@ Ccf  <- <"CCF">         { p.Simple(buffer[begin:end]) }
 Exx  <- <"EXX">         { p.Simple(buffer[begin:end]) }
 Di   <- <"DI">          { p.Simple(buffer[begin:end]) }
 Ei   <- <"EI">          { p.Simple(buffer[begin:end]) }
+
+EDSimple <- Neg / Retn / Reti / Rrd / Rld / Im0 / Im1 / Im2 / Blit / BlitIO
+Neg   <- <"NEG">        { p.EDSimple(buffer[begin:end]) }
+Retn  <- <"RETN">       { p.EDSimple(buffer[begin:end]) }
+Reti  <- <"RETI">       { p.EDSimple(buffer[begin:end]) }
+Rrd   <- <"RRD">        { p.EDSimple(buffer[begin:end]) }
+Rld   <- <"RLD">        { p.EDSimple(buffer[begin:end]) }
+Im0   <- <"IM 0">       { p.EDSimple(buffer[begin:end]) }
+Im1   <- <"IM 1">       { p.EDSimple(buffer[begin:end]) }
+Im2   <- <"IM 2">       { p.EDSimple(buffer[begin:end]) }
+
+Blit <- Ldir / Ldi / Cpir / Cpi / Lddr / Ldd / Cpdr / Cpd 
+BlitIO <- Inir / Ini / Otir / Outi / Indr / Ind / Otdr / Outd 
+Ldi   <- <"LDI">        {  p.EDSimple(buffer[begin:end]) }
+Cpi   <- <"CPI">        {  p.EDSimple(buffer[begin:end]) }
+Ini   <- <"INI">        {  p.EDSimple(buffer[begin:end]) }
+Outi  <- <"OUTI">       {  p.EDSimple(buffer[begin:end]) }
+Ldd   <- <"LDD">        {  p.EDSimple(buffer[begin:end]) }
+Cpd   <- <"CPD">        {  p.EDSimple(buffer[begin:end]) }
+Ind   <- <"IND">        {  p.EDSimple(buffer[begin:end]) }
+Outd  <- <"OUTD">       {  p.EDSimple(buffer[begin:end]) }
+Ldir  <- <"LDIR">       {  p.EDSimple(buffer[begin:end]) }
+Cpir  <- <"CPIR">       {  p.EDSimple(buffer[begin:end]) }
+Inir  <- <"INIR">       {  p.EDSimple(buffer[begin:end]) }
+Otir  <- <"OTIR">       {  p.EDSimple(buffer[begin:end]) }
+Lddr  <- <"LDDR">       {  p.EDSimple(buffer[begin:end]) }
+Cpdr  <- <"CPDR">       {  p.EDSimple(buffer[begin:end]) }
+Indr  <- <"INDR">       {  p.EDSimple(buffer[begin:end]) }
+Otdr  <- <"OTDR">       {  p.EDSimple(buffer[begin:end]) }
 
 Jump <- Rst / Call / Ret / Jp / Jr / Djnz
 

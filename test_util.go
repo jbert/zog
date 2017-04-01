@@ -183,7 +183,7 @@ var allInstructions = []testInstruction{
 	{0x68, "ld l,b", "bit 5,b", "in l,(c)	"},
 	{0x69, "ld l,c", "bit 5,c", "out (c),l	"},
 	{0x6A, "ld l,d", "bit 5,d", "adc hl,hl	"},
-	{0x6B, "ld l,e", "bit 5,e", "ld hl,(NN),sp	"},
+	{0x6B, "ld l,e", "bit 5,e", "ld hl,(NN)"},
 	{0x6C, "ld l,h", "bit 5,h", ""},
 	{0x6D, "ld l,l", "bit 5,l", ""},
 	{0x6E, "ld l,(hl)", "bit 5,(hl)", ""},

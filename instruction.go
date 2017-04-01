@@ -321,5 +321,92 @@ func LookupSimpleName(name string) Simple {
 			return simpleName.inst
 		}
 	}
-	panic(fmt.Errorf("Unrecognised simple instruction name : [%s]", name))
+	panic(fmt.Errorf("Unrecognised Simple instruction name : [%s]", name))
+}
+
+type EDSimple byte
+
+const (
+	NEG  EDSimple = 0x44
+	RETN EDSimple = 0x45
+	RETI EDSimple = 0x4d
+
+	RRD EDSimple = 0x67
+	RLD EDSimple = 0x6f
+
+	IM0 EDSimple = 0x46
+	IM1 EDSimple = 0x56
+	IM2 EDSimple = 0x5e
+
+	LDI  EDSimple = 0xa0
+	CPI  EDSimple = 0xa1
+	LDD  EDSimple = 0xa8
+	CPD  EDSimple = 0xa9
+	LDIR EDSimple = 0xb0
+	CPIR EDSimple = 0xb1
+	LDDR EDSimple = 0xb8
+	CPDR EDSimple = 0xb9
+
+	INI  EDSimple = 0xa2
+	OUTI EDSimple = 0xa3
+	IND  EDSimple = 0xaa
+	OUTD EDSimple = 0xab
+	INIR EDSimple = 0xb2
+	OTIR EDSimple = 0xb3
+	INDR EDSimple = 0xba
+	OTDR EDSimple = 0xbb
+)
+
+type edSimpleName struct {
+	inst EDSimple
+	name string
+}
+
+var EDSimpleNames []edSimpleName = []edSimpleName{
+	{NEG, "NEG"},
+	{RETN, "RETN"},
+	{RETI, "RETI"},
+	{RRD, "RRD"},
+	{RLD, "RLD"},
+	{IM0, "IM 0"},
+	{IM1, "IM 1"},
+	{IM2, "IM 2"},
+
+	{LDI, "LDI"},
+	{CPI, "CPI"},
+	{LDD, "LDD"},
+	{CPD, "CPD"},
+	{LDIR, "LDIR"},
+	{CPIR, "CPIR"},
+	{LDDR, "LDDR"},
+	{CPDR, "CPDR"},
+
+	{INI, "INI"},
+	{OUTI, "OUTI"},
+	{IND, "IND"},
+	{OUTD, "OUTD"},
+	{INIR, "INIR"},
+	{OTIR, "OTIR"},
+	{INDR, "INDR"},
+	{OTDR, "OTDR"},
+}
+
+func (s EDSimple) String() string {
+
+	for _, simpleName := range EDSimpleNames {
+		if simpleName.inst == s {
+			return simpleName.name
+		}
+	}
+	panic(fmt.Sprintf("Unknown EDSimple instruction: %02X", byte(s)))
+}
+
+func LookupEDSimpleName(name string) EDSimple {
+	name = strings.ToUpper(name)
+	for _, simpleName := range EDSimpleNames {
+		if simpleName.name == name {
+			return simpleName.inst
+		}
+	}
+	panic(fmt.Errorf("Unrecognised EDSimple instruction name : [%s]", name))
 }

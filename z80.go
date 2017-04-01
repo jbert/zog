@@ -99,6 +99,10 @@ func (c *Current) Simple(name string) {
 	c.inst = LookupSimpleName(name)
 }
 
+func (c *Current) EDSimple(name string) {
+	c.inst = LookupEDSimpleName(name)
+}
+
 func (c *Current) Rst() {
 	// n is in  must be a byte
 	imm8, ok := c.n.(Imm8)
