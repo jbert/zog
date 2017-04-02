@@ -82,7 +82,7 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 	var opPrefix byte
 	var indexPrefix byte
 
-	t := NewTable(inCh)
+	t := NewDecodeTable(inCh)
 
 	for n := range inCh {
 
@@ -130,7 +130,7 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 	close(errCh)
 }
 
-func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
+func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 
@@ -152,7 +152,7 @@ func cbDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error
 	return inst, err
 }
 
-func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
+func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 
@@ -252,7 +252,7 @@ func edDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error
 	return inst, err
 }
 
-func baseDecode(t *Table, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
+func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 

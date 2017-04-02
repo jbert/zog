@@ -2,7 +2,7 @@ package zog
 
 import "fmt"
 
-type Table struct {
+type DecodeTable struct {
 	inCh   chan byte
 	wantIX bool
 	wantIY bool
@@ -21,11 +21,11 @@ var tableBLI [][]Instruction = [][]Instruction{
 	[]Instruction{LDDR, CPDR, INDR, OTDR},
 }
 
-func NewTable(inCh chan byte) *Table {
-	return &Table{inCh: inCh}
+func NewDecodeTable(inCh chan byte) *DecodeTable {
+	return &DecodeTable{inCh: inCh}
 }
 
-func (t *Table) ResetPrefix(n byte) {
+func (t *DecodeTable) ResetPrefix(n byte) {
 	t.wantIX = false
 	t.wantIY = false
 	switch n {
@@ -36,7 +36,7 @@ func (t *Table) ResetPrefix(n byte) {
 	}
 }
 
-func (t *Table) LookupR(i byte) Loc8 {
+func (t *DecodeTable) LookupR(i byte) Loc8 {
 	l := baseTableR[i]
 	if !t.wantIX && !t.wantIY {
 		return l
@@ -68,7 +68,7 @@ func (t *Table) LookupR(i byte) Loc8 {
 	return l
 }
 
-func (t *Table) LookupRP(i byte) Loc16 {
+func (t *DecodeTable) LookupRP(i byte) Loc16 {
 	l := baseTableRP[i]
 	if l == HL {
 		if t.wantIX {
@@ -81,7 +81,7 @@ func (t *Table) LookupRP(i byte) Loc16 {
 	return l
 }
 
-func (t *Table) LookupRP2(i byte) Loc16 {
+func (t *DecodeTable) LookupRP2(i byte) Loc16 {
 	l := baseTableRP2[i]
 	if l == HL {
 		if t.wantIX {
@@ -94,7 +94,7 @@ func (t *Table) LookupRP2(i byte) Loc16 {
 	return l
 }
 
-func (t *Table) LookupBLI(a, b byte) Instruction {
+func (t *DecodeTable) LookupBLI(a, b byte) Instruction {
 	return tableBLI[a][b]
 }
 

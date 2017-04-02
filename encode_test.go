@@ -7,12 +7,14 @@ import (
 
 func TestEncodeBasic(t *testing.T) {
 	testCases := []struct {
-		reason   string
 		buf      []byte
 		expected string
 	}{
-		{"NOP", []byte{0x00}, "NOP"},
-		{"DI", []byte{0xf3}, "DI"},
+		{[]byte{0x00}, "NOP"},
+		{[]byte{0xf3}, "DI"},
+		//		{[]byte{0x77}, "LD (HL), A"},
+		//		{[]byte{0xdd, 0x77, 0x10}, "LD (IX+10h), A"},
+		//		{[]byte{0xfd, 0x77, 0x10}, "LD (IY+10h), A"},
 	}
 
 	for _, tc := range testCases {
@@ -20,11 +22,13 @@ func TestEncodeBasic(t *testing.T) {
 	}
 }
 
+/*
 func TestEncodeAll(t *testing.T) {
 	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
 		testEncodeOne(t, byteForm, stringForm)
 	})
 }
+*/
 
 func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	hexBuf := bufToHex(byteForm)

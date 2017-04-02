@@ -1,58 +1,24 @@
+- consider collapsing src/dst8 into loc8, ditto loc16
+  - have unary/binary embeddable instruction bases
+    - encode helper can examine loc for IX etc
+      - also need to encode displacement!
 
-- for assembler
-  - create ALU by string name
-  - pass in captured name
-  - use same ctor for decode (we already look up name)
-  - i.e. *don't* put the func in the aluInfo, infer it from the string name
+- panic on write to imm8
 
-- assembler/decode
-  - add ED prefix to both sets of tests
-  - or (better) use a single wrapper (test_util.go) to walk over all
-  instructions
-
-  - consider making the block instructions take the various flags (up/down, repeat/not-repeat) as ctor
-    args for a composite type
-
-- restart:
-  - implement full decoder
-  - consume byte channel
-  - instruction channel return
-
-  - instruction.go  : types for all instructions, initially just String() in the interface
-    - requires supporting machine types
-      - Src8 : place from which we can read a byte
-      - Dst8 : place to which we can write a bute
-      - Src16 : 16bit src
-      - Dst16 : 16bit dst
-    - need register concepts for String() repr
-      - R8  : implement Src8, Dst8
-      - R16 : implement Src16, Dst16
-      - Imm8 : implement Src8
-      - Imm16 : implement Src16
-      - ImmAddr16 : implement Src16, Dst16
-        - ??? or wrap an 'addr' around any other Src16/Dst16?
-  - decode.go : consume byte stream, return instruction stream
-    - we now have a disassembler (separate binary, operates on a file .bin->.z80)
-  - assemble.go : string -> instruction
-    - add Encode() to instruction too, and we can full-test the encode
-    - new binary assemble .z80 file to .bin
-  - zog.go : machine (registers, memory)
-
-
-DONE - need a better structure for decode.go
-  - need "unknown" to be default for everything?
-
-DONE - maybe drop channel i/f to decode
-  - or at least have it in terms of something else
-  - also, don't stop decoding on decode error
-    - report error, consume correct number of bytes, continue
+- assembler needs Encode() on Instruction
+  - drive via same all tests
+  - or as part of decode test loop?
+    buf -> inst         ; decode
+    inst -> string      ; disass
+    string -> inst      ; ass
+    inst -> buf         ; encode
 
 - add cmdline disassembler
   - try on some big files
   - add (made up) labels for jump targets in disassembler
 
-- implement ED
+DONE - implement ED
 
 - implement DDCB+FDCB
 
-- grab speccy book table for decode test
+DONE - grab speccy book table for decode test
