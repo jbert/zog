@@ -10,6 +10,15 @@ func TestAssembleAll(t *testing.T) {
 
 func TestAssembleBasic(t *testing.T) {
 	testCases := []string{
+		"LD A, (IX+10)",
+		"LD A, (IX-10)",
+
+		// TODO: test hex parses
+		//		"LD A, (IX+0x0a)",
+		//		"LD A, (IX-0x0a)",
+		//		"LD A, (IX+0ah)",
+		//		"LD A, (IX-0ah)",
+
 		"OUT (0xff), A",
 		"IN A, (0xff)",
 		"OUT (c), A",
@@ -23,8 +32,6 @@ func TestAssembleBasic(t *testing.T) {
 		"inc iyh",
 
 		"add iy, bc",
-
-		"LD A, (IX+10)",
 
 		"INC B",
 		"DEC B",

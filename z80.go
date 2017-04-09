@@ -3,6 +3,7 @@ package zog
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Current struct {
@@ -18,7 +19,7 @@ type Current struct {
 	r16         R16
 	r16Contents Loc
 	odigit      byte
-	signedByte  int8
+	disp        Disp
 	cc          Conditional
 	nn          Src16
 	n           Src8
@@ -125,11 +126,11 @@ func (c *Current) Jp() {
 }
 
 func (c *Current) Jr() {
-	c.inst = &JR{c.cc, Disp(c.signedByte)}
+	c.inst = &JR{c.cc, c.disp}
 }
 
 func (c *Current) Djnz() {
-	c.inst = &DJNZ{Disp(c.signedByte)}
+	c.inst = &DJNZ{c.disp}
 }
 
 func (c *Current) In() {
@@ -184,12 +185,29 @@ func (c *Current) ODigit(s string) {
 	c.odigit = byte(n)
 }
 
-func (c *Current) SignedDecimalByte(s string) {
+func (c *Current) Disp0xHex(s string) {
+	s = strings.Replace(s, "0x", "", 1)
+	n, err := strconv.ParseInt(s, 16, 8)
+	if err != nil {
+		panic(fmt.Errorf("Invalid signed decimal byte: %s", s))
+	}
+	c.disp = Disp(int8(n))
+}
+
+func (c *Current) DispHex(s string) {
+	n, err := strconv.ParseInt(s, 16, 8)
+	if err != nil {
+		panic(fmt.Errorf("Invalid signed decimal byte: %s", s))
+	}
+	c.disp = Disp(int8(n))
+}
+
+func (c *Current) DispDecimal(s string) {
 	n, err := strconv.ParseInt(s, 10, 8)
 	if err != nil {
 		panic(fmt.Errorf("Invalid signed decimal byte: %s", s))
 	}
-	c.signedByte = int8(n)
+	c.disp = Disp(int8(n))
 }
 
 func (c *Current) Conditional(cc Conditional) {
@@ -299,7 +317,7 @@ func (c *Current) R16Contents() {
 }
 
 func (c *Current) IR16Contents() {
-	c.r16Contents = IndexedContents{c.r16, Disp(c.signedByte)}
+	c.r16Contents = IndexedContents{c.r16, c.disp}
 }
 
 func (c *Current) R8(s string) {

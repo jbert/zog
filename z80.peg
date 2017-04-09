@@ -57,11 +57,24 @@ IReg16 <- <IX / IY>                                         { p.R16(buffer[begin
 
 Reg16Contents <- ( IndexedR16C / PlainR16C )              
 PlainR16C <-    '(' Reg16 ')'                               { p.R16Contents() }
-IndexedR16C <-  '(' IReg16 ws? signedDecimalByte ws? ')'    { p.IR16Contents() }
+IndexedR16C <-  '(' IReg16 ws? disp ws? ')'                 { p.IR16Contents() }
 
 n <- hexByteH / hexByte0x / decimalByte
 
 nn <- hexWordH / hexWord0x
+
+disp  <- signedHexByteH / signedHexByte0x / signedDecimalByte
+signedDecimalByte <- <[-+]?[0-9]+>                            { p.DispDecimal(buffer[begin:end]) }
+signedHexByteH <- <[-+]?[0-9a-fA-F]+> "h"                     { p.DispHex(buffer[begin:end]) }
+signedHexByte0x <- <[-+]? "0x" [0-9a-fA-F]+>                  { p.Disp0xHex(buffer[begin:end]) }
+
+hexByteH    <- <hexdigit hexdigit> "h"                        { p.Nhex(buffer[begin:end]) }
+hexByte0x   <- "0x" <hexdigit hexdigit>                       { p.Nhex(buffer[begin:end]) }
+decimalByte <- <[0-9]+>                                       { p.Ndec(buffer[begin:end]) }
+
+hexWordH    <- <hexdigit hexdigit hexdigit hexdigit> "h"      { p.NNhex(buffer[begin:end]) }
+hexWord0x   <- "0x" <hexdigit hexdigit hexdigit hexdigit>     { p.NNhex(buffer[begin:end]) }
+
 
 nn_contents <- '(' nn ')'                                 { p.NNContents() }
 
@@ -144,7 +157,7 @@ Ret   <- "RET" (ws cc)?                   { p.Ret() }
 Jp    <- "JP" ws (cc sep)? Src16          { p.Jp() }
 Jr    <- "JR" ws (cc sep)? disp           { p.Jr() }
 Djnz  <- "DJNZ" ws disp                   { p.Djnz() }
-disp  <- signedDecimalByte
+
 
 IO <- IN / OUT
 
@@ -182,18 +195,9 @@ IY <- "IY"
 SP <- "SP"
 
 
-hexByteH    <- <hexdigit hexdigit> "h"                        { p.Nhex(buffer[begin:end]) }
-hexByte0x   <- "0x" <hexdigit hexdigit>                       { p.Nhex(buffer[begin:end]) }
-decimalByte <- <[0-9]+>                                       { p.Ndec(buffer[begin:end]) }
-
-hexWordH    <- <hexdigit hexdigit hexdigit hexdigit> "h"      { p.NNhex(buffer[begin:end]) }
-hexWord0x   <- "0x" <hexdigit hexdigit hexdigit hexdigit>     { p.NNhex(buffer[begin:end]) }
-
 hexdigit <- [0-9] / [[a-f]]
 
 octaldigit <- <[0-7]>                                       { p.ODigit(buffer[begin:end]) }
-
-signedDecimalByte <- <[-+]?[0-9]+>                               { p.SignedDecimalByte(buffer[begin:end]) }
 
 cc <- FT_NZ / FT_Z / FT_NC / FT_C / FT_PO / FT_PE / FT_P / FT_M
 FT_NZ <-   "NZ" { p.Conditional(Not{FT_Z}) }
