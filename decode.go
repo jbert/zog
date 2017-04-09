@@ -222,13 +222,13 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 		case 7:
 			switch y {
 			case 0:
-				inst = &LD8{I, A}
+				inst = NewLD8(I, A)
 			case 1:
-				inst = &LD8{R, A}
+				inst = NewLD8(R, A)
 			case 2:
-				inst = &LD8{A, I}
+				inst = NewLD8(A, I)
 			case 3:
-				inst = &LD8{A, R}
+				inst = NewLD8(A, R)
 			case 4:
 				inst = RRD
 			case 5:
@@ -306,9 +306,9 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			if q == 0 {
 				switch p {
 				case 0:
-					inst = &LD8{Contents{BC}, A}
+					inst = NewLD8(Contents{BC}, A)
 				case 1:
-					inst = &LD8{Contents{DE}, A}
+					inst = NewLD8(Contents{DE}, A)
 				case 2:
 					nn, err := getImmNN(inCh)
 					if err == nil {
@@ -317,15 +317,15 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 3:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD8{Contents{nn}, A}
+						inst = NewLD8(Contents{nn}, A)
 					}
 				}
 			} else {
 				switch p {
 				case 0:
-					inst = &LD8{A, Contents{BC}}
+					inst = NewLD8(A, Contents{BC})
 				case 1:
-					inst = &LD8{A, Contents{DE}}
+					inst = NewLD8(A, Contents{DE})
 				case 2:
 					nn, err := getImmNN(inCh)
 					if err == nil {
@@ -334,7 +334,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 3:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD8{A, Contents{nn}}
+						inst = NewLD8(A, Contents{nn})
 					}
 				}
 			}
@@ -345,7 +345,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				inst = &DEC16{t.LookupRP(p)}
 			}
 		case 4:
-			inst = &INC8{t.LookupR(y)}
+			inst = NewINC8(t.LookupR(y))
 		case 5:
 			inst = &DEC8{t.LookupR(y)}
 		case 6:
@@ -353,7 +353,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			r := t.LookupR(y)
 			n, err := getImmN(inCh)
 			if err == nil {
-				inst = &LD8{r, n}
+				inst = NewLD8(r, n)
 			}
 		case 7:
 			switch y {
@@ -390,7 +390,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			if _, ok := src.(IndexedContents); ok {
 				dst = t.LookupR(y)
 			}
-			inst = &LD8{dst, src}
+			inst = NewLD8(dst, src)
 		}
 	case 2:
 		info := tableALU[y]

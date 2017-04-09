@@ -12,6 +12,11 @@ func TestEncodeBasic(t *testing.T) {
 	}{
 		{[]byte{0x00}, "NOP"},
 		{[]byte{0xf3}, "DI"},
+		{[]byte{0x04}, "INC B"},
+		{[]byte{0x0C}, "INC C"},
+		{[]byte{0x34}, "INC (HL)"},
+		{[]byte{0xdd, 0x34, 0x10}, "INC (IX+10h)"},
+		{[]byte{0xfd, 0x34, 0x10}, "INC (IY+10h)"},
 		//		{[]byte{0x77}, "LD (HL), A"},
 		//		{[]byte{0xdd, 0x77, 0x10}, "LD (IX+10h), A"},
 		//		{[]byte{0xfd, 0x77, 0x10}, "LD (IY+10h), A"},

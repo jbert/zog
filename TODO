@@ -1,7 +1,18 @@
 - consider collapsing src/dst8 into loc8, ditto loc16
-  - have unary/binary embeddable instruction bases
-    - encode helper can examine loc for IX etc
-      - also need to encode displacement!
+
+- consider have unary/binary embeddable instruction bases
+  - encode helper can examine loc for IX etc
+    - also need to encode displacement!
+  - or just helper method?
+    - take optional src + dst (or nil)
+
+- implement Encode() for instructions
+
+- add encode tests (driven by 'all' table)
+
+- add round trip tests
+  - string -> assemble2instruction -> encode2bytes-> decode2instruction -> .String()2string
+  - we'll need to handle non-injective maps (bytes -> string?)
 
 - panic on write to imm8
 

@@ -33,7 +33,7 @@ func (c *Current) GetInstructions() []Instruction {
 }
 
 func (c *Current) LD8() {
-	c.inst = &LD8{c.dst8, c.src8}
+	c.inst = NewLD8(c.dst8, c.src8)
 }
 
 func (c *Current) LD16() {
@@ -50,7 +50,7 @@ func (c *Current) Ex() {
 }
 
 func (c *Current) Inc8() {
-	c.inst = &INC8{c.loc8}
+	c.inst = NewINC8(c.loc8)
 }
 func (c *Current) Inc16() {
 	c.inst = &INC16{c.loc16}

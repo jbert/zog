@@ -11,8 +11,11 @@ type Instruction interface {
 }
 
 type LD8 struct {
-	dst Dst8
-	src Src8
+	InstBin8
+}
+
+func NewLD8(dst Dst8, src Src8) *LD8 {
+	return &LD8{InstBin8{src: src, dst: dst}}
 }
 
 func (l *LD8) String() string {
@@ -23,14 +26,23 @@ func (l *LD8) Encode() []byte {
 }
 
 type INC8 struct {
-	l Loc8
+	InstU8
 }
 
+func NewINC8(l Loc8) *INC8 {
+	return &INC8{InstU8{l: l}}
+}
 func (i *INC8) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
 func (i *INC8) Encode() []byte {
-	return []byte{}
+	i.inspect()
+	if i.eTable != tableR {
+		panic("Non-tableR INC8")
+	}
+	b := encodeXYZ(0, i.idxTable, 4)
+	fmt.Printf("JB - b %d x %d y %d z %d\n", b, 0, i.idxTable, 4)
+	return i.encodeHelper(b)
 }
 
 type DEC8 struct {
