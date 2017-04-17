@@ -58,7 +58,7 @@ func (c *Current) Inc16() {
 }
 
 func (c *Current) Dec8() {
-	c.inst = &DEC8{c.loc8}
+	c.inst = NewDEC8(c.loc8)
 }
 func (c *Current) Dec16() {
 	c.inst = &DEC16{c.loc16}

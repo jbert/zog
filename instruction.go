@@ -54,14 +54,23 @@ func (i *INC8) Encode() []byte {
 }
 
 type DEC8 struct {
-	l Loc8
+	InstU8
 }
 
+func NewDEC8(l Loc8) *DEC8 {
+	return &DEC8{InstU8{l: l}}
+}
 func (d *DEC8) String() string {
 	return fmt.Sprintf("DEC %s", d.l)
 }
 func (d *DEC8) Encode() []byte {
-	return []byte{}
+	d.inspect()
+	if d.lInfo.eTable != tableR {
+		panic("Non-tableR DEC8")
+	}
+	b := encodeXYZ(0, d.lInfo.idxTable, 5)
+	fmt.Printf("JB x %d y %d z %d: b %02X\n", 0, d.lInfo.idxTable, 5, b)
+	return idxEncodeHelper(b, d.idx)
 }
 
 type LD16 struct {

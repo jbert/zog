@@ -2,6 +2,9 @@
 
 DONE - add encode tests (driven by 'all' table)
 
+- find a way to share Encode() between simple InstU8?
+  (e.g. INC/DEC/ALU)
+
 
 DONE - imple inspect/encodeHelper  for InstBin8
   - refactor (interface?) to share code with InstU8

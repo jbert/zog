@@ -347,7 +347,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 		case 4:
 			inst = NewINC8(t.LookupR(y))
 		case 5:
-			inst = &DEC8{t.LookupR(y)}
+			inst = NewDEC8(t.LookupR(y))
 		case 6:
 			// Lookup before immmediate, so we handle IX/IY index before immediate N
 			r := t.LookupR(y)
