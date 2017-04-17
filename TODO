@@ -1,14 +1,21 @@
+- implement Encode() for instructions
+
+DONE - add encode tests (driven by 'all' table)
+
+
+DONE - imple inspect/encodeHelper  for InstBin8
+  - refactor (interface?) to share code with InstU8
+
+- allow 0x10 and 10h representations for IX offset, for encode testing
+
 - consider collapsing src/dst8 into loc8, ditto loc16
 
-- consider have unary/binary embeddable instruction bases
+DONE - consider have unary/binary embeddable instruction bases
   - encode helper can examine loc for IX etc
     - also need to encode displacement!
   - or just helper method?
     - take optional src + dst (or nil)
 
-- implement Encode() for instructions
-
-- add encode tests (driven by 'all' table)
 
 - add round trip tests
   - string -> assemble2instruction -> encode2bytes-> decode2instruction -> .String()2string

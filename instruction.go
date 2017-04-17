@@ -15,14 +15,23 @@ type LD8 struct {
 }
 
 func NewLD8(dst Dst8, src Src8) *LD8 {
-	return &LD8{InstBin8{src: src, dst: dst}}
+	return &LD8{InstBin8{dst: dst, src: src}}
 }
 
 func (l *LD8) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
 }
 func (l *LD8) Encode() []byte {
-	return []byte{}
+	l.inspect()
+	if l.dstInfo.eTable != tableR {
+		panic("Non-tableR src in LD8")
+	}
+	if l.srcInfo.eTable != tableR {
+		panic("Non-tableR dst in LD8")
+	}
+	b := encodeXYZ(1, l.dstInfo.idxTable, l.srcInfo.idxTable)
+	fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, l.srcInfo.idxTable, b)
+	return idxEncodeHelper(b, l.idx)
 }
 
 type INC8 struct {
@@ -37,12 +46,11 @@ func (i *INC8) String() string {
 }
 func (i *INC8) Encode() []byte {
 	i.inspect()
-	if i.eTable != tableR {
+	if i.lInfo.eTable != tableR {
 		panic("Non-tableR INC8")
 	}
-	b := encodeXYZ(0, i.idxTable, 4)
-	fmt.Printf("JB - b %d x %d y %d z %d\n", b, 0, i.idxTable, 4)
-	return i.encodeHelper(b)
+	b := encodeXYZ(0, i.lInfo.idxTable, 4)
+	return idxEncodeHelper(b, i.idx)
 }
 
 type DEC8 struct {

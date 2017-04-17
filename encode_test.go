@@ -12,14 +12,31 @@ func TestEncodeBasic(t *testing.T) {
 	}{
 		{[]byte{0x00}, "NOP"},
 		{[]byte{0xf3}, "DI"},
+
 		{[]byte{0x04}, "INC B"},
 		{[]byte{0x0C}, "INC C"},
 		{[]byte{0x34}, "INC (HL)"},
 		{[]byte{0xdd, 0x34, 0x10}, "INC (IX+0x10)"},
 		{[]byte{0xfd, 0x34, 0x10}, "INC (IY+0x10)"},
-		//		{[]byte{0x77}, "LD (HL), A"},
-		//		{[]byte{0xdd, 0x77, 0x10}, "LD (IX+10h), A"},
-		//		{[]byte{0xfd, 0x77, 0x10}, "LD (IY+10h), A"},
+
+		{[]byte{0x41}, "LD B, C"},
+		{[]byte{0x51}, "LD D, C"},
+
+		{[]byte{0x46}, "LD B, (HL)"},
+		{[]byte{0xdd, 0x46, 0x10}, "LD B, (IX+10h)"},
+		{[]byte{0xfd, 0x46, 0x10}, "LD B, (IY+10h)"},
+
+		{[]byte{0x70}, "LD (HL), B"},
+		{[]byte{0xdd, 0x70, 0x10}, "LD (IX+10h), B"},
+		{[]byte{0xfd, 0x70, 0x10}, "LD (IY+10h), B"},
+
+		{[]byte{0x7e}, "LD A, (HL)"},
+		{[]byte{0xdd, 0x7e, 0x10}, "LD A, (IX+10h)"},
+		{[]byte{0xfd, 0x7e, 0x10}, "LD A, (IY+10h)"},
+
+		{[]byte{0x77}, "LD (HL), A"},
+		{[]byte{0xdd, 0x77, 0x10}, "LD (IX+10h), A"},
+		{[]byte{0xfd, 0x77, 0x10}, "LD (IY+10h), A"},
 	}
 
 	for _, tc := range testCases {
@@ -27,13 +44,11 @@ func TestEncodeBasic(t *testing.T) {
 	}
 }
 
-/*
 func TestEncodeAll(t *testing.T) {
 	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
 		testEncodeOne(t, byteForm, stringForm)
 	})
 }
-*/
 
 func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	hexBuf := bufToHex(byteForm)

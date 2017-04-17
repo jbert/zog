@@ -2,9 +2,27 @@ package zog
 
 import "fmt"
 
+type loc8Info struct {
+	eTable   tableType
+	idxTable byte
+}
+
+type idxInfo struct {
+	isPrefix bool
+	isIY     bool // If idxPrefix is true, else IX
+	hasDisp  bool // Redundant?
+	idxDisp  byte
+}
+
 type InstBin8 struct {
 	dst Dst8
 	src Src8
+
+	dstInfo loc8Info
+	srcInfo loc8Info
+	idx     idxInfo
+
+	base byte
 }
 
 type tableType int
@@ -18,71 +36,84 @@ type InstU8 struct {
 
 	base byte
 
-	eTable   tableType
-	idxTable byte
+	lInfo loc8Info
 
-	isPrefix bool
-	isIY     bool // If idxPrefix is true, else IX
-	hasDisp  bool // Redundant?
-	idxDisp  byte
+	idx idxInfo
 }
 
-func (u *InstU8) inspect() {
-
-	iContents, ok := u.l.(IndexedContents)
+func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
+	iContents, ok := l.(IndexedContents)
 	if ok {
 		r16, ok := iContents.addr.(R16)
 		if !ok {
 			panic("Non-r16 addr in indexed content")
 		}
 
-		u.eTable = tableR
-		u.idxTable = findInTableR(Contents{HL})
+		info.eTable = tableR
+		info.idxTable = findInTableR(Contents{HL})
 
-		u.isPrefix = true
-		u.isIY = r16 == IY // Else IX
+		idx.isPrefix = true
+		idx.isIY = r16 == IY // Else IX
 
-		u.hasDisp = true
-		u.idxDisp = byte(iContents.d)
+		idx.hasDisp = true
+		idx.idxDisp = byte(iContents.d)
 		return
 	}
 
-	contents, ok := u.l.(Contents)
+	contents, ok := l.(Contents)
 	if ok {
 		if contents.addr == HL {
-			u.eTable = tableR
-			u.idxTable = findInTableR(Contents{HL})
+			info.eTable = tableR
+			info.idxTable = findInTableR(Contents{HL})
 			return
 		} else {
 			panic("Non-HL contents in R8")
 		}
 	}
 
-	r8, ok := u.l.(R8)
+	r8, ok := l.(R8)
 	if ok {
-		u.eTable = tableR
-		u.idxTable = findInTableR(r8)
+		info.eTable = tableR
+		info.idxTable = findInTableR(r8)
 		return
 	}
 
-	panic(fmt.Sprintf("WTF? %T", u.l))
+	panic(fmt.Sprintf("WTF? %T", l))
 }
 
-func (u *InstU8) encodeHelper(base byte) []byte {
+func (u *InstU8) inspect() {
+	inspectLoc8(u.l, &u.lInfo, &u.idx)
+}
+
+func idxEncodeHelper(base byte, idx idxInfo) []byte {
 	encoded := []byte{base}
-	if u.isPrefix {
+	if idx.isPrefix {
 		idxPrefix := byte(0xdd)
-		if u.isIY {
+		if idx.isIY {
 			idxPrefix = 0xfd
 		}
 		encoded = append([]byte{idxPrefix}, encoded...)
 
-		if u.hasDisp {
-			encoded = append(encoded, u.idxDisp)
+		if idx.hasDisp {
+			encoded = append(encoded, idx.idxDisp)
 		}
 	}
 
 	return encoded
+}
+
+func (b *InstBin8) inspect() {
+	lSrc, ok := b.src.(Loc8)
+	if !ok {
+		panic("JB1")
+	}
+	inspectLoc8(lSrc, &b.srcInfo, &b.idx)
+
+	lDst, ok := b.dst.(Loc8)
+	if !ok {
+		panic("JB2")
+	}
+	inspectLoc8(lDst, &b.dstInfo, &b.idx)
 }
 
 // See decomposeByte in decode.go
