@@ -282,7 +282,13 @@ func (jp *JP) Encode() []byte {
 			return idxEncodeHelper(buf, jp.idx)
 		}
 	}
-	return []byte{}
+	if jp.lInfo.ltype != Immediate {
+		panic("Non-immediate (or direct HL-like) JP")
+	}
+	y := findInTableCC(jp.c)
+	buf := []byte{encodeXYZ(3, y, 2)}
+	buf = append(buf, jp.lInfo.imm16...)
+	return buf
 }
 
 type CALL struct {
