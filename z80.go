@@ -12,8 +12,8 @@ type Current struct {
 	src8 Loc8
 
 	loc16 Loc16
-	dst16 Dst16
-	src16 Src16
+	dst16 Loc16
+	src16 Loc16
 
 	r8          R8
 	r16         R16
@@ -21,7 +21,7 @@ type Current struct {
 	odigit      byte
 	disp        Disp
 	cc          Conditional
-	nn          Src16
+	nn          Loc16
 	n           Loc8
 
 	inst Instruction
@@ -282,7 +282,7 @@ func (c *Current) Loc16() {
 
 func (c *Current) Dst16() {
 	if c.nn != nil {
-		nn_contents, ok := c.nn.(Dst16)
+		nn_contents, ok := c.nn.(Loc16)
 		if !ok {
 			panic("Dst16 set to NN but not contents")
 		}

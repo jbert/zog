@@ -5,15 +5,6 @@ import (
 	"strings"
 )
 
-type Src16 interface {
-	Read16(z *Zog) (uint16, error)
-	String() string
-}
-type Dst16 interface {
-	Write16(z *Zog, nn uint16) error
-	String() string
-}
-
 type Loc8 interface {
 	Read8(z *Zog) (byte, error)
 	Write8(z *Zog, n byte) error
@@ -173,7 +164,7 @@ func (r R16) Write16(z *Zog, nn uint16) error {
 }
 
 type Contents struct {
-	addr Src16
+	addr Loc16
 }
 
 func (c Contents) String() string {
@@ -204,7 +195,7 @@ func (c Contents) Write16(z *Zog, nn uint16) error {
 }
 
 type IndexedContents struct {
-	addr Src16
+	addr Loc16
 	d    Disp
 }
 
@@ -243,6 +234,9 @@ func (nn Imm16) String() string {
 func (nn Imm16) Read16(z *Zog) (uint16, error) {
 	return uint16(nn), nil
 }
+func (nn Imm16) Write16(z *Zog, n uint16) error {
+	return fmt.Errorf("Attempt to write [%02X] to immediate 16bit value [%04X]", n, nn)
+}
 
 type Imm8 byte
 
@@ -253,7 +247,7 @@ func (n Imm8) Read8(z *Zog) (byte, error) {
 	return byte(n), nil
 }
 func (n Imm8) Write8(z *Zog, tmp byte) error {
-	panic("Attempt to write to immediate 8bit value")
+	return fmt.Errorf("Attempt to write [%02X] to immediate 8bit value [%04X]", n, tmp)
 }
 
 type Conditional interface {

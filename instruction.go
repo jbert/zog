@@ -73,8 +73,8 @@ func (d *DEC8) Encode() []byte {
 }
 
 type LD16 struct {
-	dst Dst16
-	src Src16
+	dst Loc16
+	src Loc16
 }
 
 func (l *LD16) String() string {
@@ -85,8 +85,8 @@ func (l *LD16) Encode() []byte {
 }
 
 type ADD16 struct {
-	dst Dst16
-	src Src16
+	dst Loc16
+	src Loc16
 }
 
 func (a *ADD16) String() string {
@@ -97,8 +97,8 @@ func (a *ADD16) Encode() []byte {
 }
 
 type ADC16 struct {
-	dst Dst16
-	src Src16
+	dst Loc16
+	src Loc16
 }
 
 func (a *ADC16) String() string {
@@ -109,8 +109,8 @@ func (a *ADC16) Encode() []byte {
 }
 
 type SBC16 struct {
-	dst Dst16
-	src Src16
+	dst Loc16
+	src Loc16
 }
 
 func (s *SBC16) String() string {
@@ -132,16 +132,7 @@ func (i *INC16) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
 func (i *INC16) Encode() []byte {
-	l := i.l
-	if l == IX {
-		i.idx.isPrefix = true
-		l = HL
-	} else if l == IY {
-		i.idx.isPrefix = true
-		i.idx.isIY = true
-		l = HL
-	}
-	p := findInTableRP(l)
+	p := lookupLoc16(i.l, &i.idx)
 	b := encodeXPQZ(0, p, 0, 3)
 	return idxEncodeHelper([]byte{b}, i.idx)
 }
@@ -158,8 +149,8 @@ func (d *DEC16) Encode() []byte {
 }
 
 type EX struct {
-	dst Dst16
-	src Src16
+	dst Loc16
+	src Loc16
 }
 
 func (ex *EX) String() string {
@@ -210,7 +201,7 @@ func (j *JR) Encode() []byte {
 
 type JP struct {
 	c    Conditional
-	addr Src16
+	addr Loc16
 }
 
 func (jp *JP) String() string {
@@ -226,7 +217,7 @@ func (jp *JP) Encode() []byte {
 
 type CALL struct {
 	c    Conditional
-	addr Src16
+	addr Loc16
 }
 
 func (c *CALL) String() string {
@@ -265,7 +256,7 @@ func (i *IN) Encode() []byte {
 }
 
 type PUSH struct {
-	src Src16
+	src Loc16
 }
 
 func (p *PUSH) String() string {
@@ -276,7 +267,7 @@ func (p *PUSH) Encode() []byte {
 }
 
 type POP struct {
-	dst Dst16
+	dst Loc16
 }
 
 func (p *POP) String() string {

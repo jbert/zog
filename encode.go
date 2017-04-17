@@ -41,11 +41,6 @@ type InstU8 struct {
 	idx idxInfo
 }
 
-type InstU16 struct {
-	l   Loc16
-	idx idxInfo
-}
-
 func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 	iContents, ok := l.(IndexedContents)
 	if ok {
@@ -88,6 +83,23 @@ func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 
 func (u *InstU8) inspect() {
 	inspectLoc8(u.l, &u.lInfo, &u.idx)
+}
+
+type InstU16 struct {
+	l   Loc16
+	idx idxInfo
+}
+
+func lookupLoc16(l Loc16, idx *idxInfo) byte {
+	if l == IX {
+		idx.isPrefix = true
+		l = HL
+	} else if l == IY {
+		idx.isPrefix = true
+		idx.isIY = true
+		l = HL
+	}
+	return findInTableRP(l)
 }
 
 func idxEncodeHelper(base []byte, idx idxInfo) []byte {
