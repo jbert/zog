@@ -10,6 +10,13 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0x18, 0xf0}, "JR -10h"},
+		{[]byte{0x20, 0xf0}, "JR NZ, -10h"},
+		{[]byte{0x28, 0xf0}, "JR Z, -10h"},
+		{[]byte{0x08}, "EX AF, AF'"},
+
+		{[]byte{0x10, 0xf0}, "DJNZ -10h"},
+
 		{[]byte{0xcb, 0xd0}, "SET 2, B"},
 		{[]byte{0xcb, 0xd6}, "SET 2, (HL)"},
 		{[]byte{0xdd, 0xcb, 0xd6, 0x10}, "SET 2, (IX+0x10)"},

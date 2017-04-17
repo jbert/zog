@@ -148,3 +148,13 @@ func findInTableALU(name string) byte {
 	}
 	panic("Not found - bad encode")
 }
+
+func findInTableCC(c Conditional) byte {
+	for i := range tableCC {
+		// String compare
+		if tableCC[i].String() == c.String() {
+			return byte(i)
+		}
+	}
+	panic("Not found - bad encode")
+}

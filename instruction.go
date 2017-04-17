@@ -151,6 +151,9 @@ func (ex *EX) String() string {
 	return fmt.Sprintf("EX %s, %s", ex.dst, ex.src)
 }
 func (ex *EX) Encode() []byte {
+	if ex.dst == AF && ex.src == AF_PRIME {
+		return []byte{0x08}
+	}
 	return []byte{}
 }
 
@@ -162,7 +165,8 @@ func (d *DJNZ) String() string {
 	return fmt.Sprintf("DJNZ %s", d.d)
 }
 func (d *DJNZ) Encode() []byte {
-	return []byte{}
+	b := encodeXYZ(0, 2, 0)
+	return []byte{b, byte(d.d)}
 }
 
 type JR struct {
@@ -177,8 +181,16 @@ func (j *JR) String() string {
 		return fmt.Sprintf("JR %s, %s", j.c, j.d)
 	}
 }
-func (jr *JR) Encode() []byte {
-	return []byte{}
+func (j *JR) Encode() []byte {
+	var y byte
+	if j.c == True || j.c == nil {
+		y = 3
+	} else {
+		y = findInTableCC(j.c)
+		y += 4
+	}
+	b := encodeXYZ(0, y, 0)
+	return []byte{b, byte(j.d)}
 }
 
 type JP struct {
