@@ -225,7 +225,7 @@ func (ex *EX) Encode() []byte {
 
 		var info loc16Info
 		var idx idxInfo
-		inspectLoc16(ex.src, &info, &idx)
+		inspectLoc16(ex.src, &info, &idx, false)
 		buf := []byte{encodeXYZ(3, 4, 3)}
 		return idxEncodeHelper(buf, idx)
 	} else if ex.dst == DE && ex.src == HL {
@@ -328,8 +328,13 @@ func (c *CALL) String() string {
 }
 func (c *CALL) Encode() []byte {
 	c.inspect()
-	y := findInTableCC(c.c)
-	buf := []byte{encodeXYZ(3, y, 4)}
+	var buf []byte
+	if c.c == nil || c.c == True {
+		buf = []byte{encodeXPQZ(3, 0, 1, 5)}
+	} else {
+		y := findInTableCC(c.c)
+		buf = []byte{encodeXYZ(3, y, 4)}
+	}
 	buf = append(buf, c.lInfo.imm16...)
 	return buf
 }
@@ -369,14 +374,21 @@ func (i *IN) Encode() []byte {
 }
 
 type PUSH struct {
-	src Loc16
+	InstU16
 }
 
+func NewPUSH(l Loc16) *PUSH {
+	return &PUSH{InstU16{l: l}}
+}
 func (p *PUSH) String() string {
-	return fmt.Sprintf("PUSH %s", p.src)
+	return fmt.Sprintf("PUSH %s", p.l)
 }
 func (p *PUSH) Encode() []byte {
-	return []byte{}
+	p.inspectRP2()
+	if p.lInfo.ltype != tableRP2 {
+		panic("Non-tableRP PUSH")
+	}
+	return []byte{encodeXPQZ(3, p.lInfo.idxTable, 0, 5)}
 }
 
 type POP struct {
@@ -398,7 +410,8 @@ func (r *RST) String() string {
 	return fmt.Sprintf("RST %d", r.addr)
 }
 func (r *RST) Encode() []byte {
-	return []byte{}
+	y := r.addr / 8
+	return []byte{encodeXYZ(3, y, 7)}
 }
 
 type RET struct {
@@ -442,12 +455,18 @@ func (a accum) String() string {
 }
 func (a accum) Encode() []byte {
 	a.inspect()
-	if a.lInfo.ltype != tableR {
-		panic("Non-tableR Accum")
-	}
 	y := findInTableALU(a.name)
-	b := encodeXYZ(2, y, a.lInfo.idxTable)
-	return idxEncodeHelper([]byte{b}, a.idx)
+	var buf []byte
+	switch a.lInfo.ltype {
+	case tableR:
+		buf = []byte{encodeXYZ(2, y, a.lInfo.idxTable)}
+	case Immediate:
+		buf = []byte{encodeXYZ(3, y, 6)}
+		buf = append(buf, a.lInfo.imm8)
+	default:
+		panic("Unknown accum location type")
+	}
+	return idxEncodeHelper(buf, a.idx)
 }
 
 type rot struct {

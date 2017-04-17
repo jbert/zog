@@ -152,6 +152,15 @@ func findInTableRP(l Loc16) byte {
 	panic("Not found - bad encode")
 }
 
+func findInTableRP2(l Loc16) byte {
+	for i := range baseTableRP2 {
+		if baseTableRP2[i].String() == l.String() {
+			return byte(i)
+		}
+	}
+	panic("Not found - bad encode")
+}
+
 func findInTableALU(name string) byte {
 	for i, info := range tableALU {
 		if info.name == name {

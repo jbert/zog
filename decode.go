@@ -455,7 +455,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			}
 		case 5:
 			if q == 0 {
-				inst = &PUSH{t.LookupRP2(p)}
+				inst = NewPUSH(t.LookupRP2(p))
 			} else {
 				switch p {
 				case 0:
