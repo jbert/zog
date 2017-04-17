@@ -21,16 +21,6 @@ var tableBLI [][]Instruction = [][]Instruction{
 	[]Instruction{LDDR, CPDR, INDR, OTDR},
 }
 
-func findInTableR(l Loc8) byte {
-	for i := range baseTableR {
-		// String compare to get (HL) to work
-		if baseTableR[i].String() == l.String() {
-			return byte(i)
-		}
-	}
-	panic("Not found - bad encode")
-}
-
 func NewDecodeTable(inCh chan byte) *DecodeTable {
 	return &DecodeTable{inCh: inCh}
 }
@@ -138,4 +128,23 @@ var tableROT []RotInfo = []RotInfo{
 	{"SRA"},
 	{"SLL"},
 	{"SRL"},
+}
+
+func findInTableR(l Loc8) byte {
+	for i := range baseTableR {
+		// String compare to get (HL) to work
+		if baseTableR[i].String() == l.String() {
+			return byte(i)
+		}
+	}
+	panic("Not found - bad encode")
+}
+
+func findInTableALU(name string) byte {
+	for i, info := range tableALU {
+		if info.name == name {
+			return byte(i)
+		}
+	}
+	panic("Not found - bad encode")
 }

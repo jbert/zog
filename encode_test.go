@@ -10,6 +10,16 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0x80}, "ADD A, B"},
+		{[]byte{0x86}, "ADD A, (HL)"},
+		{[]byte{0xdd, 0x86, 0x10}, "ADD A, (IX+0x10)"},
+		{[]byte{0xfd, 0x86, 0x10}, "ADD A, (IY+0x10)"},
+
+		{[]byte{0xa0}, "AND B"},
+		{[]byte{0xa6}, "AND (HL)"},
+		{[]byte{0xdd, 0xa6, 0x10}, "AND (IX+0x10)"},
+		{[]byte{0xfd, 0xa6, 0x10}, "AND (IY+0x10)"},
+
 		{[]byte{0x05}, "DEC B"},
 		{[]byte{0x0D}, "DEC C"},
 		{[]byte{0x35}, "DEC (HL)"},
@@ -18,6 +28,7 @@ func TestEncodeBasic(t *testing.T) {
 
 		{[]byte{0x00}, "NOP"},
 		{[]byte{0xf3}, "DI"},
+		{[]byte{0x76}, "HALT"},
 
 		{[]byte{0x04}, "INC B"},
 		{[]byte{0x0C}, "INC C"},

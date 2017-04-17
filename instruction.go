@@ -69,7 +69,6 @@ func (d *DEC8) Encode() []byte {
 		panic("Non-tableR DEC8")
 	}
 	b := encodeXYZ(0, d.lInfo.idxTable, 5)
-	fmt.Printf("JB x %d y %d z %d: b %02X\n", 0, d.lInfo.idxTable, 5, b)
 	return idxEncodeHelper(b, d.idx)
 }
 
@@ -286,28 +285,35 @@ func (r *RET) Encode() []byte {
 	return []byte{}
 }
 
-func NewAccum(name string, src Loc8) *accum {
+func NewAccum(name string, l Loc8) *accum {
 	// TODO: lookup func by name, panic on unknown
-	return &accum{name: name, src: src}
+	return &accum{name: name, InstU8: InstU8{l: l}}
 }
 
 type accumFunc func(a, b byte) byte
 type accum struct {
 	//	f    AccumFunc
-	src  Loc8
+	InstU8
 	name string
 }
 
 func (a accum) String() string {
 	switch a.name {
 	case "ADD", "ADC", "SBC":
-		return fmt.Sprintf("%s A, %s", a.name, a.src)
+		return fmt.Sprintf("%s A, %s", a.name, a.l)
 	default:
-		return fmt.Sprintf("%s %s", a.name, a.src)
+		return fmt.Sprintf("%s %s", a.name, a.l)
 	}
 }
 func (a accum) Encode() []byte {
-	return []byte{}
+	a.inspect()
+	if a.lInfo.eTable != tableR {
+		panic("Non-tableR Accum")
+	}
+	y := findInTableALU(a.name)
+	b := encodeXYZ(2, y, a.lInfo.idxTable)
+	fmt.Printf("JB x %d y %d z %d: b %02X\n", 2, y, a.lInfo.idxTable, b)
+	return idxEncodeHelper(b, a.idx)
 }
 
 type rot struct {
