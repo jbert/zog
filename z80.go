@@ -47,7 +47,7 @@ func (c *Current) Pop() {
 	c.inst = &POP{c.dst16}
 }
 func (c *Current) Ex() {
-	c.inst = &EX{c.dst16, c.src16}
+	c.inst = NewEX(c.dst16, c.src16)
 }
 
 func (c *Current) Inc8() {

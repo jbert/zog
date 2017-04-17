@@ -208,8 +208,11 @@ func (d *DEC16) Encode() []byte {
 }
 
 type EX struct {
-	dst Loc16
-	src Loc16
+	InstBin16
+}
+
+func NewEX(dst, src Loc16) *EX {
+	return &EX{InstBin16: InstBin16{dst: dst, src: src}}
 }
 
 func (ex *EX) String() string {
@@ -218,8 +221,19 @@ func (ex *EX) String() string {
 func (ex *EX) Encode() []byte {
 	if ex.dst == AF && ex.src == AF_PRIME {
 		return []byte{0x08}
+	} else if ex.dst.String() == (Contents{SP}).String() {
+
+		var info loc16Info
+		var idx idxInfo
+		inspectLoc16(ex.src, &info, &idx)
+		buf := []byte{encodeXYZ(3, 4, 3)}
+		return idxEncodeHelper(buf, idx)
+	} else if ex.dst == DE && ex.src == HL {
+		// EX DE,HL is an excpetion to the IX/IY rule
+		return []byte{encodeXYZ(3, 5, 3)}
 	}
-	return []byte{}
+
+	panic("Unrecognised EX instruction")
 }
 
 type DJNZ struct {
@@ -285,8 +299,14 @@ func (jp *JP) Encode() []byte {
 	if jp.lInfo.ltype != Immediate {
 		panic("Non-immediate (or direct HL-like) JP")
 	}
-	y := findInTableCC(jp.c)
-	buf := []byte{encodeXYZ(3, y, 2)}
+
+	var buf []byte
+	if jp.c == True || jp.c == nil {
+		buf = []byte{encodeXYZ(3, 0, 3)}
+	} else {
+		y := findInTableCC(jp.c)
+		buf = []byte{encodeXYZ(3, y, 2)}
+	}
 	buf = append(buf, jp.lInfo.imm16...)
 	return buf
 }
@@ -316,7 +336,12 @@ func (o *OUT) String() string {
 	return fmt.Sprintf("OUT (%s), %s", o.port, o.value)
 }
 func (o *OUT) Encode() []byte {
-	return []byte{}
+	if o.port == C {
+		panic("impl")
+	} else {
+		imm8 := o.port.(Imm8)
+		return []byte{encodeXYZ(3, 2, 3), byte(imm8)}
+	}
 }
 
 type IN struct {
@@ -328,7 +353,12 @@ func (i *IN) String() string {
 	return fmt.Sprintf("IN %s, (%s)", i.dst, i.port)
 }
 func (i *IN) Encode() []byte {
-	return []byte{}
+	if i.port == C {
+		panic("impl")
+	} else {
+		imm8 := i.port.(Imm8)
+		return []byte{encodeXYZ(3, 3, 3), byte(imm8)}
+	}
 }
 
 type PUSH struct {

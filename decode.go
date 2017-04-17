@@ -276,7 +276,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			case 0:
 				inst = NOP
 			case 1:
-				inst = &EX{AF, AF_PRIME}
+				inst = NewEX(AF, AF_PRIME)
 			case 2:
 				d, err := getImmd(inCh)
 				if err == nil {
@@ -439,10 +439,10 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 					inst = &IN{A, n}
 				}
 			case 4:
-				inst = &EX{Contents{SP}, hl}
+				inst = NewEX(Contents{SP}, hl)
 			case 5:
 				// We use real HL for this, it is an exception
-				inst = &EX{DE, HL}
+				inst = NewEX(DE, HL)
 			case 6:
 				inst = DI
 			case 7:
