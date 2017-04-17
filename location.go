@@ -5,15 +5,6 @@ import (
 	"strings"
 )
 
-type Src8 interface {
-	Read8(z *Zog) (byte, error)
-	String() string
-}
-type Dst8 interface {
-	Write8(z *Zog, n byte) error
-	String() string
-}
-
 type Src16 interface {
 	Read16(z *Zog) (uint16, error)
 	String() string
@@ -260,6 +251,9 @@ func (n Imm8) String() string {
 }
 func (n Imm8) Read8(z *Zog) (byte, error) {
 	return byte(n), nil
+}
+func (n Imm8) Write8(z *Zog, tmp byte) error {
+	panic("Attempt to write to immediate 8bit value")
 }
 
 type Conditional interface {

@@ -8,8 +8,8 @@ import (
 
 type Current struct {
 	loc8 Loc8
-	dst8 Dst8
-	src8 Src8
+	dst8 Loc8
+	src8 Loc8
 
 	loc16 Loc16
 	dst16 Dst16
@@ -22,7 +22,7 @@ type Current struct {
 	disp        Disp
 	cc          Conditional
 	nn          Src16
-	n           Src8
+	n           Loc8
 
 	inst Instruction
 
@@ -231,7 +231,7 @@ func (c *Current) Dst8() {
 		return
 	}
 	if c.nn != nil {
-		nn_contents, ok := c.nn.(Dst8)
+		nn_contents, ok := c.nn.(Loc8)
 		if !ok {
 			panic("Dst8 set to NN but not contents")
 		}
@@ -257,7 +257,7 @@ func (c *Current) Src8() {
 		return
 	}
 	if c.nn != nil {
-		nn_contents, ok := c.nn.(Src8)
+		nn_contents, ok := c.nn.(Loc8)
 		if !ok {
 			panic("Dst16 set to NN but not contents")
 		}

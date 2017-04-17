@@ -50,11 +50,13 @@ func TestEncodeBasic(t *testing.T) {
 	}
 }
 
+/*
 func TestEncodeAll(t *testing.T) {
 	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
 		testEncodeOne(t, byteForm, stringForm)
 	})
 }
+*/
 
 func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	hexBuf := bufToHex(byteForm)

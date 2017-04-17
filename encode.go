@@ -15,8 +15,8 @@ type idxInfo struct {
 }
 
 type InstBin8 struct {
-	dst Dst8
-	src Src8
+	dst Loc8
+	src Loc8
 
 	dstInfo loc8Info
 	srcInfo loc8Info
@@ -103,17 +103,8 @@ func idxEncodeHelper(base byte, idx idxInfo) []byte {
 }
 
 func (b *InstBin8) inspect() {
-	lSrc, ok := b.src.(Loc8)
-	if !ok {
-		panic("JB1")
-	}
-	inspectLoc8(lSrc, &b.srcInfo, &b.idx)
-
-	lDst, ok := b.dst.(Loc8)
-	if !ok {
-		panic("JB2")
-	}
-	inspectLoc8(lDst, &b.dstInfo, &b.idx)
+	inspectLoc8(b.src, &b.srcInfo, &b.idx)
+	inspectLoc8(b.dst, &b.dstInfo, &b.idx)
 }
 
 // See decomposeByte in decode.go

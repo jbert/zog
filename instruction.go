@@ -14,7 +14,7 @@ type LD8 struct {
 	InstBin8
 }
 
-func NewLD8(dst Dst8, src Src8) *LD8 {
+func NewLD8(dst Loc8, src Loc8) *LD8 {
 	return &LD8{InstBin8{dst: dst, src: src}}
 }
 
@@ -215,8 +215,8 @@ func (c *CALL) Encode() []byte {
 }
 
 type OUT struct {
-	port  Src8
-	value Src8
+	port  Loc8
+	value Loc8
 }
 
 func (o *OUT) String() string {
@@ -227,8 +227,8 @@ func (o *OUT) Encode() []byte {
 }
 
 type IN struct {
-	dst  Dst8
-	port Src8
+	dst  Loc8
+	port Loc8
 }
 
 func (i *IN) String() string {
@@ -286,7 +286,7 @@ func (r *RET) Encode() []byte {
 	return []byte{}
 }
 
-func NewAccum(name string, src Src8) *accum {
+func NewAccum(name string, src Loc8) *accum {
 	// TODO: lookup func by name, panic on unknown
 	return &accum{name: name, src: src}
 }
@@ -294,7 +294,7 @@ func NewAccum(name string, src Src8) *accum {
 type accumFunc func(a, b byte) byte
 type accum struct {
 	//	f    AccumFunc
-	src  Src8
+	src  Loc8
 	name string
 }
 
