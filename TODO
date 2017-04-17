@@ -1,5 +1,11 @@
 - implement Encode() for instructions
 
+- might have displacement byte in the wrong place for CB-prefix:
+  "These instructions have the following format:
+    DD or FD prefix,  CB,  displacement byte,  opcode"
+  - check by hand against z80asm
+  - ??? have autotests run z80asm/z80dasm and compare?
+
 DONE - add encode tests (driven by 'all' table)
 
 - find a way to share Encode() between simple InstU8?
@@ -23,6 +29,7 @@ DONE - consider have unary/binary embeddable instruction bases
 - add round trip tests
   - string -> assemble2instruction -> encode2bytes-> decode2instruction -> .String()2string
   - we'll need to handle non-injective maps (bytes -> string?)
+  - needed to help trap the indexed CB prefix bug (displacement in wrong place)
 
 - panic on write to imm8
 

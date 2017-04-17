@@ -85,8 +85,8 @@ func (u *InstU8) inspect() {
 	inspectLoc8(u.l, &u.lInfo, &u.idx)
 }
 
-func idxEncodeHelper(base byte, idx idxInfo) []byte {
-	encoded := []byte{base}
+func idxEncodeHelper(base []byte, idx idxInfo) []byte {
+	encoded := base
 	if idx.isPrefix {
 		idxPrefix := byte(0xdd)
 		if idx.isIY {

@@ -142,11 +142,11 @@ func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 		info := tableROT[y]
 		inst = NewRot(info.name, t.LookupR(z))
 	case 1:
-		inst = &BIT{y, t.LookupR(z)}
+		inst = NewBIT(y, t.LookupR(z))
 	case 2:
-		inst = &RES{y, t.LookupR(z)}
+		inst = NewRES(y, t.LookupR(z))
 	case 3:
-		inst = &SET{y, t.LookupR(z)}
+		inst = NewSET(y, t.LookupR(z))
 	}
 
 	return inst, err

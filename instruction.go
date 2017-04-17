@@ -31,7 +31,7 @@ func (l *LD8) Encode() []byte {
 	}
 	b := encodeXYZ(1, l.dstInfo.idxTable, l.srcInfo.idxTable)
 	fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, l.srcInfo.idxTable, b)
-	return idxEncodeHelper(b, l.idx)
+	return idxEncodeHelper([]byte{b}, l.idx)
 }
 
 type INC8 struct {
@@ -50,7 +50,7 @@ func (i *INC8) Encode() []byte {
 		panic("Non-tableR INC8")
 	}
 	b := encodeXYZ(0, i.lInfo.idxTable, 4)
-	return idxEncodeHelper(b, i.idx)
+	return idxEncodeHelper([]byte{b}, i.idx)
 }
 
 type DEC8 struct {
@@ -69,7 +69,7 @@ func (d *DEC8) Encode() []byte {
 		panic("Non-tableR DEC8")
 	}
 	b := encodeXYZ(0, d.lInfo.idxTable, 5)
-	return idxEncodeHelper(b, d.idx)
+	return idxEncodeHelper([]byte{b}, d.idx)
 }
 
 type LD16 struct {
@@ -312,8 +312,7 @@ func (a accum) Encode() []byte {
 	}
 	y := findInTableALU(a.name)
 	b := encodeXYZ(2, y, a.lInfo.idxTable)
-	fmt.Printf("JB x %d y %d z %d: b %02X\n", 2, y, a.lInfo.idxTable, b)
-	return idxEncodeHelper(b, a.idx)
+	return idxEncodeHelper([]byte{b}, a.idx)
 }
 
 type rot struct {
@@ -333,39 +332,63 @@ func (r *rot) Encode() []byte {
 }
 
 type BIT struct {
+	InstU8
 	num byte
-	r   Loc8
 }
 
+func NewBIT(num byte, l Loc8) *BIT {
+	return &BIT{InstU8: InstU8{l: l}, num: num}
+}
 func (b *BIT) String() string {
-	return fmt.Sprintf("BIT %d, %s", b.num, b.r)
+	return fmt.Sprintf("BIT %d, %s", b.num, b.l)
 }
 func (b *BIT) Encode() []byte {
-	return []byte{}
+	b.inspect()
+	if b.lInfo.eTable != tableR {
+		panic("Non-tableR src in BIT")
+	}
+	enc := encodeXYZ(1, b.num, b.lInfo.idxTable)
+	return idxEncodeHelper([]byte{0xcb, enc}, b.idx)
 }
 
 type RES struct {
+	InstU8
 	num byte
-	r   Loc8
 }
 
+func NewRES(num byte, l Loc8) *RES {
+	return &RES{InstU8: InstU8{l: l}, num: num}
+}
 func (r *RES) String() string {
-	return fmt.Sprintf("RES %d, %s", r.num, r.r)
+	return fmt.Sprintf("RES %d, %s", r.num, r.l)
 }
 func (r *RES) Encode() []byte {
-	return []byte{}
+	r.inspect()
+	if r.lInfo.eTable != tableR {
+		panic("Non-tableR src in BIT")
+	}
+	enc := encodeXYZ(2, r.num, r.lInfo.idxTable)
+	return idxEncodeHelper([]byte{0xcb, enc}, r.idx)
 }
 
 type SET struct {
+	InstU8
 	num byte
-	r   Loc8
 }
 
+func NewSET(num byte, l Loc8) *SET {
+	return &SET{InstU8: InstU8{l: l}, num: num}
+}
 func (s *SET) String() string {
-	return fmt.Sprintf("SET %d, %s", s.num, s.r)
+	return fmt.Sprintf("SET %d, %s", s.num, s.l)
 }
 func (s *SET) Encode() []byte {
-	return []byte{}
+	s.inspect()
+	if s.lInfo.eTable != tableR {
+		panic("Non-tableR src in BIT")
+	}
+	enc := encodeXYZ(3, s.num, s.lInfo.idxTable)
+	return idxEncodeHelper([]byte{0xcb, enc}, s.idx)
 }
 
 type Simple byte

@@ -85,15 +85,15 @@ func (c *Current) Rot(name string) {
 }
 
 func (c *Current) Bit() {
-	c.inst = &BIT{num: c.odigit, r: c.loc8}
+	c.inst = NewBIT(c.odigit, c.loc8)
 }
 
 func (c *Current) Res() {
-	c.inst = &RES{num: c.odigit, r: c.loc8}
+	c.inst = NewRES(c.odigit, c.loc8)
 }
 
 func (c *Current) Set() {
-	c.inst = &SET{num: c.odigit, r: c.loc8}
+	c.inst = NewSET(c.odigit, c.loc8)
 }
 
 func (c *Current) Simple(name string) {
