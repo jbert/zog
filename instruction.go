@@ -93,6 +93,15 @@ func (l *LD16) Encode() []byte {
 	if l.dstInfo.ltype != tableRP {
 		panic("Non-tableRP dst in LD16")
 	}
+
+	if l.dst == SP {
+		if !l.srcInfo.isHLLike() {
+			panic("Trying to load non-HL like into SP")
+		}
+		buf := []byte{encodeXPQZ(3, 3, 1, 1)}
+		return idxEncodeHelper(buf, l.idx)
+	}
+
 	switch l.srcInfo.ltype {
 	case Immediate:
 		buf := []byte{encodeXPQZ(0, l.dstInfo.idxTable, 0, 1)}
@@ -122,7 +131,7 @@ func (a *ADD16) Encode() []byte {
 		panic("Non-tableRP src in ADD16")
 	}
 
-	// TODO: support other LD16
+	// TODO: support other ADD16
 	if !a.dstInfo.isHLLike() {
 		panic("Non-HL dst in ADD16")
 	}
@@ -250,18 +259,29 @@ func (j *JR) Encode() []byte {
 }
 
 type JP struct {
-	c    Conditional
-	addr Loc16
+	InstU16
+	c Conditional
+}
+
+func NewJP(c Conditional, l Loc16) *JP {
+	return &JP{InstU16: InstU16{l: l}, c: c}
 }
 
 func (jp *JP) String() string {
 	if jp.c == True || jp.c == nil {
-		return fmt.Sprintf("JP %s", jp.addr)
+		return fmt.Sprintf("JP %s", jp.l)
 	} else {
-		return fmt.Sprintf("JP %s, %s", jp.c, jp.addr)
+		return fmt.Sprintf("JP %s, %s", jp.c, jp.l)
 	}
 }
 func (jp *JP) Encode() []byte {
+	jp.inspect()
+	if jp.c == True || jp.c == nil {
+		if jp.lInfo.isHLLike() {
+			buf := []byte{encodeXPQZ(3, 2, 1, 1)}
+			return idxEncodeHelper(buf, jp.idx)
+		}
+	}
 	return []byte{}
 }
 
@@ -350,7 +370,11 @@ func (r *RET) String() string {
 	}
 }
 func (r *RET) Encode() []byte {
-	return []byte{}
+	if r.c == True || r.c == nil {
+		return []byte{encodeXPQZ(3, 0, 1, 1)}
+	}
+	y := findInTableCC(r.c)
+	return []byte{encodeXYZ(3, y, 0)}
 }
 
 func NewAccum(name string, l Loc8) *accum {

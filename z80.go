@@ -122,7 +122,7 @@ func (c *Current) Ret() {
 }
 
 func (c *Current) Jp() {
-	c.inst = &JP{c.cc, c.src16}
+	c.inst = NewJP(c.cc, c.src16)
 }
 
 func (c *Current) Jr() {

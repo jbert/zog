@@ -409,7 +409,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 1:
 					inst = EXX
 				case 2:
-					inst = &JP{True, hl}
+					inst = NewJP(True, hl)
 				case 3:
 					inst = NewLD16(SP, hl)
 				}
@@ -417,14 +417,14 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 		case 2:
 			nn, err := getImmNN(inCh)
 			if err == nil {
-				inst = &JP{tableCC[y], nn}
+				inst = NewJP(tableCC[y], nn)
 			}
 		case 3:
 			switch y {
 			case 0:
 				nn, err := getImmNN(inCh)
 				if err == nil {
-					inst = &JP{True, nn}
+					inst = NewJP(True, nn)
 				}
 			case 1:
 				panic(fmt.Sprintf("Decoding CB [%02X] as instruction, not prefix", n))
