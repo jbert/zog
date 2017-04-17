@@ -38,7 +38,7 @@ func (c *Current) LD8() {
 }
 
 func (c *Current) LD16() {
-	c.inst = &LD16{c.dst16, c.src16}
+	c.inst = NewLD16(c.dst16, c.src16)
 }
 func (c *Current) Push() {
 	c.inst = &PUSH{c.src16}

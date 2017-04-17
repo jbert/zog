@@ -79,15 +79,28 @@ func (d *DEC8) Encode() []byte {
 }
 
 type LD16 struct {
-	dst Loc16
-	src Loc16
+	InstBin16
 }
 
+func NewLD16(dst, src Loc16) *LD16 {
+	return &LD16{InstBin16: InstBin16{dst: dst, src: src}}
+}
 func (l *LD16) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
 }
 func (l *LD16) Encode() []byte {
-	return []byte{}
+	l.inspect()
+	if l.dstInfo.ltype != tableRP {
+		panic("Non-tableRP dst in LD16")
+	}
+	switch l.srcInfo.ltype {
+	case Immediate:
+		buf := []byte{encodeXPQZ(0, l.dstInfo.idxTable, 0, 1)}
+		buf = append(buf, l.srcInfo.imm16...)
+		return idxEncodeHelper(buf, l.idx)
+	default:
+		panic("Unknown src type in LD16")
+	}
 }
 
 type ADD16 struct {
@@ -138,8 +151,11 @@ func (i *INC16) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
 func (i *INC16) Encode() []byte {
-	p := lookupLoc16(i.l, &i.idx)
-	b := encodeXPQZ(0, p, 0, 3)
+	i.inspect()
+	if i.lInfo.ltype != tableRP {
+		panic("Non-tableRP INC16")
+	}
+	b := encodeXPQZ(0, i.lInfo.idxTable, 0, 3)
 	return idxEncodeHelper([]byte{b}, i.idx)
 }
 

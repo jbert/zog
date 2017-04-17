@@ -31,6 +31,7 @@ type locType int
 const (
 	tableR    locType = 1
 	Immediate         = 2
+	tableRP           = 3
 )
 
 type InstU8 struct {
@@ -95,11 +96,28 @@ func (u *InstU8) inspect() {
 }
 
 type InstU16 struct {
-	l   Loc16
+	l     Loc16
+	lInfo loc16Info
+	idx   idxInfo
+}
+
+type InstBin16 struct {
+	dst Loc16
+	src Loc16
+
+	dstInfo loc16Info
+	srcInfo loc16Info
+
 	idx idxInfo
 }
 
-func lookupLoc16(l Loc16, idx *idxInfo) byte {
+type loc16Info struct {
+	ltype    locType
+	idxTable byte
+	imm16    []byte
+}
+
+func inspectLoc16(l Loc16, info *loc16Info, idx *idxInfo) {
 	if l == IX {
 		idx.isPrefix = true
 		l = HL
@@ -108,9 +126,27 @@ func lookupLoc16(l Loc16, idx *idxInfo) byte {
 		idx.isIY = true
 		l = HL
 	}
-	return findInTableRP(l)
+
+	imm16, ok := l.(Imm16)
+	if ok {
+		info.ltype = Immediate
+		hi := byte(imm16 >> 8)
+		lo := byte(imm16 & 0xff)
+		info.imm16 = []byte{lo, hi}
+	} else {
+		info.ltype = tableRP
+		info.idxTable = findInTableRP(l)
+	}
 }
 
+func (u *InstU16) inspect() {
+	inspectLoc16(u.l, &u.lInfo, &u.idx)
+}
+
+func (b *InstBin16) inspect() {
+	inspectLoc16(b.dst, &b.dstInfo, &b.idx)
+	inspectLoc16(b.src, &b.srcInfo, &b.idx)
+}
 func idxEncodeHelper(base []byte, idx idxInfo) []byte {
 	encoded := base
 	if idx.isPrefix {

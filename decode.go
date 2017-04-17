@@ -197,9 +197,9 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 			nn, err := getImmNN(inCh)
 			if err == nil {
 				if q == 0 {
-					inst = &LD16{Contents{nn}, t.LookupRP(p)}
+					inst = NewLD16(Contents{nn}, t.LookupRP(p))
 				} else {
-					inst = &LD16{t.LookupRP(p), Contents{nn}}
+					inst = NewLD16(t.LookupRP(p), Contents{nn})
 				}
 			}
 		case 4:
@@ -297,7 +297,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			if q == 0 {
 				nn, err := getImmNN(inCh)
 				if err == nil {
-					inst = &LD16{t.LookupRP(p), nn}
+					inst = NewLD16(t.LookupRP(p), nn)
 				}
 			} else {
 				inst = &ADD16{hl, t.LookupRP(p)}
@@ -312,7 +312,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 2:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD16{Contents{nn}, hl}
+						inst = NewLD16(Contents{nn}, hl)
 					}
 				case 3:
 					nn, err := getImmNN(inCh)
@@ -329,7 +329,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 2:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &LD16{hl, Contents{nn}}
+						inst = NewLD16(hl, Contents{nn})
 					}
 				case 3:
 					nn, err := getImmNN(inCh)
@@ -411,7 +411,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 2:
 					inst = &JP{True, hl}
 				case 3:
-					inst = &LD16{SP, hl}
+					inst = NewLD16(SP, hl)
 				}
 			}
 		case 2:
