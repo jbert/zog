@@ -312,19 +312,26 @@ func (jp *JP) Encode() []byte {
 }
 
 type CALL struct {
-	c    Conditional
-	addr Loc16
+	InstU16
+	c Conditional
 }
 
+func NewCALL(c Conditional, l Loc16) *CALL {
+	return &CALL{InstU16: InstU16{l: l}, c: c}
+}
 func (c *CALL) String() string {
 	if c.c == True || c.c == nil {
-		return fmt.Sprintf("CALL %s", c.addr)
+		return fmt.Sprintf("CALL %s", c.l)
 	} else {
-		return fmt.Sprintf("CALL %s, %s", c.c, c.addr)
+		return fmt.Sprintf("CALL %s, %s", c.c, c.l)
 	}
 }
 func (c *CALL) Encode() []byte {
-	return []byte{}
+	c.inspect()
+	y := findInTableCC(c.c)
+	buf := []byte{encodeXYZ(3, y, 4)}
+	buf = append(buf, c.lInfo.imm16...)
+	return buf
 }
 
 type OUT struct {

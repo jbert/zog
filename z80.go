@@ -114,7 +114,7 @@ func (c *Current) Rst() {
 }
 
 func (c *Current) Call() {
-	c.inst = &CALL{c.cc, c.src16}
+	c.inst = NewCALL(c.cc, c.src16)
 }
 
 func (c *Current) Ret() {

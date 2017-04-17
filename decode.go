@@ -451,7 +451,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 		case 4:
 			nn, err := getImmNN(inCh)
 			if err == nil {
-				inst = &CALL{tableCC[y], nn}
+				inst = NewCALL(tableCC[y], nn)
 			}
 		case 5:
 			if q == 0 {
@@ -461,7 +461,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 0:
 					nn, err := getImmNN(inCh)
 					if err == nil {
-						inst = &CALL{True, nn}
+						inst = NewCALL(True, nn)
 					}
 				case 1:
 					panic(fmt.Sprintf("Decoding DD [%02X] as instruction, not prefix", n))
