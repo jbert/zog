@@ -342,7 +342,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			if q == 0 {
 				inst = NewINC16(t.LookupRP(p))
 			} else {
-				inst = &DEC16{t.LookupRP(p)}
+				inst = NewDEC16(t.LookupRP(p))
 			}
 		case 4:
 			inst = NewINC8(t.LookupR(y))

@@ -180,14 +180,22 @@ func (i *INC16) Encode() []byte {
 }
 
 type DEC16 struct {
-	l Loc16
+	InstU16
 }
 
+func NewDEC16(l Loc16) *DEC16 {
+	return &DEC16{InstU16{l: l}}
+}
 func (d *DEC16) String() string {
 	return fmt.Sprintf("DEC %s", d.l)
 }
 func (d *DEC16) Encode() []byte {
-	return []byte{}
+	d.inspect()
+	if d.lInfo.ltype != tableRP {
+		panic("Non-tableRP DEC16")
+	}
+	b := encodeXPQZ(0, d.lInfo.idxTable, 1, 3)
+	return idxEncodeHelper([]byte{b}, d.idx)
 }
 
 type EX struct {
