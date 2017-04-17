@@ -1,3 +1,11 @@
+- implement LD16
+  - copy code from INC16
+  - Use Loc16 everywhere
+  - pull into helpers
+
+  - do we use any table apart from tableR?
+    - can we drop that type and the panic() check?
+
 - implement Encode() for instructions
 
 - might have displacement byte in the wrong place for CB-prefix:

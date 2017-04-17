@@ -121,14 +121,29 @@ func (s *SBC16) Encode() []byte {
 }
 
 type INC16 struct {
-	l Loc16
+	InstU16
+}
+
+func NewINC16(l Loc16) *INC16 {
+	return &INC16{InstU16{l: l}}
 }
 
 func (i *INC16) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
 func (i *INC16) Encode() []byte {
-	return []byte{}
+	l := i.l
+	if l == IX {
+		i.idx.isPrefix = true
+		l = HL
+	} else if l == IY {
+		i.idx.isPrefix = true
+		i.idx.isIY = true
+		l = HL
+	}
+	p := findInTableRP(l)
+	b := encodeXPQZ(0, p, 0, 3)
+	return idxEncodeHelper([]byte{b}, i.idx)
 }
 
 type DEC16 struct {

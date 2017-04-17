@@ -41,6 +41,11 @@ type InstU8 struct {
 	idx idxInfo
 }
 
+type InstU16 struct {
+	l   Loc16
+	idx idxInfo
+}
+
 func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 	iContents, ok := l.(IndexedContents)
 	if ok {
@@ -110,4 +115,9 @@ func (b *InstBin8) inspect() {
 // See decomposeByte in decode.go
 func encodeXYZ(x, y, z byte) byte {
 	return x<<6 | y<<3 | z
+}
+
+func encodeXPQZ(x, p, q, z byte) byte {
+	y := p<<1 | q
+	return encodeXYZ(x, y, z)
 }

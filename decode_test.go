@@ -14,6 +14,8 @@ func TestDecodeOddities(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{"INC IX",
+			[]byte{0xDD, 0x23}, "INC IX"},
 		{"Multiple prefixes, last one wins",
 			[]byte{0xFD, 0xDD, 0x7e, 0x01}, "LD A, (IX+1)"},
 		{"EX DE, HL is an exception to index prefix",
