@@ -300,7 +300,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 					inst = NewLD16(t.LookupRP(p), nn)
 				}
 			} else {
-				inst = &ADD16{hl, t.LookupRP(p)}
+				inst = NewADD16(hl, t.LookupRP(p))
 			}
 		case 2:
 			if q == 0 {

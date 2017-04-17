@@ -11,6 +11,9 @@ type DecodeTable struct {
 // These tables participate in IX/IY replacement
 var baseTableR []Loc8 = []Loc8{B, C, D, E, H, L, Contents{HL}, A}
 var baseTableRP []Loc16 = []Loc16{BC, DE, HL, SP}
+
+const HL_RP_INDEX = 2
+
 var baseTableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
 
 var tableCC []Conditional = []Conditional{Not{FT_Z}, FT_Z, Not{FT_C}, FT_C, FT_PO, FT_PE, FT_P, FT_M}

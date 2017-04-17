@@ -65,7 +65,7 @@ func (c *Current) Dec16() {
 }
 
 func (c *Current) Add16() {
-	c.inst = &ADD16{c.dst16, c.src16}
+	c.inst = NewADD16(c.dst16, c.src16)
 }
 
 func (c *Current) Adc16() {

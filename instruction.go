@@ -104,15 +104,35 @@ func (l *LD16) Encode() []byte {
 }
 
 type ADD16 struct {
-	dst Loc16
-	src Loc16
+	InstBin16
 }
 
+func NewADD16(dst, src Loc16) *ADD16 {
+	return &ADD16{InstBin16: InstBin16{dst: dst, src: src}}
+}
 func (a *ADD16) String() string {
 	return fmt.Sprintf("ADD %s, %s", a.dst, a.src)
 }
 func (a *ADD16) Encode() []byte {
-	return []byte{}
+	a.inspect()
+	if a.dstInfo.ltype != tableRP {
+		panic("Non-tableRP dst in ADD16")
+	}
+	if a.srcInfo.ltype != tableRP {
+		panic("Non-tableRP src in ADD16")
+	}
+
+	// TODO: support other LD16
+	if !a.dstInfo.isHLLike() {
+		panic("Non-HL dst in ADD16")
+	}
+	switch a.srcInfo.ltype {
+	case tableRP:
+		buf := []byte{encodeXPQZ(0, a.srcInfo.idxTable, 1, 1)}
+		return idxEncodeHelper(buf, a.idx)
+	default:
+		panic("Unknown src type in ADD16")
+	}
 }
 
 type ADC16 struct {

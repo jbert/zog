@@ -117,6 +117,10 @@ type loc16Info struct {
 	imm16    []byte
 }
 
+func (li *loc16Info) isHLLike() bool {
+	return li.ltype == tableRP && li.idxTable == HL_RP_INDEX
+}
+
 func inspectLoc16(l Loc16, info *loc16Info, idx *idxInfo) {
 	if l == IX {
 		idx.isPrefix = true
