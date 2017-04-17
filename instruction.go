@@ -23,15 +23,21 @@ func (l *LD8) String() string {
 }
 func (l *LD8) Encode() []byte {
 	l.inspect()
-	if l.dstInfo.eTable != tableR {
-		panic("Non-tableR src in LD8")
-	}
-	if l.srcInfo.eTable != tableR {
+	if l.dstInfo.ltype != tableR {
 		panic("Non-tableR dst in LD8")
 	}
-	b := encodeXYZ(1, l.dstInfo.idxTable, l.srcInfo.idxTable)
-	fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, l.srcInfo.idxTable, b)
-	return idxEncodeHelper([]byte{b}, l.idx)
+	switch l.srcInfo.ltype {
+	case tableR:
+		b := encodeXYZ(1, l.dstInfo.idxTable, l.srcInfo.idxTable)
+		fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, l.srcInfo.idxTable, b)
+		return idxEncodeHelper([]byte{b}, l.idx)
+	case Immediate:
+		b := encodeXYZ(0, l.dstInfo.idxTable, 6)
+		fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, 6, b)
+		return idxEncodeHelper([]byte{b, l.srcInfo.imm8}, l.idx)
+	default:
+		panic("Unknown src type in LD8")
+	}
 }
 
 type INC8 struct {
@@ -46,7 +52,7 @@ func (i *INC8) String() string {
 }
 func (i *INC8) Encode() []byte {
 	i.inspect()
-	if i.lInfo.eTable != tableR {
+	if i.lInfo.ltype != tableR {
 		panic("Non-tableR INC8")
 	}
 	b := encodeXYZ(0, i.lInfo.idxTable, 4)
@@ -65,7 +71,7 @@ func (d *DEC8) String() string {
 }
 func (d *DEC8) Encode() []byte {
 	d.inspect()
-	if d.lInfo.eTable != tableR {
+	if d.lInfo.ltype != tableR {
 		panic("Non-tableR DEC8")
 	}
 	b := encodeXYZ(0, d.lInfo.idxTable, 5)
@@ -325,7 +331,7 @@ func (a accum) String() string {
 }
 func (a accum) Encode() []byte {
 	a.inspect()
-	if a.lInfo.eTable != tableR {
+	if a.lInfo.ltype != tableR {
 		panic("Non-tableR Accum")
 	}
 	y := findInTableALU(a.name)
@@ -362,7 +368,7 @@ func (b *BIT) String() string {
 }
 func (b *BIT) Encode() []byte {
 	b.inspect()
-	if b.lInfo.eTable != tableR {
+	if b.lInfo.ltype != tableR {
 		panic("Non-tableR src in BIT")
 	}
 	enc := encodeXYZ(1, b.num, b.lInfo.idxTable)
@@ -382,7 +388,7 @@ func (r *RES) String() string {
 }
 func (r *RES) Encode() []byte {
 	r.inspect()
-	if r.lInfo.eTable != tableR {
+	if r.lInfo.ltype != tableR {
 		panic("Non-tableR src in BIT")
 	}
 	enc := encodeXYZ(2, r.num, r.lInfo.idxTable)
@@ -402,7 +408,7 @@ func (s *SET) String() string {
 }
 func (s *SET) Encode() []byte {
 	s.inspect()
-	if s.lInfo.eTable != tableR {
+	if s.lInfo.ltype != tableR {
 		panic("Non-tableR src in BIT")
 	}
 	enc := encodeXYZ(3, s.num, s.lInfo.idxTable)

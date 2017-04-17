@@ -3,8 +3,9 @@ package zog
 import "fmt"
 
 type loc8Info struct {
-	eTable   tableType
+	ltype    locType
 	idxTable byte
+	imm8     byte
 }
 
 type idxInfo struct {
@@ -25,10 +26,11 @@ type InstBin8 struct {
 	base byte
 }
 
-type tableType int
+type locType int
 
 const (
-	tableR tableType = 1
+	tableR    locType = 1
+	Immediate         = 2
 )
 
 type InstU8 struct {
@@ -49,7 +51,7 @@ func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 			panic("Non-r16 addr in indexed content")
 		}
 
-		info.eTable = tableR
+		info.ltype = tableR
 		info.idxTable = findInTableR(Contents{HL})
 
 		idx.isPrefix = true
@@ -63,7 +65,7 @@ func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 	contents, ok := l.(Contents)
 	if ok {
 		if contents.addr == HL {
-			info.eTable = tableR
+			info.ltype = tableR
 			info.idxTable = findInTableR(Contents{HL})
 			return
 		} else {
@@ -73,8 +75,15 @@ func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 
 	r8, ok := l.(R8)
 	if ok {
-		info.eTable = tableR
+		info.ltype = tableR
 		info.idxTable = findInTableR(r8)
+		return
+	}
+
+	imm8, ok := l.(Imm8)
+	if ok {
+		info.ltype = Immediate
+		info.imm8 = byte(imm8)
 		return
 	}
 
