@@ -179,3 +179,12 @@ func findInTableCC(c Conditional) byte {
 	}
 	panic("Not found - bad encode")
 }
+
+func findInTableROT(name string) byte {
+	for i, info := range tableROT {
+		if info.name == name {
+			return byte(i)
+		}
+	}
+	panic("Not found - bad encode")
+}

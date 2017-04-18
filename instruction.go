@@ -523,19 +523,25 @@ func (a accum) Encode() []byte {
 }
 
 type rot struct {
+	InstU8
 	name string
-	r    Loc8
 }
 
-func NewRot(name string, r Loc8) *rot {
-	return &rot{name: name, r: r}
+func NewRot(name string, l Loc8) *rot {
+	return &rot{InstU8: InstU8{l: l}, name: name}
 }
 
 func (r *rot) String() string {
-	return fmt.Sprintf("%s %s", r.name, r.r)
+	return fmt.Sprintf("%s %s", r.name, r.l)
 }
 func (r *rot) Encode() []byte {
-	return []byte{}
+	r.inspect()
+	if r.lInfo.ltype != tableR {
+		panic("Non-tableR src in BIT")
+	}
+	y := findInTableROT(r.name)
+	buf := []byte{0xcb, encodeXYZ(0, y, r.lInfo.idxTable)}
+	return idxEncodeHelper(buf, r.idx)
 }
 
 type BIT struct {

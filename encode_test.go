@@ -10,6 +10,10 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0xcb, 0x20}, "SLA B"},
+		{[]byte{0xcb, 0x26}, "SLA (HL)"},
+		{[]byte{0xdd, 0xcb, 0x26, 0x10}, "SLA (IX+10h)"},
+
 		{[]byte{0xe5}, "PUSH HL"},
 		{[]byte{0xdd, 0xe5}, "PUSH IX"},
 		{[]byte{0xe1}, "POP HL"},
