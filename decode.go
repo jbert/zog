@@ -401,7 +401,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			inst = &RET{tableCC[y]}
 		case 1:
 			if q == 0 {
-				inst = &POP{t.LookupRP2(p)}
+				inst = NewPOP(t.LookupRP2(p))
 			} else {
 				switch p {
 				case 0:

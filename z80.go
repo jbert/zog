@@ -44,7 +44,7 @@ func (c *Current) Push() {
 	c.inst = NewPUSH(c.src16)
 }
 func (c *Current) Pop() {
-	c.inst = &POP{c.dst16}
+	c.inst = NewPOP(c.dst16)
 }
 func (c *Current) Ex() {
 	c.inst = NewEX(c.dst16, c.src16)

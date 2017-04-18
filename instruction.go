@@ -432,18 +432,27 @@ func (p *PUSH) Encode() []byte {
 	if p.lInfo.ltype != tableRP2 {
 		panic("Non-tableRP PUSH")
 	}
-	return []byte{encodeXPQZ(3, p.lInfo.idxTable, 0, 5)}
+	buf := []byte{encodeXPQZ(3, p.lInfo.idxTable, 0, 5)}
+	return idxEncodeHelper(buf, p.idx)
 }
 
 type POP struct {
-	dst Loc16
+	InstU16
 }
 
+func NewPOP(l Loc16) *POP {
+	return &POP{InstU16{l: l}}
+}
 func (p *POP) String() string {
-	return fmt.Sprintf("POP %s", p.dst)
+	return fmt.Sprintf("POP %s", p.l)
 }
 func (p *POP) Encode() []byte {
-	return []byte{}
+	p.inspectRP2()
+	if p.lInfo.ltype != tableRP2 {
+		panic("Non-tableRP PUSH")
+	}
+	buf := []byte{encodeXPQZ(3, p.lInfo.idxTable, 0, 1)}
+	return idxEncodeHelper(buf, p.idx)
 }
 
 type RST struct {
