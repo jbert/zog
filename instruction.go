@@ -461,14 +461,19 @@ func (i *IN) String() string {
 }
 func (i *IN) Encode() []byte {
 	if i.port == C {
-		var info loc8Info
-		var idx idxInfo
-		inspectLoc8(i.dst, &info, &idx)
-		if info.ltype != tableR {
-			panic("Non-tableR dst in IN")
+		var y byte
+		if i.dst == F {
+			y = 6
+		} else {
+			var info loc8Info
+			var idx idxInfo
+			inspectLoc8(i.dst, &info, &idx)
+			if info.ltype != tableR {
+				panic("Non-tableR dst in IN")
+			}
+			y = info.idxTable
 		}
-		// (HL)? IX?
-		return []byte{0xed, encodeXYZ(1, info.idxTable, 0)}
+		return []byte{0xed, encodeXYZ(1, y, 0)}
 	} else {
 		imm8 := i.port.(Imm8)
 		return []byte{encodeXYZ(3, 3, 3), byte(imm8)}
