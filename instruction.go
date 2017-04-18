@@ -796,7 +796,7 @@ func (s EDSimple) String() string {
 }
 
 func (s EDSimple) Encode() []byte {
-	return []byte{byte(s)}
+	return []byte{0xed, byte(s)}
 }
 
 func LookupEDSimpleName(name string) EDSimple {
