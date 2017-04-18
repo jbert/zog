@@ -22,6 +22,18 @@ func (l *LD8) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
 }
 func (l *LD8) Encode() []byte {
+	// ED special cases
+	switch true {
+	case l.dst == I && l.src == A:
+		return []byte{0xed, 0x47}
+	case l.dst == A && l.src == I:
+		return []byte{0xed, 0x57}
+	case l.dst == R && l.src == A:
+		return []byte{0xed, 0x4f}
+	case l.dst == A && l.src == R:
+		return []byte{0xed, 0x5f}
+	}
+
 	l.inspect()
 
 	switch l.dstInfo.ltype {

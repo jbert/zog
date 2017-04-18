@@ -10,6 +10,17 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0xed, 0x47}, "LD I, A"},
+		{[]byte{0xed, 0x57}, "LD A, I"},
+		{[]byte{0xed, 0x5f}, "LD A, R"},
+		{[]byte{0xed, 0x4f}, "LD R, A"},
+
+		{[]byte{0xed, 0x46}, "IM 0"},
+		{[]byte{0xed, 0x56}, "IM 1"},
+		{[]byte{0xed, 0x5e}, "IM 2"},
+
+		{[]byte{0xed, 0x45}, "RETN"},
+		{[]byte{0xed, 0x4d}, "RETI"},
 		{[]byte{0xed, 0x44}, "NEG"},
 
 		// HL has a non-ED encoding which is preferred
