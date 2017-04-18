@@ -23,6 +23,23 @@ func (l *LD8) String() string {
 }
 func (l *LD8) Encode() []byte {
 	l.inspect()
+
+	switch l.dstInfo.ltype {
+	case BCDEContents:
+		// LD (BC), A or LD (DE), A
+		p := byte(1)
+		if l.srcInfo.isBC {
+			p = 0
+		}
+		buf := []byte{encodeXPQZ(0, p, 0, 2)}
+		return buf
+	case ImmediateContents:
+		// LD (nn), A
+		buf := []byte{encodeXPQZ(0, 3, 0, 2)}
+		buf = append(buf, l.dstInfo.imm16...)
+		return buf
+	}
+
 	if l.dstInfo.ltype != tableR {
 		panic("Non-tableR dst in LD8")
 	}
@@ -33,8 +50,20 @@ func (l *LD8) Encode() []byte {
 		return idxEncodeHelper([]byte{b}, l.idx)
 	case Immediate:
 		b := encodeXYZ(0, l.dstInfo.idxTable, 6)
-		fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, 6, b)
 		return idxEncodeHelper([]byte{b, l.srcInfo.imm8}, l.idx)
+	case BCDEContents:
+		// LD A, (BC) or LD A, (DE)
+		p := byte(1)
+		if l.srcInfo.isBC {
+			p = 0
+		}
+		b := encodeXPQZ(0, p, 1, 2)
+		return []byte{b}
+	case ImmediateContents:
+		// LD A, (nn)
+		buf := []byte{encodeXPQZ(0, 3, 1, 2)}
+		buf = append(buf, l.srcInfo.imm16...)
+		return buf
 	default:
 		panic("Unknown src type in LD8")
 	}
@@ -90,6 +119,16 @@ func (l *LD16) String() string {
 }
 func (l *LD16) Encode() []byte {
 	l.inspect()
+	switch l.dstInfo.ltype {
+	case ImmediateContents:
+		// LD (nn), HL has multiple encodings
+		if l.srcInfo.isHLLike() {
+			buf := []byte{encodeXPQZ(0, 2, 0, 2)}
+			buf = append(buf, l.dstInfo.imm16...)
+			return idxEncodeHelper(buf, l.idx)
+		}
+	}
+
 	if l.dstInfo.ltype != tableRP {
 		panic("Non-tableRP dst in LD16")
 	}
@@ -105,6 +144,11 @@ func (l *LD16) Encode() []byte {
 	switch l.srcInfo.ltype {
 	case Immediate:
 		buf := []byte{encodeXPQZ(0, l.dstInfo.idxTable, 0, 1)}
+		buf = append(buf, l.srcInfo.imm16...)
+		return idxEncodeHelper(buf, l.idx)
+	case ImmediateContents:
+		// LD HL, (nn) has multiple encodings
+		buf := []byte{encodeXPQZ(0, 2, 1, 2)}
 		buf = append(buf, l.srcInfo.imm16...)
 		return idxEncodeHelper(buf, l.idx)
 	default:

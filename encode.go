@@ -6,6 +6,8 @@ type loc8Info struct {
 	ltype    locType
 	idxTable byte
 	imm8     byte
+	isBC     bool
+	imm16    []byte
 }
 
 type idxInfo struct {
@@ -29,10 +31,12 @@ type InstBin8 struct {
 type locType int
 
 const (
-	tableR    locType = 1
-	Immediate         = 2
-	tableRP           = 3
-	tableRP2          = 4
+	tableR            locType = 1
+	Immediate                 = 2
+	tableRP                   = 3
+	tableRP2                  = 4
+	BCDEContents              = 5
+	ImmediateContents         = 6
 )
 
 type InstU8 struct {
@@ -70,9 +74,20 @@ func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 			info.ltype = tableR
 			info.idxTable = findInTableR(Contents{HL})
 			return
-		} else {
-			panic("Non-HL contents in R8")
+		} else if contents.addr == BC || contents.addr == DE {
+			info.ltype = BCDEContents
+			info.isBC = contents.addr == BC
+			return
 		}
+		imm16, ok := contents.addr.(Imm16)
+		if ok {
+			info.ltype = ImmediateContents
+			hi := byte(imm16 >> 8)
+			lo := byte(imm16 & 0xff)
+			info.imm16 = []byte{lo, hi}
+			return
+		}
+		panic("Unrecognised contents of loc8")
 	}
 
 	r8, ok := l.(R8)
@@ -130,6 +145,19 @@ func inspectLoc16(l Loc16, info *loc16Info, idx *idxInfo, wantRP2 bool) {
 		idx.isPrefix = true
 		idx.isIY = true
 		l = HL
+	}
+
+	contents, ok := l.(Contents)
+	if ok {
+		imm16, isImm := contents.addr.(Imm16)
+		if isImm {
+			info.ltype = ImmediateContents
+			hi := byte(imm16 >> 8)
+			lo := byte(imm16 & 0xff)
+			info.imm16 = []byte{lo, hi}
+			return
+		}
+		panic("Non-immediate Loc16 contents")
 	}
 
 	imm16, ok := l.(Imm16)

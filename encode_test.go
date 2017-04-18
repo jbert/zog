@@ -10,6 +10,14 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0x22, 0x34, 0x12}, "LD (1234h), HL"},
+		{[]byte{0xdd, 0x22, 0x34, 0x12}, "LD (1234h), IX"},
+		{[]byte{0x2a, 0x34, 0x12}, "LD HL, (1234h)"},
+		{[]byte{0xdd, 0x2a, 0x34, 0x12}, "LD IX, (1234h)"},
+
+		{[]byte{0x3a, 0x34, 0x12}, "LD A, (1234h)"},
+		{[]byte{0x32, 0x34, 0x12}, "LD (1234h), A"},
+
 		{[]byte{0xcf}, "RST 8"},
 		{[]byte{0xc7}, "RST 0"},
 
@@ -133,13 +141,11 @@ func TestEncodeBasic(t *testing.T) {
 	}
 }
 
-/*
 func TestEncodeAll(t *testing.T) {
 	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
 		testEncodeOne(t, byteForm, stringForm)
 	})
 }
-*/
 
 func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	hexBuf := bufToHex(byteForm)
@@ -160,7 +166,7 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	encodedBuf := insts[0].Encode()
 
 	if bufToHex(encodedBuf) != bufToHex(byteForm) {
-		t.Fatalf("Wrong encode for [%s] [%s] != [%s]", stringForm, bufToHex(encodedBuf), bufToHex(byteForm))
+		t.Fatalf("Wrong encode for [%s] got [%s] expected [%s]", stringForm, bufToHex(encodedBuf), bufToHex(byteForm))
 	}
 	fmt.Printf("Encoded [%s] to [%s]\n", stringForm, bufToHex(encodedBuf))
 }
