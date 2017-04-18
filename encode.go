@@ -50,6 +50,34 @@ type InstU8 struct {
 }
 
 func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
+	// indexed H and L are tableR, and set idx info
+	switch l {
+	case IXH:
+		info.ltype = tableR
+		info.idxTable = findInTableR(H)
+		idx.isPrefix = true
+		idx.isIY = false
+		return
+	case IXL:
+		info.ltype = tableR
+		info.idxTable = findInTableR(L)
+		idx.isPrefix = true
+		idx.isIY = false
+		return
+	case IYH:
+		info.ltype = tableR
+		info.idxTable = findInTableR(H)
+		idx.isPrefix = true
+		idx.isIY = true
+		return
+	case IYL:
+		info.ltype = tableR
+		info.idxTable = findInTableR(L)
+		idx.isPrefix = true
+		idx.isIY = true
+		return
+	}
+
 	iContents, ok := l.(IndexedContents)
 	if ok {
 		r16, ok := iContents.addr.(R16)

@@ -10,6 +10,9 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0xed, 0xb0}, "LDIR"},
+		{[]byte{0xed, 0xbb}, "OTDR"},
+
 		{[]byte{0xed, 0x47}, "LD I, A"},
 		{[]byte{0xed, 0x57}, "LD A, I"},
 		{[]byte{0xed, 0x5f}, "LD A, R"},
