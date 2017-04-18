@@ -121,11 +121,18 @@ func (l *LD16) Encode() []byte {
 	l.inspect()
 	switch l.dstInfo.ltype {
 	case ImmediateContents:
-		// LD (nn), HL has multiple encodings
+		// LD (nn), HL has multiple encodings, we choose the non-ED one
 		if l.srcInfo.isHLLike() {
 			buf := []byte{encodeXPQZ(0, 2, 0, 2)}
 			buf = append(buf, l.dstInfo.imm16...)
 			return idxEncodeHelper(buf, l.idx)
+		} else {
+			if l.srcInfo.ltype != tableRP {
+				panic("Non-tableRP src in LD16 (NN), src")
+			}
+			buf := []byte{0xed, encodeXPQZ(1, l.srcInfo.idxTable, 0, 3)}
+			buf = append(buf, l.dstInfo.imm16...)
+			return buf
 		}
 	}
 
@@ -148,9 +155,18 @@ func (l *LD16) Encode() []byte {
 		return idxEncodeHelper(buf, l.idx)
 	case ImmediateContents:
 		// LD HL, (nn) has multiple encodings
-		buf := []byte{encodeXPQZ(0, 2, 1, 2)}
-		buf = append(buf, l.srcInfo.imm16...)
-		return idxEncodeHelper(buf, l.idx)
+		if l.dstInfo.isHLLike() {
+			buf := []byte{encodeXPQZ(0, 2, 1, 2)}
+			buf = append(buf, l.srcInfo.imm16...)
+			return idxEncodeHelper(buf, l.idx)
+		} else {
+			if l.dstInfo.ltype != tableRP {
+				panic("Non-tableRP src in LD16 (NN), src")
+			}
+			buf := []byte{0xed, encodeXPQZ(1, l.dstInfo.idxTable, 1, 3)}
+			buf = append(buf, l.srcInfo.imm16...)
+			return buf
+		}
 	default:
 		panic("Unknown src type in LD16")
 	}
