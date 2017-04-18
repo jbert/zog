@@ -393,7 +393,14 @@ func (o *OUT) String() string {
 }
 func (o *OUT) Encode() []byte {
 	if o.port == C {
-		panic("impl")
+		var info loc8Info
+		var idx idxInfo
+		inspectLoc8(o.value, &info, &idx)
+		if info.ltype != tableR {
+			panic("Non-tableR value in OUT")
+		}
+		// (HL)? IX?
+		return []byte{0xed, encodeXYZ(1, info.idxTable, 1)}
 	} else {
 		imm8 := o.port.(Imm8)
 		return []byte{encodeXYZ(3, 2, 3), byte(imm8)}
@@ -410,7 +417,14 @@ func (i *IN) String() string {
 }
 func (i *IN) Encode() []byte {
 	if i.port == C {
-		panic("impl")
+		var info loc8Info
+		var idx idxInfo
+		inspectLoc8(i.dst, &info, &idx)
+		if info.ltype != tableR {
+			panic("Non-tableR dst in IN")
+		}
+		// (HL)? IX?
+		return []byte{0xed, encodeXYZ(1, info.idxTable, 0)}
 	} else {
 		imm8 := i.port.(Imm8)
 		return []byte{encodeXYZ(3, 3, 3), byte(imm8)}
