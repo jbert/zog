@@ -152,14 +152,6 @@ func (l *LD16) Encode() []byte {
 		panic("Non-tableRP dst in LD16")
 	}
 
-	if l.dst == SP {
-		if !l.srcInfo.isHLLike() {
-			panic("Trying to load non-HL like into SP")
-		}
-		buf := []byte{encodeXPQZ(3, 3, 1, 1)}
-		return idxEncodeHelper(buf, l.idx)
-	}
-
 	switch l.srcInfo.ltype {
 	case Immediate:
 		buf := []byte{encodeXPQZ(0, l.dstInfo.idxTable, 0, 1)}
@@ -178,6 +170,16 @@ func (l *LD16) Encode() []byte {
 			buf := []byte{0xed, encodeXPQZ(1, l.dstInfo.idxTable, 1, 3)}
 			buf = append(buf, l.srcInfo.imm16...)
 			return buf
+		}
+	case tableRP:
+		if l.srcInfo.isHLLike() {
+			if l.dst != SP {
+				panic("HL-like load to non-SP")
+			}
+			buf := []byte{encodeXPQZ(3, 3, 1, 1)}
+			return idxEncodeHelper(buf, l.idx)
+		} else {
+			panic("Non-HL like load to something")
 		}
 	default:
 		panic("Unknown src type in LD16")
