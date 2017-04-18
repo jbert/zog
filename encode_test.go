@@ -10,6 +10,12 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0xed, 0x5a}, "ADC HL, DE"},
+		{[]byte{0xdd, 0xed, 0x5a}, "ADC IX, DE"},
+
+		{[]byte{0xed, 0x52}, "SBC HL, DE"},
+		{[]byte{0xdd, 0xed, 0x52}, "SBC IX, DE"},
+
 		{[]byte{0xed, 0x51}, "OUT (C), D"},
 		{[]byte{0xed, 0x50}, "IN D, (C)"},
 

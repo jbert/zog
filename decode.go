@@ -189,9 +189,9 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 			}
 		case 2:
 			if q == 0 {
-				inst = &SBC16{hl, t.LookupRP(p)}
+				inst = NewSBC16(hl, t.LookupRP(p))
 			} else {
-				inst = &ADC16{hl, t.LookupRP(p)}
+				inst = NewADC16(hl, t.LookupRP(p))
 			}
 		case 3:
 			nn, err := getImmNN(inCh)

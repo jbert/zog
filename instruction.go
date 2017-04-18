@@ -189,27 +189,41 @@ func (a *ADD16) Encode() []byte {
 }
 
 type ADC16 struct {
-	dst Loc16
-	src Loc16
+	InstBin16
 }
 
+func NewADC16(dst, src Loc16) *ADC16 {
+	return &ADC16{InstBin16: InstBin16{dst: dst, src: src}}
+}
 func (a *ADC16) String() string {
 	return fmt.Sprintf("ADC %s, %s", a.dst, a.src)
 }
 func (a *ADC16) Encode() []byte {
-	return []byte{}
+	a.inspect()
+	if a.srcInfo.ltype != tableRP {
+		panic("Non-tableRP src in ADC16")
+	}
+	buf := []byte{0xed, encodeXPQZ(1, a.srcInfo.idxTable, 1, 2)}
+	return idxEncodeHelper(buf, a.idx)
 }
 
 type SBC16 struct {
-	dst Loc16
-	src Loc16
+	InstBin16
 }
 
+func NewSBC16(dst, src Loc16) *SBC16 {
+	return &SBC16{InstBin16: InstBin16{dst: dst, src: src}}
+}
 func (s *SBC16) String() string {
 	return fmt.Sprintf("SBC %s, %s", s.dst, s.src)
 }
 func (s *SBC16) Encode() []byte {
-	return []byte{}
+	s.inspect()
+	if s.srcInfo.ltype != tableRP {
+		panic("Non-tableRP src in ADC16")
+	}
+	buf := []byte{0xed, encodeXPQZ(1, s.srcInfo.idxTable, 0, 2)}
+	return idxEncodeHelper(buf, s.idx)
 }
 
 type INC16 struct {
