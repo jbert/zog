@@ -11,6 +11,10 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0xDD, 0x36, 0xEC, 0xAB}, "ld (ix-20),abh"},
+		{[]byte{0xFD, 0x36, 0xEC, 0xAB}, "ld (iy-20),abh"},
+
+		{[]byte{0x02}, "LD (BC), A"},
 		{[]byte{0x02}, "LD (BC), A"},
 		{[]byte{0x12}, "LD (DE), A"},
 
@@ -214,7 +218,7 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 
 	if bufToHex(encodedBuf) != bufToHex(byteForm) {
 		uStringForm := strings.ToUpper(stringForm)
-		if byteForm[0] == 0xdd || byteForm[0] == 0xfd &&
+		if (byteForm[0] == 0xdd || byteForm[0] == 0xfd) &&
 			!(strings.Contains(uStringForm, "IX") || strings.Contains(uStringForm, "IY")) {
 			fmt.Printf("Not failing [%s != %s], due to IX/IY duplication\n", bufToHex(byteForm), bufToHex(encodedBuf))
 		} else {
