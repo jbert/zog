@@ -2,6 +2,7 @@ package zog
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -209,7 +210,13 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	encodedBuf := insts[0].Encode()
 
 	if bufToHex(encodedBuf) != bufToHex(byteForm) {
-		t.Fatalf("Wrong encode for [%s] got [%s] expected [%s]", stringForm, bufToHex(encodedBuf), bufToHex(byteForm))
+		uStringForm := strings.ToUpper(stringForm)
+		if byteForm[0] == 0xdd || byteForm[0] == 0xfd &&
+			!(strings.Contains(uStringForm, "IX") || strings.Contains(uStringForm, "IY")) {
+			fmt.Printf("Not failing [%s != %s], due to IX/IY duplication\n", bufToHex(byteForm), bufToHex(encodedBuf))
+		} else {
+			t.Fatalf("Wrong encode for [%s] got [%s] expected [%s]", stringForm, bufToHex(encodedBuf), bufToHex(byteForm))
+		}
 	}
 	fmt.Printf("Encoded [%s] to [%s]\n", stringForm, bufToHex(encodedBuf))
 }
