@@ -61,8 +61,10 @@ func (l *LD8) Encode() []byte {
 		fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, l.srcInfo.idxTable, b)
 		return idxEncodeHelper([]byte{b}, l.idx)
 	case Immediate:
-		b := encodeXYZ(0, l.dstInfo.idxTable, 6)
-		return idxEncodeHelper([]byte{b, l.srcInfo.imm8}, l.idx)
+		buf := []byte{encodeXYZ(0, l.dstInfo.idxTable, 6)}
+		buf = idxEncodeHelper(buf, l.idx)
+		buf = append(buf, l.srcInfo.imm8)
+		return buf
 	case BCDEContents:
 		// LD A, (BC) or LD A, (DE)
 		p := byte(1)
