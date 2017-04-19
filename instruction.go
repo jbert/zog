@@ -40,7 +40,7 @@ func (l *LD8) Encode() []byte {
 	case BCDEContents:
 		// LD (BC), A or LD (DE), A
 		p := byte(1)
-		if l.srcInfo.isBC {
+		if l.dstInfo.isBC {
 			p = 0
 		}
 		buf := []byte{encodeXPQZ(0, p, 0, 2)}
