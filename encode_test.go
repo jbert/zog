@@ -11,6 +11,8 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
+		{[]byte{0xDD, 0xED, 0x60}, "IN IXH, (C)"},
+
 		{[]byte{0x36, 0xAB}, "ld (hl),abh"},
 		{[]byte{0xDD, 0x36, 0xEC, 0xAB}, "ld (ix-20),abh"},
 		{[]byte{0xFD, 0x36, 0xEC, 0xAB}, "ld (iy-20),abh"},
@@ -217,11 +219,13 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 
 	encodedBuf := insts[0].Encode()
 
+	uStringForm := strings.ToUpper(stringForm)
 	if bufToHex(encodedBuf) != bufToHex(byteForm) {
-		uStringForm := strings.ToUpper(stringForm)
 		if (byteForm[0] == 0xdd || byteForm[0] == 0xfd) &&
 			!(strings.Contains(uStringForm, "IX") || strings.Contains(uStringForm, "IY")) {
 			fmt.Printf("Not failing [%s != %s], due to IX/IY duplication\n", bufToHex(byteForm), bufToHex(encodedBuf))
+		} else if decodeToSameInstruction(encodedBuf, byteForm) {
+			fmt.Printf("Not failing [%s != %s], since they encode the same instruction\n", bufToHex(byteForm), bufToHex(encodedBuf))
 		} else {
 			t.Fatalf("Wrong encode for [%s] got [%s] expected [%s]", stringForm, bufToHex(encodedBuf), bufToHex(byteForm))
 		}

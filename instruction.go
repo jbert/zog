@@ -446,7 +446,8 @@ func (o *OUT) Encode() []byte {
 			panic("Non-tableR value in OUT")
 		}
 		// (HL)? IX?
-		return []byte{0xed, encodeXYZ(1, info.idxTable, 1)}
+		buf := []byte{0xed, encodeXYZ(1, info.idxTable, 1)}
+		return idxEncodeHelper(buf, idx)
 	} else {
 		imm8 := o.port.(Imm8)
 		return []byte{encodeXYZ(3, 2, 3), byte(imm8)}
@@ -464,18 +465,19 @@ func (i *IN) String() string {
 func (i *IN) Encode() []byte {
 	if i.port == C {
 		var y byte
+		var info loc8Info
+		var idx idxInfo
 		if i.dst == F {
 			y = 6
 		} else {
-			var info loc8Info
-			var idx idxInfo
 			inspectLoc8(i.dst, &info, &idx)
 			if info.ltype != tableR {
 				panic("Non-tableR dst in IN")
 			}
 			y = info.idxTable
 		}
-		return []byte{0xed, encodeXYZ(1, y, 0)}
+		buf := []byte{0xed, encodeXYZ(1, y, 0)}
+		return idxEncodeHelper(buf, idx)
 	} else {
 		imm8 := i.port.(Imm8)
 		return []byte{encodeXYZ(3, 3, 3), byte(imm8)}

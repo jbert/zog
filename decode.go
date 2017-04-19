@@ -175,8 +175,6 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 		switch z {
 		case 0:
 			if y == 6 {
-				// This would be (HL), it's unclear what this should be
-				log.Printf("IN (C)? or 'set flag'?")
 				inst = &IN{dst: F, port: C}
 			} else {
 				inst = &IN{dst: t.LookupR(y), port: C}

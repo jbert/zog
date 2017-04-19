@@ -158,6 +158,33 @@ func compareAssembly(a, b string) bool {
 	return a == b
 }
 
+func decodeToSameInstruction(a, b []byte) bool {
+	sA := bufToHex(a)
+	sB := bufToHex(b)
+
+	iAs, err := DecodeBytes(a)
+	if err != nil {
+		fmt.Printf("Error decoding [%s]: %s", sA, err)
+		return false
+	}
+	iBs, err := DecodeBytes(b)
+	if err != nil {
+		fmt.Printf("Error decoding [%s]: %s", sB, err)
+		return false
+	}
+
+	if len(iAs) != 1 {
+		fmt.Printf("Multiple instructions [%d] for %s", len(iAs), sA)
+		return false
+	}
+	if len(iBs) != 1 {
+		fmt.Printf("Multiple instructions [%d] for %s", len(iBs), sB)
+		return false
+	}
+
+	return iAs[0].String() == iBs[0].String()
+}
+
 var allInstructions = []testInstruction{
 	{0x00, "nop", "rlc b", " 	"},
 	{0x01, "ld bc,NN", "rlc c", " 	"},

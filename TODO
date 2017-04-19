@@ -1,4 +1,4 @@
-- implement LD16
+DONE - implement LD16
   - copy code from INC16
   - Use Loc16 everywhere
   - pull into helpers
@@ -6,7 +6,7 @@
   - do we use any table apart from tableR?
     - can we drop that type and the panic() check?
 
-- implement Encode() for instructions
+DONE - implement Encode() for instructions
 
 - might have displacement byte in the wrong place for CB-prefix:
   "These instructions have the following format:
@@ -14,18 +14,16 @@
   - check by hand against z80asm
   - ??? have autotests run z80asm/z80dasm and compare?
 
+- add tests (and then support) for DDCD and FDCB
+  - note *mandatory displacement* before instruction
+
+- make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
+
+- check DD ED sequencing
+
+
+
 DONE - add encode tests (driven by 'all' table)
-
-- find a way to share Encode() between simple InstU8?
-  (e.g. INC/DEC/ALU)
-
-
-DONE - imple inspect/encodeHelper  for InstBin8
-  - refactor (interface?) to share code with InstU8
-
-- allow 0x10 and 10h representations for IX offset, for encode testing
-
-- consider collapsing src/dst8 into loc8, ditto loc16
 
 DONE - consider have unary/binary embeddable instruction bases
   - encode helper can examine loc for IX etc
