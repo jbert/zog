@@ -209,7 +209,6 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	if err != nil {
 		t.Fatalf("Error for byte [%s]: %s (%s)", hexBuf, err, stringForm)
 	}
-
 	if len(insts) == 0 {
 		t.Fatalf("No instructions for byte [%s] (%s)", hexBuf, stringForm)
 	}
@@ -231,4 +230,27 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 		}
 	}
 	fmt.Printf("Encoded [%s] to [%s]\n", stringForm, bufToHex(encodedBuf))
+
+	// And go back!
+	fmt.Printf("== Loop buf [%s] -> string [%s]\n", hexBuf, stringForm)
+	insts, err = DecodeBytes(encodedBuf)
+
+	if err != nil {
+		t.Fatalf("Error for byte [%s]: %s (%s)", hexBuf, err, stringForm)
+	}
+	if len(insts) == 0 {
+		t.Fatalf("No instructions for byte [%s] (%s)", hexBuf, stringForm)
+	}
+	if len(insts) != 1 {
+		t.Fatalf("More than one instruction (%d) for byte [%s]: %v", len(insts), hexBuf, insts)
+	}
+
+	loopString := insts[0].String()
+	uLoopString := strings.ToUpper(loopString)
+
+	uLoopString = strings.Replace(uLoopString, ", ", ",", -1)
+
+	if uLoopString != uStringForm {
+		t.Fatalf("Looped string encoding doesn't match start: got [%s] expected [%s]", uLoopString, uStringForm)
+	}
 }

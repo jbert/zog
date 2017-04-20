@@ -1,18 +1,19 @@
-DONE - implement LD16
-  - copy code from INC16
-  - Use Loc16 everywhere
-  - pull into helpers
+- add encode/decode loop test before z80asm (to check encode/decode
+ consistent)
 
-  - do we use any table apart from tableR?
-    - can we drop that type and the panic() check?
+- need to ignore DD/FD before ED
+  - encode+decode
 
-DONE - implement Encode() for instructions
+- DD CB
+  - need to resolve before z80asm tests
+
+- have autotests run z80asm/z80dasm and compare
+  - "make" a table?
 
 - might have displacement byte in the wrong place for CB-prefix:
   "These instructions have the following format:
     DD or FD prefix,  CB,  displacement byte,  opcode"
   - check by hand against z80asm
-  - ??? have autotests run z80asm/z80dasm and compare?
 
 - add tests (and then support) for DDCD and FDCB
   - note *mandatory displacement* before instruction
@@ -20,8 +21,6 @@ DONE - implement Encode() for instructions
 - make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
 
 - check DD ED sequencing
-
-
 
 DONE - add encode tests (driven by 'all' table)
 
