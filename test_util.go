@@ -25,9 +25,15 @@ func testUtilRunAll(t *testing.T, f func(t *testing.T, byteForm []byte, stringFo
 							if indexPrefix != 0 {
 								buf = append([]byte{indexPrefix}, buf...)
 							}
+							effectiveIndexPrefix := indexPrefix
+							if opPrefix == 0xed {
+								// Index prefices ignored for ED
+								effectiveIndexPrefix = 0x00
+							}
+
 							// getExpected will append the IX/IY immediate byte to buf, so must
 							// be called before expandImmediateData
-							buf, expected := ti.getExpected(indexPrefix, opPrefix, buf)
+							buf, expected := ti.getExpected(effectiveIndexPrefix, opPrefix, buf)
 							buf, expected = expandImmediateData(buf, expected)
 							expected = normaliseAssembly(expected)
 							if expected == "" {
@@ -185,6 +191,45 @@ func decodeToSameInstruction(a, b []byte) bool {
 	return iAs[0].String() == iBs[0].String()
 }
 
+/*
+func z80asmAssemble(s string) []byte {
+	// stdin/stdout filter
+	cmd := exec.Command("z80asm", "-o", "-")
+	w, err := cmd.StdinPipe()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get stdin to command: %s", err))
+	}
+	r, err := cmd.StdoutPipe()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get stdout of command: %s", err))
+	}
+
+	if err := cmd.Start(); err != nil {
+		panic(fmt.Sprintf("Can't start: %s", err))
+	}
+
+	go func() {
+		defer w.Close()
+		n, err := io.WriteString(w, s)
+		if n != len(s) {
+			panic("Short write - buffering?")
+		}
+		if err != nil {
+			panic(fmt.Sprintf("Write error : %s", err))
+		}
+	}()
+
+	buf, err := ioutil.ReadAll(r)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to read stdout: %s", err))
+	}
+	if err = cmd.Wait(); err != nil {
+		panic(fmt.Sprintf("Failed to Wait(): %s", err))
+	}
+
+	return buf
+}
+*/
 var allInstructions = []testInstruction{
 	{0x00, "nop", "rlc b", " 	"},
 	{0x01, "ld bc,NN", "rlc c", " 	"},

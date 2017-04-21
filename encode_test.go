@@ -11,7 +11,8 @@ func TestEncodeBasic(t *testing.T) {
 		buf      []byte
 		expected string
 	}{
-		{[]byte{0xDD, 0xED, 0x60}, "IN IXH, (C)"},
+		//		{[]byte{0xDD,0xED,0x60},"IN IXH,(C)"},
+		{[]byte{0xDD, 0xED, 0x60}, "IN H,(C)"},
 
 		{[]byte{0x36, 0xAB}, "ld (hl),abh"},
 		{[]byte{0xDD, 0x36, 0xEC, 0xAB}, "ld (ix-20),abh"},
@@ -41,11 +42,13 @@ func TestEncodeBasic(t *testing.T) {
 		{[]byte{0xed, 0x43, 0x34, 0x12}, "LD (1234h), BC"},
 		{[]byte{0xed, 0x4b, 0x34, 0x12}, "LD BC, (1234h)"},
 
-		{[]byte{0xed, 0x5a}, "ADC HL, DE"},
-		{[]byte{0xdd, 0xed, 0x5a}, "ADC IX, DE"},
+		{[]byte{0xed, 0x5a}, "ADC HL,DE"},
+		//		{[]byte{0xdd,0xed,0x5a},"ADC IX,DE"},
+		{[]byte{0xdd, 0xed, 0x5a}, "ADC HL,DE"},
 
-		{[]byte{0xed, 0x52}, "SBC HL, DE"},
-		{[]byte{0xdd, 0xed, 0x52}, "SBC IX, DE"},
+		{[]byte{0xed, 0x52}, "SBC HL,DE"},
+		//		{[]byte{0xdd,0xed,0x52},"SBC IX,DE"},
+		{[]byte{0xdd, 0xed, 0x52}, "SBC HL,DE"},
 
 		{[]byte{0xed, 0x51}, "OUT (C), D"},
 		{[]byte{0xed, 0x50}, "IN D, (C)"},
@@ -249,8 +252,11 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	uLoopString := strings.ToUpper(loopString)
 
 	uLoopString = strings.Replace(uLoopString, ", ", ",", -1)
+	fmt.Printf("uStringForm before: [%s]\n", uStringForm)
+	uStringForm = strings.Replace(uStringForm, ", ", ",", -1)
+	fmt.Printf("uStringForm after: [%s]\n", uStringForm)
 
 	if uLoopString != uStringForm {
-		t.Fatalf("Looped string encoding doesn't match start: got [%s] expected [%s]", uLoopString, uStringForm)
+		t.Fatalf("Looped string encoding [%s] doesn't match start: got [%s] expected [%s]", hexBuf, uLoopString, uStringForm)
 	}
 }

@@ -1,4 +1,4 @@
-- add encode/decode loop test before z80asm (to check encode/decode
+DONE - add encode/decode loop test before z80asm (to check encode/decode
  consistent)
 
 - need to ignore DD/FD before ED

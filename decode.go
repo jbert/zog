@@ -88,8 +88,12 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 
 		if opPrefix == 0 {
 			switch n {
-			case 0xcb, 0xed:
+			case 0xcb:
 				opPrefix = n
+				continue
+			case 0xed:
+				opPrefix = n
+				indexPrefix = 0
 				continue
 			case 0xdd, 0xfd:
 				// Last one wins
