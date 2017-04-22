@@ -2,6 +2,9 @@ package zog
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os/exec"
 	"regexp"
 	"strings"
 	"testing"
@@ -100,15 +103,15 @@ func (tc *testInstruction) getExpected(indexPrefix byte, opPrefix byte, buf []by
 
 	switch indexPrefix {
 	case 0xdd:
-		return indexRegisterMunge("IX", buf, expected)
+		return indexRegisterMunge(opPrefix == 0xcb, "IX", buf, expected)
 	case 0xfd:
-		return indexRegisterMunge("IY", buf, expected)
+		return indexRegisterMunge(opPrefix == 0xcb, "IY", buf, expected)
 	default:
 		return buf, expected
 	}
 }
 
-func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]byte, string) {
+func indexRegisterMunge(isCB bool, indexRegister string, buf []byte, expected string) ([]byte, string) {
 	d := int8(-20)
 
 	// Must match location.go:func (ic IndexedContents) String() format
@@ -116,19 +119,37 @@ func indexRegisterMunge(indexRegister string, buf []byte, expected string) ([]by
 	hReplace := indexRegister + "h"
 	lReplace := indexRegister + "l"
 
+	// CB cases:
+	// SET/RES n, (HL)		-> SET/RES n, (ix+d)
+	// ROT (HL)				-> ROT (ix+d)
+
+	// SET/RES m, r		-> SET/RES n, (ix+d), r
+	// BIT n, r 			-> BIT n, (ix+d) 	[for all r!]
+	// ROT r					-> ROT (ix+d),r
 	if strings.Contains(expected, "(hl)") {
 		expected = strings.Replace(expected, "(hl)", hlReplace, -1)
 		buf = append(buf, byte(d))
 	} else {
-		// Exception
-		if expected != "ex de,hl" {
-			expected = strings.Replace(expected, "hl", indexRegister, -1)
-			expected = strings.Replace(expected, "h,", hReplace+",", -1)
-			expected = strings.Replace(expected, ",h", ","+hReplace, -1)
-			expected = strings.Replace(expected, " h", " "+hReplace, -1)
-			expected = strings.Replace(expected, "l,", lReplace+",", -1)
-			expected = strings.Replace(expected, ",l", ","+lReplace, -1)
-			expected = strings.Replace(expected, " l", " "+lReplace, -1)
+		if isCB {
+			// (HL) cases taken care of
+			op := strings.ToLower(expected[0:3])
+			switch op {
+			case "set", "res":
+				expected = strings.Replace(expected, ",", ","+hlReplace+",", -1)
+			default:
+				expected = strings.Replace(expected, " ", " "+hlReplace+",", -1)
+			}
+		} else {
+			// Exception
+			if expected != "ex de,hl" {
+				expected = strings.Replace(expected, "hl", indexRegister, -1)
+				expected = strings.Replace(expected, "h,", hReplace+",", -1)
+				expected = strings.Replace(expected, ",h", ","+hReplace, -1)
+				expected = strings.Replace(expected, " h", " "+hReplace, -1)
+				expected = strings.Replace(expected, "l,", lReplace+",", -1)
+				expected = strings.Replace(expected, ",l", ","+lReplace, -1)
+				expected = strings.Replace(expected, " l", " "+lReplace, -1)
+			}
 		}
 	}
 
@@ -191,7 +212,6 @@ func decodeToSameInstruction(a, b []byte) bool {
 	return iAs[0].String() == iBs[0].String()
 }
 
-/*
 func z80asmAssemble(s string) []byte {
 	// stdin/stdout filter
 	cmd := exec.Command("z80asm", "-o", "-")
@@ -229,7 +249,7 @@ func z80asmAssemble(s string) []byte {
 
 	return buf
 }
-*/
+
 var allInstructions = []testInstruction{
 	{0x00, "nop", "rlc b", " 	"},
 	{0x01, "ld bc,NN", "rlc c", " 	"},
