@@ -140,7 +140,7 @@ func findInTableR(l Loc8) byte {
 			return byte(i)
 		}
 	}
-	panic("Not found - bad encode")
+	panic(fmt.Sprintf("Not found in table R: %s", l))
 }
 
 func findInTableRP(l Loc16) byte {
@@ -149,7 +149,7 @@ func findInTableRP(l Loc16) byte {
 			return byte(i)
 		}
 	}
-	panic("Not found - bad encode")
+	panic(fmt.Sprintf("Not found in table RP: %s", l))
 }
 
 func findInTableRP2(l Loc16) byte {
@@ -158,7 +158,7 @@ func findInTableRP2(l Loc16) byte {
 			return byte(i)
 		}
 	}
-	panic("Not found - bad encode")
+	panic(fmt.Sprintf("Not found in table RP2: %s", l))
 }
 
 func findInTableALU(name string) byte {
@@ -167,7 +167,7 @@ func findInTableALU(name string) byte {
 			return byte(i)
 		}
 	}
-	panic("Not found - bad encode")
+	panic(fmt.Sprintf("Not found in tableALU: %s", name))
 }
 
 func findInTableCC(c Conditional) byte {
@@ -177,7 +177,7 @@ func findInTableCC(c Conditional) byte {
 			return byte(i)
 		}
 	}
-	panic("Not found - bad encode")
+	panic(fmt.Sprintf("Not found in tableCC: %s", c))
 }
 
 func findInTableROT(name string) byte {
@@ -186,5 +186,5 @@ func findInTableROT(name string) byte {
 			return byte(i)
 		}
 	}
-	panic("Not found - bad encode")
+	panic(fmt.Sprintf("Not found in tableROT: %s", name))
 }
