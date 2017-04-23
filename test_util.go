@@ -112,13 +112,21 @@ func (tc *testInstruction) getExpected(indexPrefix byte, opPrefix byte, buf []by
 }
 
 func indexRegisterMunge(isCB bool, indexRegister string, buf []byte, expected string) ([]byte, string) {
-	d := int8(-20)
+	disp := int8(-20)
 
 	// Must match location.go:func (ic IndexedContents) String() format
-	hlReplace := fmt.Sprintf("(%s%+d)", indexRegister, d)
+	hlReplace := fmt.Sprintf("(%s%+d)", indexRegister, disp)
 	hReplace := indexRegister + "h"
 	lReplace := indexRegister + "l"
 
+	if isCB {
+		if len(buf) != 3 {
+			panic("DDCB buf not 3 bytes long")
+		}
+		n := buf[2]          // save instruction
+		buf[2] = byte(disp)  // then displacement
+		buf = append(buf, n) // and put instruction bacl
+	}
 	// CB cases:
 	// SET/RES n, (HL)		-> SET/RES n, (ix+d)
 	// ROT (HL)				-> ROT (ix+d)
@@ -126,9 +134,13 @@ func indexRegisterMunge(isCB bool, indexRegister string, buf []byte, expected st
 	// SET/RES m, r		-> SET/RES n, (ix+d), r
 	// BIT n, r 			-> BIT n, (ix+d) 	[for all r!]
 	// ROT r					-> ROT (ix+d),r
+
 	if strings.Contains(expected, "(hl)") {
 		expected = strings.Replace(expected, "(hl)", hlReplace, -1)
-		buf = append(buf, byte(d))
+		// We did this above (in a different place) if this was CB
+		if !isCB {
+			buf = append(buf, byte(disp))
+		}
 	} else {
 		if isCB {
 			// (HL) cases taken care of
@@ -136,6 +148,8 @@ func indexRegisterMunge(isCB bool, indexRegister string, buf []byte, expected st
 			switch op {
 			case "set", "res":
 				expected = strings.Replace(expected, ",", ","+hlReplace+",", -1)
+			case "bit":
+				// Do nothing
 			default:
 				expected = strings.Replace(expected, " ", " "+hlReplace+",", -1)
 			}
@@ -209,6 +223,7 @@ func decodeToSameInstruction(a, b []byte) bool {
 		return false
 	}
 
+	fmt.Printf("JB - BA [%s] IA [%s] BB [%s] IB [%s]\n", bufToHex(a), iAs[0].String(), bufToHex(b), iBs[0].String())
 	return iAs[0].String() == iBs[0].String()
 }
 

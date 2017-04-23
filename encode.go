@@ -217,21 +217,36 @@ func (b *InstBin16) inspect() {
 	inspectLoc16(b.dst, &b.dstInfo, &b.idx, false)
 	inspectLoc16(b.src, &b.srcInfo, &b.idx, false)
 }
-func idxEncodeHelper(base []byte, idx idxInfo) []byte {
+func encodeHelper(base []byte, idx idxInfo, dispFirst bool) []byte {
 	encoded := base
 	if idx.isPrefix {
 		idxPrefix := byte(0xdd)
 		if idx.isIY {
 			idxPrefix = 0xfd
 		}
-		encoded = append([]byte{idxPrefix}, encoded...)
-
-		if idx.hasDisp {
-			encoded = append(encoded, idx.idxDisp)
+		if dispFirst {
+			// dispFirst implies idx.hasDisp
+			encoded = append([]byte{idxPrefix}, encoded...)
+			n := encoded[len(encoded)-1]
+			encoded[len(encoded)-1] = idx.idxDisp
+			encoded = append(encoded, n)
+		} else {
+			encoded = append([]byte{idxPrefix}, encoded...)
+			if idx.hasDisp {
+				encoded = append(encoded, idx.idxDisp)
+			}
 		}
 	}
 
 	return encoded
+}
+
+func idxEncodeHelper(base []byte, idx idxInfo) []byte {
+	return encodeHelper(base, idx, false)
+}
+
+func ddcbHelper(base []byte, idx idxInfo) []byte {
+	return encodeHelper(base, idx, true)
 }
 
 func (b *InstBin8) inspect() {

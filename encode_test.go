@@ -55,7 +55,7 @@ func TestEncodeBasic(t *testing.T) {
 
 		{[]byte{0xcb, 0x20}, "SLA B"},
 		{[]byte{0xcb, 0x26}, "SLA (HL)"},
-		{[]byte{0xdd, 0xcb, 0x26, 0x10}, "SLA (IX+16)"},
+		{[]byte{0xdd, 0xcb, 0x10, 0x26}, "SLA (IX+16)"},
 
 		{[]byte{0xe5}, "PUSH HL"},
 		{[]byte{0xdd, 0xe5}, "PUSH IX"},
@@ -134,18 +134,18 @@ func TestEncodeBasic(t *testing.T) {
 
 		{[]byte{0xcb, 0xd0}, "SET 2, B"},
 		{[]byte{0xcb, 0xd6}, "SET 2, (HL)"},
-		{[]byte{0xdd, 0xcb, 0xd6, 0x10}, "SET 2, (IX+16)"},
-		{[]byte{0xfd, 0xcb, 0xd6, 0x10}, "SET 2, (IY+16)"},
+		{[]byte{0xdd, 0xcb, 0x10, 0xd6}, "SET 2, (IX+16)"},
+		{[]byte{0xfd, 0xcb, 0x10, 0xd6}, "SET 2, (IY+16)"},
 
 		{[]byte{0xcb, 0x90}, "RES 2, B"},
 		{[]byte{0xcb, 0x96}, "RES 2, (HL)"},
-		{[]byte{0xdd, 0xcb, 0x96, 0x10}, "RES 2, (IX+16)"},
-		{[]byte{0xfd, 0xcb, 0x96, 0x10}, "RES 2, (IY+16)"},
+		{[]byte{0xdd, 0xcb, 0x10, 0x96}, "RES 2, (IX+16)"},
+		{[]byte{0xfd, 0xcb, 0x10, 0x96}, "RES 2, (IY+16)"},
 
 		{[]byte{0xcb, 0x50}, "BIT 2, B"},
 		{[]byte{0xcb, 0x56}, "BIT 2, (HL)"},
-		{[]byte{0xdd, 0xcb, 0x56, 0x10}, "BIT 2, (IX+16)"},
-		{[]byte{0xfd, 0xcb, 0x56, 0x10}, "BIT 2, (IY+16)"},
+		{[]byte{0xdd, 0xcb, 0x10, 0x56}, "BIT 2, (IX+16)"},
+		{[]byte{0xfd, 0xcb, 0x10, 0x56}, "BIT 2, (IY+16)"},
 
 		{[]byte{0x80}, "ADD A, B"},
 		{[]byte{0x86}, "ADD A, (HL)"},
@@ -229,7 +229,7 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 		} else if decodeToSameInstruction(encodedBuf, byteForm) {
 			fmt.Printf("Not failing [%s != %s], since they encode the same instruction\n", bufToHex(byteForm), bufToHex(encodedBuf))
 		} else {
-			t.Fatalf("Wrong encode for [%s] got [%s] expected [%s]", stringForm, bufToHex(encodedBuf), bufToHex(byteForm))
+			t.Fatalf("Wrong encode for [%s] (%s) got [%s] expected [%s]", stringForm, insts[0].String(), bufToHex(encodedBuf), bufToHex(byteForm))
 		}
 	}
 	fmt.Printf("Encoded [%s] to [%s]\n", stringForm, bufToHex(encodedBuf))

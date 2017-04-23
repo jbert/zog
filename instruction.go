@@ -591,15 +591,20 @@ func (a accum) Encode() []byte {
 
 type rot struct {
 	InstU8
+	cpy  Loc8
 	name string
 }
 
-func NewRot(name string, l Loc8) *rot {
-	return &rot{InstU8: InstU8{l: l}, name: name}
+func NewRot(name string, l Loc8, cpy Loc8) *rot {
+	return &rot{InstU8: InstU8{l: l}, cpy: cpy, name: name}
 }
 
 func (r *rot) String() string {
-	return fmt.Sprintf("%s %s", r.name, r.l)
+	s := fmt.Sprintf("%s %s", r.name, r.l)
+	if r.cpy != nil {
+		s += ", " + r.cpy.String()
+	}
+	return s
 }
 func (r *rot) Encode() []byte {
 	r.inspect()
@@ -607,8 +612,12 @@ func (r *rot) Encode() []byte {
 		panic("Non-tableR src in BIT")
 	}
 	y := findInTableROT(r.name)
-	buf := []byte{0xcb, encodeXYZ(0, y, r.lInfo.idxTable)}
-	return idxEncodeHelper(buf, r.idx)
+	z := r.lInfo.idxTable
+	if r.idx.isPrefix && r.cpy != nil {
+		z = findInTableR(r.cpy)
+	}
+	buf := []byte{0xcb, encodeXYZ(0, y, z)}
+	return ddcbHelper(buf, r.idx)
 }
 
 type BIT struct {
@@ -627,48 +636,67 @@ func (b *BIT) Encode() []byte {
 	if b.lInfo.ltype != tableR {
 		panic("Non-tableR src in BIT")
 	}
-	enc := encodeXYZ(1, b.num, b.lInfo.idxTable)
-	return idxEncodeHelper([]byte{0xcb, enc}, b.idx)
+	z := b.lInfo.idxTable
+	enc := encodeXYZ(1, b.num, z)
+	return ddcbHelper([]byte{0xcb, enc}, b.idx)
 }
 
 type RES struct {
 	InstU8
+	cpy Loc8
 	num byte
 }
 
-func NewRES(num byte, l Loc8) *RES {
-	return &RES{InstU8: InstU8{l: l}, num: num}
+func NewRES(num byte, l Loc8, cpy Loc8) *RES {
+	return &RES{InstU8: InstU8{l: l}, cpy: cpy, num: num}
 }
 func (r *RES) String() string {
-	return fmt.Sprintf("RES %d, %s", r.num, r.l)
+	s := fmt.Sprintf("RES %d, %s", r.num, r.l)
+	if r.cpy != nil {
+		s += ", " + r.cpy.String()
+	}
+	return s
 }
 func (r *RES) Encode() []byte {
 	r.inspect()
 	if r.lInfo.ltype != tableR {
 		panic("Non-tableR src in BIT")
 	}
-	enc := encodeXYZ(2, r.num, r.lInfo.idxTable)
-	return idxEncodeHelper([]byte{0xcb, enc}, r.idx)
+	z := r.lInfo.idxTable
+	if r.idx.isPrefix && r.cpy != nil {
+		z = findInTableR(r.cpy)
+	}
+	enc := encodeXYZ(2, r.num, z)
+	return ddcbHelper([]byte{0xcb, enc}, r.idx)
 }
 
 type SET struct {
 	InstU8
+	cpy Loc8
 	num byte
 }
 
-func NewSET(num byte, l Loc8) *SET {
-	return &SET{InstU8: InstU8{l: l}, num: num}
+func NewSET(num byte, l Loc8, cpy Loc8) *SET {
+	return &SET{InstU8: InstU8{l: l}, cpy: cpy, num: num}
 }
 func (s *SET) String() string {
-	return fmt.Sprintf("SET %d, %s", s.num, s.l)
+	str := fmt.Sprintf("SET %d, %s", s.num, s.l)
+	if s.cpy != nil {
+		str += ", " + s.cpy.String()
+	}
+	return str
 }
 func (s *SET) Encode() []byte {
 	s.inspect()
 	if s.lInfo.ltype != tableR {
 		panic("Non-tableR src in BIT")
 	}
-	enc := encodeXYZ(3, s.num, s.lInfo.idxTable)
-	return idxEncodeHelper([]byte{0xcb, enc}, s.idx)
+	z := s.lInfo.idxTable
+	if s.idx.isPrefix && s.cpy != nil {
+		z = findInTableR(s.cpy)
+	}
+	enc := encodeXYZ(3, s.num, z)
+	return ddcbHelper([]byte{0xcb, enc}, s.idx)
 }
 
 type Simple byte

@@ -8,6 +8,7 @@ import (
 
 type Current struct {
 	loc8 Loc8
+	cpy8 Loc8
 	dst8 Loc8
 	src8 Loc8
 
@@ -81,7 +82,7 @@ func (c *Current) Accum(name string) {
 }
 
 func (c *Current) Rot(name string) {
-	c.inst = NewRot(name, c.loc8)
+	c.inst = NewRot(name, c.loc8, c.cpy8)
 }
 
 func (c *Current) Bit() {
@@ -89,11 +90,11 @@ func (c *Current) Bit() {
 }
 
 func (c *Current) Res() {
-	c.inst = NewRES(c.odigit, c.loc8)
+	c.inst = NewRES(c.odigit, c.loc8, c.cpy8)
 }
 
 func (c *Current) Set() {
-	c.inst = NewSET(c.odigit, c.loc8)
+	c.inst = NewSET(c.odigit, c.loc8, c.cpy8)
 }
 
 func (c *Current) Simple(name string) {
@@ -212,6 +213,10 @@ func (c *Current) DispDecimal(s string) {
 
 func (c *Current) Conditional(cc Conditional) {
 	c.cc = cc
+}
+
+func (c *Current) Copy8() {
+	c.cpy8 = c.r8
 }
 
 func (c *Current) Loc8() {

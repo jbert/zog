@@ -10,6 +10,20 @@ func TestAssembleAll(t *testing.T) {
 
 func TestAssembleBasic(t *testing.T) {
 	testCases := []string{
+		"RLC (IX+1), B",
+		"RLC (IX+1)",
+
+		"SRL (IX+1), B",
+		"SRL (IX+1)",
+
+		"SET 7, (IX+1), B",
+		"SET 7, (IX+1)",
+
+		"RES 7, (IX+1), B",
+		"RES 7, (IX+1)",
+
+		"BIT 7, (IX+1)",
+
 		"LD A, (IX+10)",
 		"LD A, (IX-10)",
 

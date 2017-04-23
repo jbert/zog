@@ -111,7 +111,19 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 		case 0:
 			inst, err = baseDecode(t, inCh, indexPrefix, n)
 		case 0xcb:
-			inst, err = cbDecode(t, inCh, indexPrefix, n)
+			var disp byte
+			if indexPrefix != 0x00 {
+				// DDCB - displacement byte comes before instruction...
+				disp = n
+				var ok bool
+				n, ok = <-inCh
+				if !ok {
+					err = fmt.Errorf("DDCB: Can't get instruction after displacement")
+				}
+			}
+			if err == nil {
+				inst, err = cbDecode(t, inCh, indexPrefix, n, disp)
+			}
 		case 0xed:
 			inst, err = edDecode(t, inCh, indexPrefix, n)
 		}
@@ -134,23 +146,61 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 	close(errCh)
 }
 
-func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
+func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte, disp byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 
 	x, y, z, p, q := decomposeByte(n)
 	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
+	if indexPrefix == 0x00 {
+		switch x {
+		case 0:
+			info := tableROT[y]
+			inst = NewRot(info.name, t.LookupR(z), nil)
+		case 1:
+			inst = NewBIT(y, t.LookupR(z))
+		case 2:
+			inst = NewRES(y, t.LookupR(z), nil)
+		case 3:
+			inst = NewSET(y, t.LookupR(z), nil)
+		}
+		return inst, err
+	}
+
+	var hl Loc16
+	if indexPrefix == 0xDD {
+		hl = IX
+	} else if indexPrefix == 0xFD {
+		hl = IY
+	}
+	l8 := IndexedContents{hl, Disp(disp)}
+
+	// We have handled the index byte here, we don't want the table
+	// lookup to read another and think we are in indexed mode
+	t.ResetPrefix(0x00)
+	cpy := t.LookupR(z)
+	if z == 6 {
+		// Don't need/want copy to (HL)
+		cpy = nil
+	}
+
 	switch x {
 	case 0:
 		info := tableROT[y]
-		inst = NewRot(info.name, t.LookupR(z))
+		inst = NewRot(info.name, l8, cpy)
 	case 1:
-		inst = NewBIT(y, t.LookupR(z))
+		// Table lookup won't have done indexed rewrite for (hl)
+		// but we have the correct loc8 in l8 for that case.
+		if z == 6 {
+			inst = NewBIT(y, l8)
+		} else {
+			inst = NewBIT(y, t.LookupR(z))
+		}
 	case 2:
-		inst = NewRES(y, t.LookupR(z))
+		inst = NewRES(y, l8, cpy)
 	case 3:
-		inst = NewSET(y, t.LookupR(z))
+		inst = NewSET(y, l8, cpy)
 	}
 
 	return inst, err

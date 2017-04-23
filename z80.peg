@@ -43,6 +43,7 @@ Sbc16 <- "SBC" ws Dst16 sep Src16                         { p.Sbc16() }
 Dst8 <- (Reg8 / Reg16Contents / nn_contents)              { p.Dst8() }
 Src8 <- (n / Reg8 / Reg16Contents / nn_contents)          { p.Src8() }
 Loc8 <- (Reg8 / Reg16Contents)                            { p.Loc8() }
+Copy8 <- Reg8                                             { p.Copy8() }
 ILoc8 <- IReg8                                            { p.Loc8() }
 
 Reg8  <- <A / F / B / C / D / E / H / L / IReg8 / I / R>  { p.R8(buffer[begin:end]) }
@@ -91,18 +92,18 @@ Cp  <- "CP"  ws Src8            { p.Accum("CP") }
 
 BitOp <- Rot / Bit / Res / Set
 Rot <- Rlc / Rrc / Rl / Rr / Sla / Sra / Sll / Srl
-Rlc <- "RLC" ws Loc8            { p.Rot("RLC") }
-Rrc <- "RRC" ws Loc8            { p.Rot("RRC") }
-Rl  <- "RL"  ws Loc8            { p.Rot("RL") }
-Rr  <- "RR"  ws Loc8            { p.Rot("RR") }
-Sla <- "SLA" ws Loc8            { p.Rot("SLA") }
-Sra <- "SRA" ws Loc8            { p.Rot("SRA") }
-Sll <- "SLL" ws Loc8            { p.Rot("SLL") }
-Srl <- "SRL" ws Loc8            { p.Rot("SRL") }
+Rlc <- "RLC" ws Loc8 (sep Copy8)?            { p.Rot("RLC") }
+Rrc <- "RRC" ws Loc8 (sep Copy8)?            { p.Rot("RRC") }
+Rl  <- "RL"  ws Loc8 (sep Copy8)?            { p.Rot("RL") }
+Rr  <- "RR"  ws Loc8 (sep Copy8)?            { p.Rot("RR") }
+Sla <- "SLA" ws Loc8 (sep Copy8)?            { p.Rot("SLA") }
+Sra <- "SRA" ws Loc8 (sep Copy8)?            { p.Rot("SRA") }
+Sll <- "SLL" ws Loc8 (sep Copy8)?            { p.Rot("SLL") }
+Srl <- "SRL" ws Loc8 (sep Copy8)?            { p.Rot("SRL") }
 
-Bit <- "BIT" ws octaldigit sep Loc8       { p.Bit() }
-Res <- "RES" ws octaldigit sep Loc8       { p.Res() }
-Set <- "SET" ws octaldigit sep Loc8       { p.Set() }
+Bit <- "BIT" ws octaldigit sep Loc8                   { p.Bit() }
+Res <- "RES" ws octaldigit sep Loc8 (sep Copy8)?      { p.Res() }
+Set <- "SET" ws octaldigit sep Loc8 (sep Copy8)?      { p.Set() }
 
 Simple <- Nop / Halt / Rlca / Rrca / Rla / Rra / Daa / Cpl / Scf / Ccf / Exx / Di / Ei
 
