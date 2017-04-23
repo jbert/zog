@@ -15,11 +15,13 @@ func TestZ80AsmBasic(t *testing.T) {
 	}
 }
 
+/*
 func TestZ80AsmAll(t *testing.T) {
 	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
 		testZ80AsmOne(t, byteForm, stringForm)
 	})
 }
+*/
 
 func testZ80AsmOne(t *testing.T, byteForm []byte, stringForm string) {
 	z80Buf := z80asmAssemble(stringForm)

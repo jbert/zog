@@ -251,12 +251,9 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	loopString := insts[0].String()
 	uLoopString := strings.ToUpper(loopString)
 
-	uLoopString = strings.Replace(uLoopString, ", ", ",", -1)
-	fmt.Printf("uStringForm before: [%s]\n", uStringForm)
-	uStringForm = strings.Replace(uStringForm, ", ", ",", -1)
-	fmt.Printf("uStringForm after: [%s]\n", uStringForm)
-
 	if !compareAssembly(uLoopString, uStringForm) {
+		fmt.Printf("S: %s normalised %s\n", uLoopString, normaliseAssembly(uLoopString))
+		fmt.Printf("S: %s normalised %s\n", uStringForm, normaliseAssembly(uStringForm))
 		t.Fatalf("Looped string encoding [%s] doesn't match start: got [%s] expected [%s]", hexBuf, uLoopString, uStringForm)
 	}
 }

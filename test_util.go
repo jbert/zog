@@ -179,15 +179,16 @@ func normaliseWhiteSpace(s string) string {
 }
 func normaliseHex(s string) string {
 	// 0xabcd -> abcdh
-	re := regexp.MustCompile("([[:xdigit:]]{2})h")
+	re := regexp.MustCompile("([[:xdigit:]]{4})h")
 	s = re.ReplaceAllString(s, "0x${1}")
-	re = regexp.MustCompile("([[:xdigit:]]{4})h")
+	re = regexp.MustCompile("([[:xdigit:]]{2})h")
 	s = re.ReplaceAllString(s, "0x${1}")
 	return s
 }
 
 func normaliseAssembly(s string) string {
 	s = strings.TrimSpace(s)
+	s = strings.ToLower(s)
 	s = normaliseHex(s)
 	s = normaliseWhiteSpace(s)
 	s = strings.ToLower(s)
