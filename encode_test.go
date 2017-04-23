@@ -14,9 +14,9 @@ func TestEncodeBasic(t *testing.T) {
 		//		{[]byte{0xDD,0xED,0x60},"IN IXH,(C)"},
 		{[]byte{0xDD, 0xED, 0x60}, "IN H,(C)"},
 
-		{[]byte{0x36, 0xAB}, "ld (hl),abh"},
-		{[]byte{0xDD, 0x36, 0xEC, 0xAB}, "ld (ix-20),abh"},
-		{[]byte{0xFD, 0x36, 0xEC, 0xAB}, "ld (iy-20),abh"},
+		{[]byte{0x36, 0xAB}, "ld (hl),0xab"},
+		{[]byte{0xDD, 0x36, 0xEC, 0xAB}, "ld (ix-20),0xab"},
+		{[]byte{0xFD, 0x36, 0xEC, 0xAB}, "ld (iy-20),0xab"},
 
 		{[]byte{0x02}, "LD (BC), A"},
 		{[]byte{0x02}, "LD (BC), A"},
@@ -256,7 +256,7 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	uStringForm = strings.Replace(uStringForm, ", ", ",", -1)
 	fmt.Printf("uStringForm after: [%s]\n", uStringForm)
 
-	if uLoopString != uStringForm {
+	if !compareAssembly(uLoopString, uStringForm) {
 		t.Fatalf("Looped string encoding [%s] doesn't match start: got [%s] expected [%s]", hexBuf, uLoopString, uStringForm)
 	}
 }

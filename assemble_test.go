@@ -52,7 +52,7 @@ func TestAssembleBasic(t *testing.T) {
 
 		"LD A, B",
 		"LD A, 0x10",
-		"LD A, 10h",
+		"LD A, 0x10",
 
 		"INC DE",
 		"ADD DE, HL",

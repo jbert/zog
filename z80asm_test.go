@@ -5,10 +5,14 @@ import (
 	"testing"
 )
 
-/*
-func TestZ80Asm(t *testing.T) {
-	buf := z80asmAssemble("LD (IX+10h), A")
-	fmt.Printf("buf is %v\n", buf)
+func TestZ80AsmBasic(t *testing.T) {
+	testCases := []string {
+		"LD (IX+10h), A",
+	}
+
+	for _, s := range testCases {
+		testZ80AsmOne(t, nil, s)
+	}
 }
 
 func TestZ80AsmAll(t *testing.T) {
@@ -16,7 +20,6 @@ func TestZ80AsmAll(t *testing.T) {
 		testZ80AsmOne(t, byteForm, stringForm)
 	})
 }
-*/
 
 func testZ80AsmOne(t *testing.T, byteForm []byte, stringForm string) {
 	z80Buf := z80asmAssemble(stringForm)

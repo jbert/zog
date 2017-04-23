@@ -36,17 +36,17 @@ func testUtilRunAll(t *testing.T, f func(t *testing.T, byteForm []byte, stringFo
 
 							// getExpected will append the IX/IY immediate byte to buf, so must
 							// be called before expandImmediateData
-							buf, expected := ti.getExpected(effectiveIndexPrefix, opPrefix, buf)
-							buf, expected = expandImmediateData(buf, expected)
-							expected = normaliseAssembly(expected)
-							if expected == "" {
+							buf, stringForm := ti.createVariantForms(effectiveIndexPrefix, opPrefix, buf)
+							buf, stringForm = expandImmediateData(buf, stringForm)
+							stringForm = normaliseAssembly(stringForm)
+							if stringForm == "" {
 								t.Skip("No instruction")
 							}
 
 							hexBuf := bufToHex(buf)
-							fmt.Printf("TEST [%s]: %s\n", hexBuf, expected)
+							fmt.Printf("TEST [%s]: %s\n", hexBuf, stringForm)
 
-							f(t, buf, expected)
+							f(t, buf, stringForm)
 						})
 					}
 				})
@@ -63,8 +63,8 @@ func expandImmediateData(buf []byte, template string) ([]byte, string) {
 		s = strings.Replace(s, "NN", "0x1234", 1)
 	}
 	if strings.Contains(s, "N") {
-		buf = append(buf, 0xab)
-		s = strings.Replace(s, "N", "0xab", 1)
+		buf = append(buf, 0xde)
+		s = strings.Replace(s, "N", "0xde", 1)
 	}
 	if strings.Contains(s, "DIS") {
 		buf = append(buf, 0xf0)
@@ -88,26 +88,26 @@ type testInstruction struct {
 	inst_after_ed string
 }
 
-func (tc *testInstruction) getExpected(indexPrefix byte, opPrefix byte, buf []byte) ([]byte, string) {
-	var expected string
+func (tc *testInstruction) createVariantForms(indexPrefix byte, opPrefix byte, buf []byte) ([]byte, string) {
+	var stringForm string
 	switch opPrefix {
 	case 0: // No prefix
-		expected = tc.inst
+		stringForm = tc.inst
 	case 0xcb:
-		expected = tc.inst_after_cb
+		stringForm = tc.inst_after_cb
 	case 0xed:
-		expected = tc.inst_after_ed
+		stringForm = tc.inst_after_ed
 	default:
 		panic(fmt.Sprintf("Unrecognised op prefix %02X", opPrefix))
 	}
 
 	switch indexPrefix {
 	case 0xdd:
-		return indexRegisterMunge(opPrefix == 0xcb, "IX", buf, expected)
+		return indexRegisterMunge(opPrefix == 0xcb, "IX", buf, stringForm)
 	case 0xfd:
-		return indexRegisterMunge(opPrefix == 0xcb, "IY", buf, expected)
+		return indexRegisterMunge(opPrefix == 0xcb, "IY", buf, stringForm)
 	default:
-		return buf, expected
+		return buf, stringForm
 	}
 }
 
@@ -179,8 +179,10 @@ func normaliseWhiteSpace(s string) string {
 }
 func normaliseHex(s string) string {
 	// 0xabcd -> abcdh
-	re := regexp.MustCompile("0x([[:xdigit:]]{1,4})")
-	s = re.ReplaceAllString(s, "${1}h")
+	re := regexp.MustCompile("([[:xdigit:]]{2})h")
+	s = re.ReplaceAllString(s, "0x${1}")
+	re = regexp.MustCompile("([[:xdigit:]]{4})h")
+	s = re.ReplaceAllString(s, "0x${1}")
 	return s
 }
 
@@ -195,7 +197,6 @@ func normaliseAssembly(s string) string {
 func compareAssembly(a, b string) bool {
 	a = normaliseAssembly(a)
 	b = normaliseAssembly(b)
-	fmt.Printf("a [%s] b [%s]\n", a, b)
 	return a == b
 }
 
@@ -223,7 +224,6 @@ func decodeToSameInstruction(a, b []byte) bool {
 		return false
 	}
 
-	fmt.Printf("JB - BA [%s] IA [%s] BB [%s] IB [%s]\n", bufToHex(a), iAs[0].String(), bufToHex(b), iBs[0].String())
 	return iAs[0].String() == iBs[0].String()
 }
 

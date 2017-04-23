@@ -229,7 +229,7 @@ func (ic IndexedContents) Write16(z *Zog, nn uint16) error {
 type Imm16 uint16
 
 func (nn Imm16) String() string {
-	return fmt.Sprintf("%04Xh", uint16(nn))
+	return fmt.Sprintf("0x%04X", uint16(nn))
 }
 func (nn Imm16) Read16(z *Zog) (uint16, error) {
 	return uint16(nn), nil
@@ -241,7 +241,7 @@ func (nn Imm16) Write16(z *Zog, n uint16) error {
 type Imm8 byte
 
 func (n Imm8) String() string {
-	return fmt.Sprintf("%02Xh", byte(n))
+	return fmt.Sprintf("0x%02X", byte(n))
 }
 func (n Imm8) Read8(z *Zog) (byte, error) {
 	return byte(n), nil

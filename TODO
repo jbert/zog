@@ -1,4 +1,4 @@
-- inspectCB needs to handle the DD prefix for encode
+DONE - inspectCB needs to handle the DD prefix for encode
   - encode_test.go:232: Wrong encode for [SLA (IX+16)] got [DDCB2610] expected [DDCB1026]
 
 
@@ -8,7 +8,7 @@ DONE - add encode/decode loop test before z80asm (to check encode/decode
 DONE - need to ignore DD/FD before ED
   - encode+decode
 
-- DD CB
+DONE - DD CB
   - need to resolve before z80asm tests
 
   - need to:
