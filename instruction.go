@@ -58,7 +58,6 @@ func (l *LD8) Encode() []byte {
 	switch l.srcInfo.ltype {
 	case tableR:
 		b := encodeXYZ(1, l.dstInfo.idxTable, l.srcInfo.idxTable)
-		fmt.Printf("JB x %d y %d z %d: b %02X\n", 1, l.dstInfo.idxTable, l.srcInfo.idxTable, b)
 		return idxEncodeHelper([]byte{b}, l.idx)
 	case Immediate:
 		buf := []byte{encodeXYZ(0, l.dstInfo.idxTable, 6)}
