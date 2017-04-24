@@ -1,29 +1,93 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
 	"github.com/jbert/zog"
 )
 
-func main() {
-	fname := "tt.z80"
-	f, err := os.Open(fname)
-	if err != nil {
-		log.Fatalf("Can't open [%s]: %s", fname, err)
-	}
-	buf, err := ioutil.ReadAll(f)
-	if err != nil {
-		log.Fatalf("Can't readall: %s", err)
-	}
-	f.Close()
+type options struct {
+	inFileName  string
+	outFileName string
+}
 
-	insts, err := zog.Assemble(string(buf))
-	fmt.Printf("Got %d instructions\n", len(insts))
-	for _, inst := range insts {
-		fmt.Printf("%s\n", inst)
+func main() {
+	o, err := parseArgs()
+	if err != nil {
+		log.Fatalf("Bad arguments: %s\n", err)
+		os.Exit(1)
 	}
+
+	var in io.Reader
+	if o.inFileName == "-" {
+		in = os.Stdin
+	} else {
+		f, err := os.Open(o.inFileName)
+		if err != nil {
+			log.Fatalf("Can't open [%s]: %s", o.inFileName, err)
+		}
+		defer f.Close()
+		in = f
+	}
+	br := bufio.NewReader(in)
+
+	var w io.Writer
+	if o.outFileName == "-" {
+		w = os.Stdout
+	} else {
+		f, err := os.Create(o.outFileName)
+		if err != nil {
+			log.Fatalf("Can't open [%s]: %s", o.outFileName, err)
+		}
+		defer f.Close()
+		w = f
+	}
+
+	for lineNum := 1; ; lineNum++ {
+		line, isPrefix, err := br.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatalf("Line %d: error reading: %s", lineNum, err)
+		}
+		if isPrefix {
+			log.Fatalf("Line %d: bufio ReadLine didn't return whole line - very long line?", lineNum)
+		}
+		fmt.Fprintf(os.Stderr, "L: %s\n", line)
+		insts, err := zog.Assemble(string(line))
+		if err != nil {
+			log.Fatalf("Line %d: failed to assemble: %s", lineNum, err)
+		}
+
+		for _, inst := range insts {
+			fmt.Fprintf(os.Stderr, "%s\n", inst)
+			encodedBuf := inst.Encode()
+			n, err := w.Write(encodedBuf)
+			if err != nil {
+				log.Fatalf("Line %d: failed to write: %s", lineNum, err)
+			}
+			if n != len(encodedBuf) {
+				log.Fatalf("Line %d: partial write: wrote %d not %d", lineNum, n, len(encodedBuf))
+			}
+		}
+	}
+
+}
+
+func parseArgs() (*options, error) {
+	o := options{}
+	flag.StringVar(&o.outFileName, "out", "-", "Output file (default stdout)")
+	flag.Parse()
+	if len(os.Args) == 2 {
+		o.inFileName = os.Args[1]
+	} else {
+		o.inFileName = "-"
+	}
+	return &o, nil
 }
