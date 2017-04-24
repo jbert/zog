@@ -6,8 +6,10 @@ type PegAssembler Peg {
 
 Program <- (BlankLine / Line)+
 
-BlankLine <- ws* "\n"
-Line <- Instruction "\n"?                                   { p.Emit() }
+BlankLine <- ws* LineEnd
+Line <- Instruction LineEnd?                                   { p.Emit() }
+
+LineEnd <- ("\n" / ":")
 
 Instruction <- ws* ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / EDSimple / Simple / Jump / IO )
 
