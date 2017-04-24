@@ -1,70 +1,20 @@
-DONE - inspectCB needs to handle the DD prefix for encode
-  - encode_test.go:232: Wrong encode for [SLA (IX+16)] got [DDCB2610] expected [DDCB1026]
-
-
-DONE - add encode/decode loop test before z80asm (to check encode/decode
- consistent)
-
-DONE - need to ignore DD/FD before ED
-  - encode+decode
-
-DONE - DD CB
-  - need to resolve before z80asm tests
-
-  - need to:
-    - for all CB codes (Rot, Set, Res, Bit)
-      - or have 'wrapper op'?
-      - or 'bridging loc'?
-    - update test munging code
-    - update assembler
-    - add dst2 to RLC (two ctors) where we copy
-    - change decode+encode to put the displacement byte in the right place
-
-- have autotests run z80asm/z80dasm and compare
-  - "make" a table?
-
-- might have displacement byte in the wrong place for CB-prefix:
-  "These instructions have the following format:
-    DD or FD prefix,  CB,  displacement byte,  opcode"
-  - check by hand against z80asm
-
-- add tests (and then support) for DDCD and FDCB
-  - note *mandatory displacement* before instruction
-
-- make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
-
-- check DD ED sequencing
-
-DONE - add encode tests (driven by 'all' table)
-
-DONE - consider have unary/binary embeddable instruction bases
-  - encode helper can examine loc for IX etc
-    - also need to encode displacement!
-  - or just helper method?
-    - take optional src + dst (or nil)
-
-
-- add round trip tests
-  - string -> assemble2instruction -> encode2bytes-> decode2instruction -> .String()2string
-  - we'll need to handle non-injective maps (bytes -> string?)
-  - needed to help trap the indexed CB prefix bug (displacement in wrong place)
-
-- panic on write to imm8
-
-- assembler needs Encode() on Instruction
-  - drive via same all tests
-  - or as part of decode test loop?
-    buf -> inst         ; decode
-    inst -> string      ; disass
-    string -> inst      ; ass
-    inst -> buf         ; encode
+- improve assembler to the point it can assemble zexall/zexdoc
+  - parse args
+  - write to output file. Default stdout
+  - support writing text format instructions, default to binary
+    - useful for test. Dom't worry about label preserving
+  - then add support routines/modes to emulator
+    - conout to write to console
+    - jp 0 to "reboot cp/m"
+    - halt
 
 - add cmdline disassembler
   - try on some big files
   - add (made up) labels for jump targets in disassembler
+  - add some directives (org, data bytes)
 
-DONE - implement ED
+- add emulator
+  - make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
 
-- implement DDCB+FDCB
-
-DONE - grab speccy book table for decode test
+- find sample z80 to use as tests for emulator
+  - spectrum rom!
