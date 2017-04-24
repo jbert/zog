@@ -2,9 +2,6 @@ package zog
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
-	"os/exec"
 	"regexp"
 	"strings"
 	"testing"
