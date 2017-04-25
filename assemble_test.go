@@ -1,11 +1,43 @@
 package zog
 
-import "testing"
+import (
+	"fmt"
+	"strings"
+	"testing"
+)
 
 func TestAssembleAll(t *testing.T) {
 	testUtilRunAll(t, func(t *testing.T, byteForm []byte, stringForm string) {
 		testAssembleOne(t, stringForm)
 	})
+}
+
+func TestAssembleMulti(t *testing.T) {
+	testCases := []struct {
+		prog        string
+		byteFormStr string
+	}{
+		{"LD HL, 0x1000", "21 00 10"},
+		{"LD HL, 0x1000 : LD A, B : PUSH HL", "21 00 10 78 e5"},
+	}
+	for _, tc := range testCases {
+		fmt.Printf("Assemble: %s\n", tc.prog)
+		insts, err := Assemble(tc.prog)
+		if err != nil {
+			t.Fatalf("Failed to assemble [%s]: %s", tc.prog, err)
+		}
+		buf := Encode(insts)
+		byteFormStr := strings.ToLower(tc.byteFormStr)
+		byteFormStr = strings.Replace(byteFormStr, " ", "", -1)
+
+		hexBufStr := strings.ToLower(bufToHex(buf))
+
+		if hexBufStr != byteFormStr {
+			t.Fatalf("Encoded instructions doesn't match got [%s] expected [%s]", hexBufStr, byteFormStr)
+		} else {
+			fmt.Printf("Matched OK\n")
+		}
+	}
 }
 
 func TestAssembleBasic(t *testing.T) {

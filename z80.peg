@@ -9,7 +9,8 @@ Program <- (BlankLine / Line)+
 BlankLine <- ws* LineEnd
 Line <- Instruction LineEnd?                                   { p.Emit() }
 
-LineEnd <- ("\n" / ":")
+Comment <- (";" / "#") .*
+LineEnd <- Comment? ("\n" / ":")
 
 Instruction <- ws* ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / EDSimple / Simple / Jump / IO )
 

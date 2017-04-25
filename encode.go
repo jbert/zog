@@ -2,6 +2,15 @@ package zog
 
 import "fmt"
 
+func Encode(insts []Instruction) []byte {
+	buf := make([]byte, 0)
+	for _, inst := range insts {
+		instBuf := inst.Encode()
+		buf = append(buf, instBuf...)
+	}
+	return buf
+}
+
 type loc8Info struct {
 	ltype    locType
 	idxTable byte
