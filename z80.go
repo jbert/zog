@@ -25,13 +25,18 @@ type Current struct {
 	nn          Loc16
 	n           Loc8
 
-	inst Instruction
+	inst  Instruction
+	label string
 
-	insts []Instruction
+	assembly Assembly
 }
 
-func (c *Current) GetInstructions() []Instruction {
-	return c.insts
+func (c *Current) GetAssembly() *Assembly {
+	return &c.assembly
+}
+
+func (c *Current) Label(label string) {
+	c.label = label
 }
 
 func (c *Current) LD8() {
@@ -334,10 +339,15 @@ func (c *Current) R16(s string) {
 }
 
 func (c *Current) Emit() {
-	c.insts = append(c.insts, c.inst)
+	linst := LabelledInstruction{Inst: c.inst}
+	if c.label != "" {
+		c.assembly.Labels[c.label] = len(c.assembly.Linsts) - 1
+		linst.Label = c.label
+	}
+	c.assembly.Linsts = append(c.assembly.Linsts, linst)
 	c.clean()
 }
 
 func (c *Current) clean() {
-	*c = Current{insts: c.insts, cc: True}
+	*c = Current{assembly: c.assembly, cc: True}
 }

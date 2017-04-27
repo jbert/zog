@@ -59,15 +59,15 @@ func main() {
 		if isPrefix {
 			log.Fatalf("Line %d: bufio ReadLine didn't return whole line - very long line?", lineNum)
 		}
-		fmt.Fprintf(os.Stderr, "L: %s\n", line)
-		insts, err := zog.Assemble(string(line))
+		//		fmt.Fprintf(os.Stderr, "L: %s\n", line)
+		assembly, err := zog.Assemble(string(line))
 		if err != nil {
 			log.Fatalf("Line %d: failed to assemble: %s", lineNum, err)
 		}
 
-		for _, inst := range insts {
-			fmt.Fprintf(os.Stderr, "%s\n", inst)
-			encodedBuf := inst.Encode()
+		fmt.Fprintf(os.Stderr, assembly.String())
+		for _, linst := range assembly.Linsts {
+			encodedBuf := linst.Inst.Encode()
 			n, err := w.Write(encodedBuf)
 			if err != nil {
 				log.Fatalf("Line %d: failed to write: %s", lineNum, err)

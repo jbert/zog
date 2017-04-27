@@ -1,8 +1,29 @@
+- parsing assembly needs to include the notion of address
+  instead of building []Insts, need to build the byte array (instead or as well)
+  labels refer to byte positions in the byte array
+  org statements change where we assemble
+  labels map[string]uint16
+
 - improve assembler to the point it can assemble zexall/zexdoc
-  - parse args
-  - write to output file. Default stdout
-  - support writing text format instructions, default to binary
+  DONE - parse args
+  DONE - write to output file. Default stdout
+  NO - support writing text format instructions, default to binary
     - useful for test. Dom't worry about label preserving
+  - how to parse labels etc?
+    - add to peg grammar?
+  - have sep grammars for assembly format and instructions?
+    - comments, labels, defbytes
+    - macros?
+    .title
+    aseg
+    org
+    label:
+    named label in instructions (call, etc)
+    ditto for relative instructions
+    dw (can be followed by label)
+    arithmetic in constants (label+X)
+
+    
   - then add support routines/modes to emulator
     - conout to write to console
     - jp 0 to "reboot cp/m"
