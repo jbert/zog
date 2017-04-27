@@ -208,10 +208,11 @@ func testEncodeOne(t *testing.T, byteForm []byte, stringForm string) {
 	hexBuf := bufToHex(byteForm)
 
 	fmt.Printf("== Encode buf [%s] -> string [%s]\n", hexBuf, stringForm)
-	insts, err := Assemble(stringForm)
+	assembly, err := Assemble(stringForm)
 	if err != nil {
 		t.Fatalf("Error for byte [%s]: %s (%s)", hexBuf, err, stringForm)
 	}
+	insts := assembly.Instructions()
 	if len(insts) == 0 {
 		t.Fatalf("No instructions for byte [%s] (%s)", hexBuf, stringForm)
 	}

@@ -24,11 +24,11 @@ func TestAssembleMulti(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		fmt.Printf("Assemble: %s\n", tc.prog)
-		insts, err := Assemble(tc.prog)
+		assembly, err := Assemble(tc.prog)
 		if err != nil {
 			t.Fatalf("Failed to assemble [%s]: %s", tc.prog, err)
 		}
-		buf := Encode(insts)
+		buf := Encode(assembly.Instructions())
 		byteFormStr := strings.ToLower(tc.byteFormStr)
 		byteFormStr = strings.Replace(byteFormStr, " ", "", -1)
 
@@ -120,14 +120,14 @@ func TestAssembleBasic(t *testing.T) {
 }
 
 func testAssembleOne(t *testing.T, s string) {
-	insts, err := Assemble(s)
+	assembly, err := Assemble(s)
 	if err != nil {
 		t.Fatalf("Failed to assemble [%s]: %s", s, err)
 	}
 
 	assembledStr := ""
-	for _, inst := range insts {
-		assembledStr += inst.String() + "\n"
+	for _, linst := range assembly.Linsts {
+		assembledStr += linst.Inst.String() + "\n"
 	}
 	if !compareAssembly(assembledStr, s) {
 		t.Fatalf("Assembled str not equal [%s] != [%s]", assembledStr, s)

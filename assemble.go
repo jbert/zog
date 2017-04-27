@@ -30,6 +30,14 @@ type Assembly struct {
 	Labels   map[string]int
 }
 
+func (a *Assembly) Instructions() []Instruction {
+	insts := make([]Instruction, 0)
+	for _, linst := range a.Linsts {
+		insts = append(insts, linst.Inst)
+	}
+	return insts
+}
+
 func (a *Assembly) String() string {
 	colWidth := 20
 	str := ""
