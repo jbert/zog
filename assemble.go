@@ -6,6 +6,7 @@ func Assemble(s string) (*Assembly, error) {
 
 	assembler := &PegAssembler{Buffer: s}
 	assembler.Init()
+	assembler.Current.Init()
 	err := assembler.Parse()
 	if err != nil {
 		return nil, fmt.Errorf("Can't parse: %s", err)
@@ -28,6 +29,10 @@ type Assembly struct {
 	BaseAddr uint16
 	Linsts   []LabelledInstruction
 	Labels   map[string]int
+}
+
+func (a *Assembly) Init() {
+	a.Labels = make(map[string]int)
 }
 
 func (a *Assembly) Instructions() []Instruction {

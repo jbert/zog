@@ -7,12 +7,17 @@ type PegAssembler Peg {
 Program <- (BlankLine / Line)+
 
 BlankLine <- ws* LineEnd
-Line <- Instruction LineEnd?                                   { p.Emit() }
+Line <- Label? ws* Instruction LineEnd?                                   { p.Emit() }
+
+Label <- <alpha alphanum*> ":"                                { p.Label(buffer[begin:end])} 
+alphanum <- alpha / num
+alpha <- [[a-z]]
+num <- [0-9]
 
 Comment <- (";" / "#") .*
 LineEnd <- Comment? ("\n" / ":")
 
-Instruction <- ws* ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / EDSimple / Simple / Jump / IO )
+Instruction <- ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / EDSimple / Simple / Jump / IO )
 
 Assignment <- Load / Push / Pop / Ex
 

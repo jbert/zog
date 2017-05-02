@@ -31,6 +31,10 @@ type Current struct {
 	assembly Assembly
 }
 
+func (c *Current) Init() {
+	c.assembly.Init()
+}
+
 func (c *Current) GetAssembly() *Assembly {
 	return &c.assembly
 }
