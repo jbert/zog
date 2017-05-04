@@ -4,14 +4,17 @@ import "fmt"
 
 func Assemble(s string) (*Assembly, error) {
 
+	s += "\n"
+
 	assembler := &PegAssembler{Buffer: s}
 	assembler.Init()
 	assembler.Current.Init()
 	err := assembler.Parse()
 	if err != nil {
+		assembler.PrintSyntaxTree()
 		return nil, fmt.Errorf("Can't parse: %s", err)
 	}
-	// assembler.Print()
+	//assembler.Print()
 	//assembler.PrintSyntaxTree()
 	assembler.Execute()
 

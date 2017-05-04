@@ -1,3 +1,7 @@
+- labels need to be usable everywhere an NN is used
+
+- add defb/defw etc http://www.nongnu.org/z80asm/directives.html
+
 - parsing assembly needs to include the notion of address
   instead of building []Insts, need to build the byte array (instead or as well)
   labels refer to byte positions in the byte array
