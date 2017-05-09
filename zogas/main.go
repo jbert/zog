@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -34,7 +34,6 @@ func main() {
 		defer f.Close()
 		in = f
 	}
-	br := bufio.NewReader(in)
 
 	var w io.Writer
 	if o.outFileName == "-" {
@@ -48,33 +47,24 @@ func main() {
 		w = f
 	}
 
-	for lineNum := 1; ; lineNum++ {
-		line, isPrefix, err := br.ReadLine()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Fatalf("Line %d: error reading: %s", lineNum, err)
-		}
-		if isPrefix {
-			log.Fatalf("Line %d: bufio ReadLine didn't return whole line - very long line?", lineNum)
-		}
-		//		fmt.Fprintf(os.Stderr, "L: %s\n", line)
-		assembly, err := zog.Assemble(string(line))
-		if err != nil {
-			log.Fatalf("Line %d: failed to assemble: %s", lineNum, err)
-		}
+	contents, err := ioutil.ReadAll(in)
+	if err != nil {
+		log.Fatalf("Failed to read file: %s", err)
+	}
+	assembly, err := zog.Assemble(string(contents))
+	if err != nil {
+		log.Fatalf("failed to assemble: %s", err)
+	}
 
-		fmt.Fprintf(os.Stderr, assembly.String())
-		for _, linst := range assembly.Linsts {
-			encodedBuf := linst.Inst.Encode()
-			n, err := w.Write(encodedBuf)
-			if err != nil {
-				log.Fatalf("Line %d: failed to write: %s", lineNum, err)
-			}
-			if n != len(encodedBuf) {
-				log.Fatalf("Line %d: partial write: wrote %d not %d", lineNum, n, len(encodedBuf))
-			}
+	fmt.Fprintf(os.Stderr, assembly.String())
+	for _, linst := range assembly.Linsts {
+		encodedBuf := linst.Inst.Encode()
+		n, err := w.Write(encodedBuf)
+		if err != nil {
+			log.Fatalf("failed to write: %s", err)
+		}
+		if n != len(encodedBuf) {
+			log.Fatalf("partial write: wrote %d not %d", n, len(encodedBuf))
 		}
 	}
 

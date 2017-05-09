@@ -8,6 +8,7 @@ import (
 type Instruction interface {
 	String() string
 	Encode() []byte
+	Resolve(a *Assembly) error
 }
 
 type LD8 struct {
@@ -336,6 +337,9 @@ func (d *DJNZ) Encode() []byte {
 	b := encodeXYZ(0, 2, 0)
 	return []byte{b, byte(d.d)}
 }
+func (d *DJNZ) Resolve(a *Assembly) error {
+	return nil
+}
 
 type JR struct {
 	c Conditional
@@ -359,6 +363,9 @@ func (j *JR) Encode() []byte {
 	}
 	b := encodeXYZ(0, y, 0)
 	return []byte{b, byte(j.d)}
+}
+func (j *JR) Resolve(a *Assembly) error {
+	return nil
 }
 
 type JP struct {
@@ -452,6 +459,9 @@ func (o *OUT) Encode() []byte {
 		return []byte{encodeXYZ(3, 2, 3), byte(imm8)}
 	}
 }
+func (o *OUT) Resolve(a *Assembly) error {
+	return nil
+}
 
 type IN struct {
 	dst  Loc8
@@ -481,6 +491,9 @@ func (i *IN) Encode() []byte {
 		imm8 := i.port.(Imm8)
 		return []byte{encodeXYZ(3, 3, 3), byte(imm8)}
 	}
+}
+func (i *IN) Resolve(a *Assembly) error {
+	return nil
 }
 
 type PUSH struct {
@@ -532,6 +545,9 @@ func (r *RST) Encode() []byte {
 	y := r.addr / 8
 	return []byte{encodeXYZ(3, y, 7)}
 }
+func (r *RST) Resolve(a *Assembly) error {
+	return nil
+}
 
 type RET struct {
 	c Conditional
@@ -550,6 +566,9 @@ func (r *RET) Encode() []byte {
 	}
 	y := findInTableCC(r.c)
 	return []byte{encodeXYZ(3, y, 0)}
+}
+func (r *RET) Resolve(a *Assembly) error {
+	return nil
 }
 
 func NewAccum(name string, l Loc8) *accum {
@@ -757,6 +776,9 @@ func (s Simple) String() string {
 func (s Simple) Encode() []byte {
 	return []byte{byte(s)}
 }
+func (s Simple) Resolve(a *Assembly) error {
+	return nil
+}
 
 func LookupSimpleName(name string) Simple {
 	name = strings.ToUpper(name)
@@ -847,6 +869,9 @@ func (s EDSimple) String() string {
 
 func (s EDSimple) Encode() []byte {
 	return []byte{0xed, byte(s)}
+}
+func (s EDSimple) Resolve(a *Assembly) error {
+	return nil
 }
 
 func LookupEDSimpleName(name string) EDSimple {

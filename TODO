@@ -1,4 +1,9 @@
-- labels need to be usable everywhere an NN is used
+DONE - labels need to be usable everywhere an NN is used
+
+- need to resolve labels at some pt
+  - second pass on assembler?
+  - method on instruction?
+    - or type-switch in assembler
 
 - add defb/defw etc http://www.nongnu.org/z80asm/directives.html
 

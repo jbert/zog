@@ -198,6 +198,15 @@ func inspectLoc16(l Loc16, info *loc16Info, idx *idxInfo, wantRP2 bool) {
 	}
 
 	imm16, ok := l.(Imm16)
+	if !ok {
+		var label *Label
+		// overwrite 'ok'
+		label, ok = l.(*Label)
+		if ok {
+			imm16 = label.Imm16
+		}
+	}
+
 	if ok {
 		info.ltype = Immediate
 		hi := byte(imm16 >> 8)

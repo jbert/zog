@@ -12,11 +12,15 @@ func TestAssembleAll(t *testing.T) {
 	})
 }
 
-func TestAssembleMulti(t *testing.T) {
+func TestAssembleRich(t *testing.T) {
 	testCases := []struct {
 		prog        string
 		byteFormStr string
 	}{
+		{`
+org 0100h
+start: jp start
+`, "c3 00 01"},
 		{"LD HL, 0x1000", "21 00 10"},
 		{"LD HL, 0x1000 : LD A, B : PUSH HL", "21 00 10 78 e5"},
 		{"LD HL, 0x1000 ; LD A, B : PUSH HL", "21 00 10"},

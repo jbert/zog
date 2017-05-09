@@ -39,8 +39,13 @@ func (c *Current) GetAssembly() *Assembly {
 	return &c.assembly
 }
 
-func (c *Current) Label(label string) {
+func (c *Current) LabelDefn(label string) {
 	c.label = label
+}
+
+func (c *Current) Org() {
+	addr := c.nn.(Imm16)
+	c.assembly.BaseAddr = uint16(addr)
 }
 
 func (c *Current) LD8() {
@@ -165,6 +170,10 @@ func (c *Current) Nhex(s string) {
 		panic(fmt.Errorf("Invalid byte: %s", s))
 	}
 	c.n = Imm8(n)
+}
+
+func (c *Current) NNLabel(label string) {
+	c.nn = &Label{name: label}
 }
 
 func (c *Current) NNhex(s string) {
@@ -343,12 +352,14 @@ func (c *Current) R16(s string) {
 }
 
 func (c *Current) Emit() {
-	linst := LabelledInstruction{Inst: c.inst}
-	if c.label != "" {
-		c.assembly.Labels[c.label] = len(c.assembly.Linsts) - 1
-		linst.Label = c.label
+	if c.inst != nil {
+		linst := LabelledInstruction{Inst: c.inst}
+		if c.label != "" {
+			c.assembly.Labels[c.label] = len(c.assembly.Linsts)
+			linst.Label = c.label
+		}
+		c.assembly.Linsts = append(c.assembly.Linsts, linst)
 	}
-	c.assembly.Linsts = append(c.assembly.Linsts, linst)
 	c.clean()
 }
 

@@ -226,6 +226,20 @@ func (ic IndexedContents) Write16(z *Zog, nn uint16) error {
 	return nil
 }
 
+type Label struct {
+	// Default to the zero value because we need to encode
+	// this location *before* it is resolved with an address
+	// so that we can calculate instruction length.
+	// See assemble/ResolveAddr
+	Imm16
+	name string
+}
+
+func (l Label) String() string {
+	addrStr := l.Imm16.String()
+	return fmt.Sprintf("%s (%s)", l.name, addrStr)
+}
+
 type Imm16 uint16
 
 func (nn Imm16) String() string {
