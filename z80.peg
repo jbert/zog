@@ -4,17 +4,25 @@ type PegAssembler Peg {
   Current
 }
 
-Program <- Line+
+Program <- Line+ !.
 
-Line <- Label? ws* Instruction? LineEnd                                   { p.Emit() }
+Line <- ws* LabelDefn? ws* Statement? ws? Comment? ws? ("\r"?"\n" / ":")    { p.Emit() }
 
-Label <- <alpha alphanum*> ":"                                { p.Label(buffer[begin:end])} 
+Statement <- Directive / Instruction
+
+Directive <- (Title / Aseg / Org)
+
+Title <- '.title' ws "'" [^']* "'"
+Aseg <- 'aseg'
+Org <- "org" ws nn                                              { p.Org() }
+
+LabelDefn <- LabelText ":" ws                                { p.LabelDefn(buffer[begin:end])} 
+LabelText <- <alpha alphanum*>                            
 alphanum <- alpha / num
 alpha <- [[a-z]]
 num <- [0-9]
 
 Comment <- (";" / "#") [^\n]*
-LineEnd <- ws? Comment? ws? ("\n" / ":")
 
 Instruction <- ( Assignment / Inc / Dec / Alu16 / Alu / BitOp / EDSimple / Simple / Jump / IO )
 
@@ -69,7 +77,7 @@ IndexedR16C <-  '(' IReg16 ws? disp ws? ')'                 { p.IR16Contents() }
 
 n <- hexByteH / hexByte0x / decimalByte
 
-nn <- hexWordH / hexWord0x
+nn <- LabelNN / hexWordH / hexWord0x
 
 disp  <- signedHexByteH / signedHexByte0x / signedDecimalByte
 signedDecimalByte <- <[-+]?[0-9]+>                            { p.DispDecimal(buffer[begin:end]) }
@@ -80,6 +88,7 @@ hexByteH    <- <hexdigit hexdigit> "h"                        { p.Nhex(buffer[be
 hexByte0x   <- "0x" <hexdigit hexdigit>                       { p.Nhex(buffer[begin:end]) }
 decimalByte <- <[0-9]+>                                       { p.Ndec(buffer[begin:end]) }
 
+LabelNN     <- <LabelText>                                    { p.NNLabel(buffer[begin:end]) }
 hexWordH    <- <hexdigit hexdigit hexdigit hexdigit> "h"      { p.NNhex(buffer[begin:end]) }
 hexWord0x   <- "0x" <hexdigit hexdigit hexdigit hexdigit>     { p.NNhex(buffer[begin:end]) }
 
@@ -176,7 +185,7 @@ Port <- "(C)" / '(' n ')'
 
 sep <- ws? ',' ws?
 
-ws <- ' '+
+ws <- [ \t]+
 
 A <- "A"
 F <- "F"

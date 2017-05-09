@@ -1,11 +1,13 @@
 DONE - labels need to be usable everywhere an NN is used
 
-- need to resolve labels at some pt
+DONE - need to resolve labels at some pt
   - second pass on assembler?
   - method on instruction?
     - or type-switch in assembler
 
-- add defb/defw etc http://www.nongnu.org/z80asm/directives.html
+- add (labelled) defb/defw etc http://www.nongnu.org/z80asm/directives.html
+  msbt:	ds	14
+
 
 - parsing assembly needs to include the notion of address
   instead of building []Insts, need to build the byte array (instead or as well)
