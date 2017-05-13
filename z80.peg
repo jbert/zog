@@ -10,12 +10,13 @@ Line <- ws* LabelDefn? ws* Statement? ws? Comment? ws? ("\r"?"\n" / ":")    { p.
 
 Statement <- Directive / Instruction
 
-Directive <- (Title / Aseg / Org / Defb / Defs)
+Directive <- (Title / Aseg / Org / Defb / Defs / Defw)
 
 Title <- '.'? 'title' ws "'" [^']* "'"
 Aseg <- 'aseg'
 Org <- "org" ws nn                                              { p.Org() }
 Defb <- ("defb" / "db") ws n                                { p.DefByte() }
+Defw <- ("defw" / "dw") ws nn                                { p.DefWord() }
 Defs <- ("defs" / "ds") ws n                                { p.DefSpace() }
 
 LabelDefn <- LabelText ":" ws                                { p.LabelDefn(buffer[begin:end])} 

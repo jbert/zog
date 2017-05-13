@@ -52,6 +52,16 @@ func (c *Current) DefByte() {
 	c.inst = NewData(data)
 }
 
+func (c *Current) DefWord() {
+	w, ok := c.nn.(Imm16)
+	if !ok {
+		panic("Defword must be followed by a word")
+	}
+	ww := uint16(w)
+	data := []byte{byte(ww & 0xff), byte(ww >> 8)}
+	c.inst = NewData(data)
+}
+
 func (c *Current) DefSpace() {
 	numBytes, ok := c.n.(Imm8)
 	if !ok {
