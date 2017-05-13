@@ -43,6 +43,24 @@ func (c *Current) LabelDefn(label string) {
 	c.label = label
 }
 
+func (c *Current) DefByte() {
+	b, ok := c.n.(Imm8)
+	if !ok {
+		panic("Defbyte must be followed by a byte")
+	}
+	data := []byte{byte(b)}
+	c.inst = NewData(data)
+}
+
+func (c *Current) DefSpace() {
+	numBytes, ok := c.n.(Imm8)
+	if !ok {
+		panic("Defspace must be followed by number of bytes")
+	}
+	data := make([]byte, numBytes)
+	c.inst = NewData(data)
+}
+
 func (c *Current) Org() {
 	addr := c.nn.(Imm16)
 	c.assembly.BaseAddr = uint16(addr)

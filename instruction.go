@@ -11,6 +11,23 @@ type Instruction interface {
 	Resolve(a *Assembly) error
 }
 
+type Data struct {
+	data []byte
+}
+
+func NewData(data []byte) *Data {
+	return &Data{data: data}
+}
+func (d *Data) String() string {
+	return bufToHex(d.data)
+}
+func (d *Data) Encode() []byte {
+	return d.data
+}
+func (d *Data) Resolve(a *Assembly) error {
+	return nil
+}
+
 type LD8 struct {
 	InstBin8
 }
