@@ -116,8 +116,12 @@ func inspectLoc8(l Loc8, info *loc8Info, idx *idxInfo) {
 			info.isBC = contents.addr == BC
 			return
 		}
+		label, labelOK := contents.addr.(*Label)
 		imm16, ok := contents.addr.(Imm16)
-		if ok {
+		if ok || labelOK {
+			if labelOK {
+				imm16 = label.Imm16
+			}
 			info.ltype = ImmediateContents
 			hi := byte(imm16 >> 8)
 			lo := byte(imm16 & 0xff)
