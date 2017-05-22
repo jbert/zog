@@ -94,7 +94,7 @@ func TestAssembleBasic(t *testing.T) {
 		"LD A, 0x10",
 
 		"INC DE",
-		"ADD DE, HL",
+		//		"ADD DE, HL",
 		"EX AF,AF'",
 		"RET C",
 		"CALL DE",
@@ -107,7 +107,8 @@ func TestAssembleBasic(t *testing.T) {
 
 		"RL A",
 		"SET 4, A",
-		"SLA F",
+		//		"SLA F",
+		"SLA (HL)",
 
 		"LD DE, 0x1234",
 		"LD DE, (0x1234)",
