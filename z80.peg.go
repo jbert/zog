@@ -12910,7 +12910,7 @@ func (p *PegAssembler) Init() {
 		nil,
 		/* 10 LabelDefn <- <(LabelText ':' ws Action5)> */
 		nil,
-		/* 11 LabelText <- <<(alpha alphanum*)>> */
+		/* 11 LabelText <- <<(alpha alphanum alphanum+)>> */
 		func() bool {
 			position1811, tokenIndex1811 := position, tokenIndex
 			{
@@ -12920,30 +12920,17 @@ func (p *PegAssembler) Init() {
 					if !_rules[rulealpha]() {
 						goto l1811
 					}
+					if !_rules[rulealphanum]() {
+						goto l1811
+					}
+					if !_rules[rulealphanum]() {
+						goto l1811
+					}
 				l1814:
 					{
 						position1815, tokenIndex1815 := position, tokenIndex
-						{
-							position1816 := position
-							{
-								position1817, tokenIndex1817 := position, tokenIndex
-								if !_rules[rulealpha]() {
-									goto l1818
-								}
-								goto l1817
-							l1818:
-								position, tokenIndex = position1817, tokenIndex1817
-								{
-									position1819 := position
-									if c := buffer[position]; c < rune('0') || c > rune('9') {
-										goto l1815
-									}
-									position++
-									add(rulenum, position1819)
-								}
-							}
-						l1817:
-							add(rulealphanum, position1816)
+						if !_rules[rulealphanum]() {
+							goto l1815
 						}
 						goto l1814
 					l1815:
@@ -12959,7 +12946,35 @@ func (p *PegAssembler) Init() {
 			return false
 		},
 		/* 12 alphanum <- <(alpha / num)> */
-		nil,
+		func() bool {
+			position1816, tokenIndex1816 := position, tokenIndex
+			{
+				position1817 := position
+				{
+					position1818, tokenIndex1818 := position, tokenIndex
+					if !_rules[rulealpha]() {
+						goto l1819
+					}
+					goto l1818
+				l1819:
+					position, tokenIndex = position1818, tokenIndex1818
+					{
+						position1820 := position
+						if c := buffer[position]; c < rune('0') || c > rune('9') {
+							goto l1816
+						}
+						position++
+						add(rulenum, position1820)
+					}
+				}
+			l1818:
+				add(rulealphanum, position1817)
+			}
+			return true
+		l1816:
+			position, tokenIndex = position1816, tokenIndex1816
+			return false
+		},
 		/* 13 alpha <- <([a-z] / [A-Z])> */
 		func() bool {
 			position1821, tokenIndex1821 := position, tokenIndex
