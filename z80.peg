@@ -20,7 +20,7 @@ Defw <- ("defw" / "dw") ws nn                                { p.DefWord() }
 Defs <- ("defs" / "ds") ws n                                { p.DefSpace() }
 
 LabelDefn <- LabelText ":" ws                                { p.LabelDefn(buffer[begin:end])} 
-LabelText <- <alpha alphanum*>                            
+LabelText <- <alpha alphanum alphanum+>                            
 alphanum <- alpha / num
 alpha <- [[a-z]]
 num <- [0-9]
