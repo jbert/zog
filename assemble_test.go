@@ -17,9 +17,9 @@ func TestAssembleRich(t *testing.T) {
 		prog        string
 		byteFormStr string
 	}{
+		{`org 0100h : start: jp start`, "c3 00 01"},
 		{`ld a, (foo) : foo: defb abh`, "3a 03 00 ab"},
 		{`defw 1234h`, "3412"},
-		{`org 0100h : start: jp start`, "c3 00 01"},
 		{`defb 10h`, "10"},
 		{`defs 03h`, "00 00 00"},
 		{"LD HL, 0x1000", "21 00 10"},

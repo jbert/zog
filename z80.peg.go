@@ -77,6 +77,8 @@ const (
 	ruleLabelNN
 	rulehexWordH
 	rulehexWord0x
+	rulehexWord
+	rulezeroHexWord
 	rulenn_contents
 	ruleAlu
 	ruleAdd
@@ -304,7 +306,6 @@ const (
 	ruleAction113
 	ruleAction114
 	ruleAction115
-	ruleAction116
 )
 
 var rul3s = [...]string{
@@ -372,6 +373,8 @@ var rul3s = [...]string{
 	"LabelNN",
 	"hexWordH",
 	"hexWord0x",
+	"hexWord",
+	"zeroHexWord",
 	"nn_contents",
 	"Alu",
 	"Add",
@@ -599,7 +602,6 @@ var rul3s = [...]string{
 	"Action113",
 	"Action114",
 	"Action115",
-	"Action116",
 }
 
 type token32 struct {
@@ -716,7 +718,7 @@ type PegAssembler struct {
 
 	Buffer string
 	buffer []rune
-	rules  [292]func() bool
+	rules  [293]func() bool
 	parse  func(rule ...int) error
 	reset  func()
 	Pretty bool
@@ -893,47 +895,47 @@ func (p *PegAssembler) Execute() {
 		case ruleAction41:
 			p.NNhex(buffer[begin:end])
 		case ruleAction42:
-			p.NNhex(buffer[begin:end])
-		case ruleAction43:
 			p.NNContents()
-		case ruleAction44:
+		case ruleAction43:
 			p.Accum("ADD")
-		case ruleAction45:
+		case ruleAction44:
 			p.Accum("ADC")
-		case ruleAction46:
+		case ruleAction45:
 			p.Accum("SUB")
-		case ruleAction47:
+		case ruleAction46:
 			p.Accum("SBC")
-		case ruleAction48:
+		case ruleAction47:
 			p.Accum("AND")
-		case ruleAction49:
+		case ruleAction48:
 			p.Accum("XOR")
-		case ruleAction50:
+		case ruleAction49:
 			p.Accum("OR")
-		case ruleAction51:
+		case ruleAction50:
 			p.Accum("CP")
-		case ruleAction52:
+		case ruleAction51:
 			p.Rot("RLC")
-		case ruleAction53:
+		case ruleAction52:
 			p.Rot("RRC")
-		case ruleAction54:
+		case ruleAction53:
 			p.Rot("RL")
-		case ruleAction55:
+		case ruleAction54:
 			p.Rot("RR")
-		case ruleAction56:
+		case ruleAction55:
 			p.Rot("SLA")
-		case ruleAction57:
+		case ruleAction56:
 			p.Rot("SRA")
-		case ruleAction58:
+		case ruleAction57:
 			p.Rot("SLL")
-		case ruleAction59:
+		case ruleAction58:
 			p.Rot("SRL")
-		case ruleAction60:
+		case ruleAction59:
 			p.Bit()
-		case ruleAction61:
+		case ruleAction60:
 			p.Res()
-		case ruleAction62:
+		case ruleAction61:
 			p.Set()
+		case ruleAction62:
+			p.Simple(buffer[begin:end])
 		case ruleAction63:
 			p.Simple(buffer[begin:end])
 		case ruleAction64:
@@ -959,7 +961,7 @@ func (p *PegAssembler) Execute() {
 		case ruleAction74:
 			p.Simple(buffer[begin:end])
 		case ruleAction75:
-			p.Simple(buffer[begin:end])
+			p.EDSimple(buffer[begin:end])
 		case ruleAction76:
 			p.EDSimple(buffer[begin:end])
 		case ruleAction77:
@@ -1007,40 +1009,38 @@ func (p *PegAssembler) Execute() {
 		case ruleAction98:
 			p.EDSimple(buffer[begin:end])
 		case ruleAction99:
-			p.EDSimple(buffer[begin:end])
-		case ruleAction100:
 			p.Rst()
-		case ruleAction101:
+		case ruleAction100:
 			p.Call()
-		case ruleAction102:
+		case ruleAction101:
 			p.Ret()
-		case ruleAction103:
+		case ruleAction102:
 			p.Jp()
-		case ruleAction104:
+		case ruleAction103:
 			p.Jr()
-		case ruleAction105:
+		case ruleAction104:
 			p.Djnz()
-		case ruleAction106:
+		case ruleAction105:
 			p.In()
-		case ruleAction107:
+		case ruleAction106:
 			p.Out()
-		case ruleAction108:
+		case ruleAction107:
 			p.ODigit(buffer[begin:end])
-		case ruleAction109:
+		case ruleAction108:
 			p.Conditional(Not{FT_Z})
-		case ruleAction110:
+		case ruleAction109:
 			p.Conditional(FT_Z)
-		case ruleAction111:
+		case ruleAction110:
 			p.Conditional(Not{FT_C})
-		case ruleAction112:
+		case ruleAction111:
 			p.Conditional(FT_C)
-		case ruleAction113:
+		case ruleAction112:
 			p.Conditional(FT_PO)
-		case ruleAction114:
+		case ruleAction113:
 			p.Conditional(FT_PE)
-		case ruleAction115:
+		case ruleAction114:
 			p.Conditional(FT_P)
-		case ruleAction116:
+		case ruleAction115:
 			p.Conditional(FT_M)
 
 		}
@@ -2685,7 +2685,7 @@ func (p *PegAssembler) Init() {
 														goto l227
 													}
 													{
-														add(ruleAction44, position)
+														add(ruleAction43, position)
 													}
 													add(ruleAdd, position228)
 												}
@@ -2764,7 +2764,7 @@ func (p *PegAssembler) Init() {
 														goto l238
 													}
 													{
-														add(ruleAction45, position)
+														add(ruleAction44, position)
 													}
 													add(ruleAdc, position239)
 												}
@@ -2825,7 +2825,7 @@ func (p *PegAssembler) Init() {
 														goto l249
 													}
 													{
-														add(ruleAction46, position)
+														add(ruleAction45, position)
 													}
 													add(ruleSub, position250)
 												}
@@ -2874,7 +2874,7 @@ func (p *PegAssembler) Init() {
 																goto l224
 															}
 															{
-																add(ruleAction51, position)
+																add(ruleAction50, position)
 															}
 															add(ruleCp, position259)
 														}
@@ -2919,7 +2919,7 @@ func (p *PegAssembler) Init() {
 																goto l224
 															}
 															{
-																add(ruleAction50, position)
+																add(ruleAction49, position)
 															}
 															add(ruleOr, position265)
 														}
@@ -2979,7 +2979,7 @@ func (p *PegAssembler) Init() {
 																goto l224
 															}
 															{
-																add(ruleAction49, position)
+																add(ruleAction48, position)
 															}
 															add(ruleXor, position271)
 														}
@@ -3039,7 +3039,7 @@ func (p *PegAssembler) Init() {
 																goto l224
 															}
 															{
-																add(ruleAction48, position)
+																add(ruleAction47, position)
 															}
 															add(ruleAnd, position279)
 														}
@@ -3117,7 +3117,7 @@ func (p *PegAssembler) Init() {
 																goto l224
 															}
 															{
-																add(ruleAction47, position)
+																add(ruleAction46, position)
 															}
 															add(ruleSbc, position287)
 														}
@@ -3207,7 +3207,7 @@ func (p *PegAssembler) Init() {
 															}
 														l312:
 															{
-																add(ruleAction52, position)
+																add(ruleAction51, position)
 															}
 															add(ruleRlc, position304)
 														}
@@ -3281,7 +3281,7 @@ func (p *PegAssembler) Init() {
 															}
 														l323:
 															{
-																add(ruleAction53, position)
+																add(ruleAction52, position)
 															}
 															add(ruleRrc, position315)
 														}
@@ -3340,7 +3340,7 @@ func (p *PegAssembler) Init() {
 															}
 														l332:
 															{
-																add(ruleAction54, position)
+																add(ruleAction53, position)
 															}
 															add(ruleRl, position326)
 														}
@@ -3399,7 +3399,7 @@ func (p *PegAssembler) Init() {
 															}
 														l341:
 															{
-																add(ruleAction55, position)
+																add(ruleAction54, position)
 															}
 															add(ruleRr, position335)
 														}
@@ -3473,7 +3473,7 @@ func (p *PegAssembler) Init() {
 															}
 														l352:
 															{
-																add(ruleAction56, position)
+																add(ruleAction55, position)
 															}
 															add(ruleSla, position344)
 														}
@@ -3547,7 +3547,7 @@ func (p *PegAssembler) Init() {
 															}
 														l363:
 															{
-																add(ruleAction57, position)
+																add(ruleAction56, position)
 															}
 															add(ruleSra, position355)
 														}
@@ -3621,7 +3621,7 @@ func (p *PegAssembler) Init() {
 															}
 														l374:
 															{
-																add(ruleAction58, position)
+																add(ruleAction57, position)
 															}
 															add(ruleSll, position366)
 														}
@@ -3695,7 +3695,7 @@ func (p *PegAssembler) Init() {
 															}
 														l384:
 															{
-																add(ruleAction59, position)
+																add(ruleAction58, position)
 															}
 															add(ruleSrl, position376)
 														}
@@ -3782,7 +3782,7 @@ func (p *PegAssembler) Init() {
 															}
 														l395:
 															{
-																add(ruleAction62, position)
+																add(ruleAction61, position)
 															}
 															add(ruleSet, position387)
 														}
@@ -3861,7 +3861,7 @@ func (p *PegAssembler) Init() {
 															}
 														l405:
 															{
-																add(ruleAction61, position)
+																add(ruleAction60, position)
 															}
 															add(ruleRes, position397)
 														}
@@ -3927,7 +3927,7 @@ func (p *PegAssembler) Init() {
 																goto l297
 															}
 															{
-																add(ruleAction60, position)
+																add(ruleAction59, position)
 															}
 															add(ruleBit, position407)
 														}
@@ -4013,7 +4013,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position420)
 													}
 													{
-														add(ruleAction77, position)
+														add(ruleAction76, position)
 													}
 													add(ruleRetn, position419)
 												}
@@ -4087,7 +4087,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position432)
 													}
 													{
-														add(ruleAction78, position)
+														add(ruleAction77, position)
 													}
 													add(ruleReti, position431)
 												}
@@ -4146,7 +4146,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position444)
 													}
 													{
-														add(ruleAction79, position)
+														add(ruleAction78, position)
 													}
 													add(ruleRrd, position443)
 												}
@@ -4198,7 +4198,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position454)
 													}
 													{
-														add(ruleAction81, position)
+														add(ruleAction80, position)
 													}
 													add(ruleIm0, position453)
 												}
@@ -4250,7 +4250,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position462)
 													}
 													{
-														add(ruleAction82, position)
+														add(ruleAction81, position)
 													}
 													add(ruleIm1, position461)
 												}
@@ -4302,7 +4302,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position470)
 													}
 													{
-														add(ruleAction83, position)
+														add(ruleAction82, position)
 													}
 													add(ruleIm2, position469)
 												}
@@ -4383,7 +4383,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position481)
 																	}
 																	{
-																		add(ruleAction94, position)
+																		add(ruleAction93, position)
 																	}
 																	add(ruleInir, position480)
 																}
@@ -4442,7 +4442,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position493)
 																	}
 																	{
-																		add(ruleAction86, position)
+																		add(ruleAction85, position)
 																	}
 																	add(ruleIni, position492)
 																}
@@ -4516,7 +4516,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position503)
 																	}
 																	{
-																		add(ruleAction95, position)
+																		add(ruleAction94, position)
 																	}
 																	add(ruleOtir, position502)
 																}
@@ -4590,7 +4590,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position515)
 																	}
 																	{
-																		add(ruleAction87, position)
+																		add(ruleAction86, position)
 																	}
 																	add(ruleOuti, position514)
 																}
@@ -4664,7 +4664,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position527)
 																	}
 																	{
-																		add(ruleAction98, position)
+																		add(ruleAction97, position)
 																	}
 																	add(ruleIndr, position526)
 																}
@@ -4723,7 +4723,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position539)
 																	}
 																	{
-																		add(ruleAction90, position)
+																		add(ruleAction89, position)
 																	}
 																	add(ruleInd, position538)
 																}
@@ -4797,7 +4797,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position549)
 																	}
 																	{
-																		add(ruleAction99, position)
+																		add(ruleAction98, position)
 																	}
 																	add(ruleOtdr, position548)
 																}
@@ -4871,7 +4871,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position560)
 																	}
 																	{
-																		add(ruleAction91, position)
+																		add(ruleAction90, position)
 																	}
 																	add(ruleOutd, position559)
 																}
@@ -4933,7 +4933,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position571)
 															}
 															{
-																add(ruleAction80, position)
+																add(ruleAction79, position)
 															}
 															add(ruleRld, position570)
 														}
@@ -4991,7 +4991,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position580)
 															}
 															{
-																add(ruleAction76, position)
+																add(ruleAction75, position)
 															}
 															add(ruleNeg, position579)
 														}
@@ -5068,7 +5068,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position592)
 																	}
 																	{
-																		add(ruleAction92, position)
+																		add(ruleAction91, position)
 																	}
 																	add(ruleLdir, position591)
 																}
@@ -5127,7 +5127,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position604)
 																	}
 																	{
-																		add(ruleAction84, position)
+																		add(ruleAction83, position)
 																	}
 																	add(ruleLdi, position603)
 																}
@@ -5201,7 +5201,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position614)
 																	}
 																	{
-																		add(ruleAction93, position)
+																		add(ruleAction92, position)
 																	}
 																	add(ruleCpir, position613)
 																}
@@ -5260,7 +5260,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position626)
 																	}
 																	{
-																		add(ruleAction85, position)
+																		add(ruleAction84, position)
 																	}
 																	add(ruleCpi, position625)
 																}
@@ -5334,7 +5334,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position636)
 																	}
 																	{
-																		add(ruleAction96, position)
+																		add(ruleAction95, position)
 																	}
 																	add(ruleLddr, position635)
 																}
@@ -5393,7 +5393,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position648)
 																	}
 																	{
-																		add(ruleAction88, position)
+																		add(ruleAction87, position)
 																	}
 																	add(ruleLdd, position647)
 																}
@@ -5467,7 +5467,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position658)
 																	}
 																	{
-																		add(ruleAction97, position)
+																		add(ruleAction96, position)
 																	}
 																	add(ruleCpdr, position657)
 																}
@@ -5526,7 +5526,7 @@ func (p *PegAssembler) Init() {
 																		add(rulePegText, position669)
 																	}
 																	{
-																		add(ruleAction89, position)
+																		add(ruleAction88, position)
 																	}
 																	add(ruleCpd, position668)
 																}
@@ -5616,7 +5616,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position682)
 													}
 													{
-														add(ruleAction65, position)
+														add(ruleAction64, position)
 													}
 													add(ruleRlca, position681)
 												}
@@ -5690,7 +5690,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position694)
 													}
 													{
-														add(ruleAction66, position)
+														add(ruleAction65, position)
 													}
 													add(ruleRrca, position693)
 												}
@@ -5749,7 +5749,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position706)
 													}
 													{
-														add(ruleAction67, position)
+														add(ruleAction66, position)
 													}
 													add(ruleRla, position705)
 												}
@@ -5808,7 +5808,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position716)
 													}
 													{
-														add(ruleAction69, position)
+														add(ruleAction68, position)
 													}
 													add(ruleDaa, position715)
 												}
@@ -5867,7 +5867,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position726)
 													}
 													{
-														add(ruleAction70, position)
+														add(ruleAction69, position)
 													}
 													add(ruleCpl, position725)
 												}
@@ -5926,7 +5926,7 @@ func (p *PegAssembler) Init() {
 														add(rulePegText, position736)
 													}
 													{
-														add(ruleAction73, position)
+														add(ruleAction72, position)
 													}
 													add(ruleExx, position735)
 												}
@@ -5973,7 +5973,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position746)
 															}
 															{
-																add(ruleAction75, position)
+																add(ruleAction74, position)
 															}
 															add(ruleEi, position745)
 														}
@@ -6016,7 +6016,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position753)
 															}
 															{
-																add(ruleAction74, position)
+																add(ruleAction73, position)
 															}
 															add(ruleDi, position752)
 														}
@@ -6074,7 +6074,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position760)
 															}
 															{
-																add(ruleAction72, position)
+																add(ruleAction71, position)
 															}
 															add(ruleCcf, position759)
 														}
@@ -6132,7 +6132,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position769)
 															}
 															{
-																add(ruleAction71, position)
+																add(ruleAction70, position)
 															}
 															add(ruleScf, position768)
 														}
@@ -6190,7 +6190,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position778)
 															}
 															{
-																add(ruleAction68, position)
+																add(ruleAction67, position)
 															}
 															add(ruleRra, position777)
 														}
@@ -6263,7 +6263,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position787)
 															}
 															{
-																add(ruleAction64, position)
+																add(ruleAction63, position)
 															}
 															add(ruleHalt, position786)
 														}
@@ -6321,7 +6321,7 @@ func (p *PegAssembler) Init() {
 																add(rulePegText, position798)
 															}
 															{
-																add(ruleAction63, position)
+																add(ruleAction62, position)
 															}
 															add(ruleNop, position797)
 														}
@@ -6394,7 +6394,7 @@ func (p *PegAssembler) Init() {
 														goto l809
 													}
 													{
-														add(ruleAction100, position)
+														add(ruleAction99, position)
 													}
 													add(ruleRst, position810)
 												}
@@ -6453,7 +6453,7 @@ func (p *PegAssembler) Init() {
 														goto l818
 													}
 													{
-														add(ruleAction103, position)
+														add(ruleAction102, position)
 													}
 													add(ruleJp, position819)
 												}
@@ -6532,7 +6532,7 @@ func (p *PegAssembler) Init() {
 																goto l806
 															}
 															{
-																add(ruleAction105, position)
+																add(ruleAction104, position)
 															}
 															add(ruleDjnz, position828)
 														}
@@ -6590,7 +6590,7 @@ func (p *PegAssembler) Init() {
 																goto l806
 															}
 															{
-																add(ruleAction104, position)
+																add(ruleAction103, position)
 															}
 															add(ruleJr, position838)
 														}
@@ -6657,7 +6657,7 @@ func (p *PegAssembler) Init() {
 															}
 														l854:
 															{
-																add(ruleAction102, position)
+																add(ruleAction101, position)
 															}
 															add(ruleRet, position846)
 														}
@@ -6745,7 +6745,7 @@ func (p *PegAssembler) Init() {
 																goto l806
 															}
 															{
-																add(ruleAction101, position)
+																add(ruleAction100, position)
 															}
 															add(ruleCall, position856)
 														}
@@ -6809,7 +6809,7 @@ func (p *PegAssembler) Init() {
 														goto l870
 													}
 													{
-														add(ruleAction106, position)
+														add(ruleAction105, position)
 													}
 													add(ruleIN, position871)
 												}
@@ -6876,7 +6876,7 @@ func (p *PegAssembler) Init() {
 														goto l13
 													}
 													{
-														add(ruleAction107, position)
+														add(ruleAction106, position)
 													}
 													add(ruleOUT, position877)
 												}
@@ -8561,7 +8561,7 @@ func (p *PegAssembler) Init() {
 															goto l1125
 														}
 														{
-															add(ruleAction44, position)
+															add(ruleAction43, position)
 														}
 														add(ruleAdd, position1126)
 													}
@@ -8640,7 +8640,7 @@ func (p *PegAssembler) Init() {
 															goto l1136
 														}
 														{
-															add(ruleAction45, position)
+															add(ruleAction44, position)
 														}
 														add(ruleAdc, position1137)
 													}
@@ -8701,7 +8701,7 @@ func (p *PegAssembler) Init() {
 															goto l1147
 														}
 														{
-															add(ruleAction46, position)
+															add(ruleAction45, position)
 														}
 														add(ruleSub, position1148)
 													}
@@ -8750,7 +8750,7 @@ func (p *PegAssembler) Init() {
 																	goto l1122
 																}
 																{
-																	add(ruleAction51, position)
+																	add(ruleAction50, position)
 																}
 																add(ruleCp, position1157)
 															}
@@ -8795,7 +8795,7 @@ func (p *PegAssembler) Init() {
 																	goto l1122
 																}
 																{
-																	add(ruleAction50, position)
+																	add(ruleAction49, position)
 																}
 																add(ruleOr, position1163)
 															}
@@ -8855,7 +8855,7 @@ func (p *PegAssembler) Init() {
 																	goto l1122
 																}
 																{
-																	add(ruleAction49, position)
+																	add(ruleAction48, position)
 																}
 																add(ruleXor, position1169)
 															}
@@ -8915,7 +8915,7 @@ func (p *PegAssembler) Init() {
 																	goto l1122
 																}
 																{
-																	add(ruleAction48, position)
+																	add(ruleAction47, position)
 																}
 																add(ruleAnd, position1177)
 															}
@@ -8993,7 +8993,7 @@ func (p *PegAssembler) Init() {
 																	goto l1122
 																}
 																{
-																	add(ruleAction47, position)
+																	add(ruleAction46, position)
 																}
 																add(ruleSbc, position1185)
 															}
@@ -9083,7 +9083,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1210:
 																{
-																	add(ruleAction52, position)
+																	add(ruleAction51, position)
 																}
 																add(ruleRlc, position1202)
 															}
@@ -9157,7 +9157,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1221:
 																{
-																	add(ruleAction53, position)
+																	add(ruleAction52, position)
 																}
 																add(ruleRrc, position1213)
 															}
@@ -9216,7 +9216,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1230:
 																{
-																	add(ruleAction54, position)
+																	add(ruleAction53, position)
 																}
 																add(ruleRl, position1224)
 															}
@@ -9275,7 +9275,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1239:
 																{
-																	add(ruleAction55, position)
+																	add(ruleAction54, position)
 																}
 																add(ruleRr, position1233)
 															}
@@ -9349,7 +9349,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1250:
 																{
-																	add(ruleAction56, position)
+																	add(ruleAction55, position)
 																}
 																add(ruleSla, position1242)
 															}
@@ -9423,7 +9423,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1261:
 																{
-																	add(ruleAction57, position)
+																	add(ruleAction56, position)
 																}
 																add(ruleSra, position1253)
 															}
@@ -9497,7 +9497,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1272:
 																{
-																	add(ruleAction58, position)
+																	add(ruleAction57, position)
 																}
 																add(ruleSll, position1264)
 															}
@@ -9571,7 +9571,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1282:
 																{
-																	add(ruleAction59, position)
+																	add(ruleAction58, position)
 																}
 																add(ruleSrl, position1274)
 															}
@@ -9658,7 +9658,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1293:
 																{
-																	add(ruleAction62, position)
+																	add(ruleAction61, position)
 																}
 																add(ruleSet, position1285)
 															}
@@ -9737,7 +9737,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1303:
 																{
-																	add(ruleAction61, position)
+																	add(ruleAction60, position)
 																}
 																add(ruleRes, position1295)
 															}
@@ -9803,7 +9803,7 @@ func (p *PegAssembler) Init() {
 																	goto l1195
 																}
 																{
-																	add(ruleAction60, position)
+																	add(ruleAction59, position)
 																}
 																add(ruleBit, position1305)
 															}
@@ -9889,7 +9889,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1318)
 														}
 														{
-															add(ruleAction77, position)
+															add(ruleAction76, position)
 														}
 														add(ruleRetn, position1317)
 													}
@@ -9963,7 +9963,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1330)
 														}
 														{
-															add(ruleAction78, position)
+															add(ruleAction77, position)
 														}
 														add(ruleReti, position1329)
 													}
@@ -10022,7 +10022,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1342)
 														}
 														{
-															add(ruleAction79, position)
+															add(ruleAction78, position)
 														}
 														add(ruleRrd, position1341)
 													}
@@ -10074,7 +10074,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1352)
 														}
 														{
-															add(ruleAction81, position)
+															add(ruleAction80, position)
 														}
 														add(ruleIm0, position1351)
 													}
@@ -10126,7 +10126,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1360)
 														}
 														{
-															add(ruleAction82, position)
+															add(ruleAction81, position)
 														}
 														add(ruleIm1, position1359)
 													}
@@ -10178,7 +10178,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1368)
 														}
 														{
-															add(ruleAction83, position)
+															add(ruleAction82, position)
 														}
 														add(ruleIm2, position1367)
 													}
@@ -10259,7 +10259,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1379)
 																		}
 																		{
-																			add(ruleAction94, position)
+																			add(ruleAction93, position)
 																		}
 																		add(ruleInir, position1378)
 																	}
@@ -10318,7 +10318,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1391)
 																		}
 																		{
-																			add(ruleAction86, position)
+																			add(ruleAction85, position)
 																		}
 																		add(ruleIni, position1390)
 																	}
@@ -10392,7 +10392,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1401)
 																		}
 																		{
-																			add(ruleAction95, position)
+																			add(ruleAction94, position)
 																		}
 																		add(ruleOtir, position1400)
 																	}
@@ -10466,7 +10466,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1413)
 																		}
 																		{
-																			add(ruleAction87, position)
+																			add(ruleAction86, position)
 																		}
 																		add(ruleOuti, position1412)
 																	}
@@ -10540,7 +10540,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1425)
 																		}
 																		{
-																			add(ruleAction98, position)
+																			add(ruleAction97, position)
 																		}
 																		add(ruleIndr, position1424)
 																	}
@@ -10599,7 +10599,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1437)
 																		}
 																		{
-																			add(ruleAction90, position)
+																			add(ruleAction89, position)
 																		}
 																		add(ruleInd, position1436)
 																	}
@@ -10673,7 +10673,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1447)
 																		}
 																		{
-																			add(ruleAction99, position)
+																			add(ruleAction98, position)
 																		}
 																		add(ruleOtdr, position1446)
 																	}
@@ -10747,7 +10747,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1458)
 																		}
 																		{
-																			add(ruleAction91, position)
+																			add(ruleAction90, position)
 																		}
 																		add(ruleOutd, position1457)
 																	}
@@ -10809,7 +10809,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1469)
 																}
 																{
-																	add(ruleAction80, position)
+																	add(ruleAction79, position)
 																}
 																add(ruleRld, position1468)
 															}
@@ -10867,7 +10867,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1478)
 																}
 																{
-																	add(ruleAction76, position)
+																	add(ruleAction75, position)
 																}
 																add(ruleNeg, position1477)
 															}
@@ -10944,7 +10944,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1490)
 																		}
 																		{
-																			add(ruleAction92, position)
+																			add(ruleAction91, position)
 																		}
 																		add(ruleLdir, position1489)
 																	}
@@ -11003,7 +11003,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1502)
 																		}
 																		{
-																			add(ruleAction84, position)
+																			add(ruleAction83, position)
 																		}
 																		add(ruleLdi, position1501)
 																	}
@@ -11077,7 +11077,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1512)
 																		}
 																		{
-																			add(ruleAction93, position)
+																			add(ruleAction92, position)
 																		}
 																		add(ruleCpir, position1511)
 																	}
@@ -11136,7 +11136,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1524)
 																		}
 																		{
-																			add(ruleAction85, position)
+																			add(ruleAction84, position)
 																		}
 																		add(ruleCpi, position1523)
 																	}
@@ -11210,7 +11210,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1534)
 																		}
 																		{
-																			add(ruleAction96, position)
+																			add(ruleAction95, position)
 																		}
 																		add(ruleLddr, position1533)
 																	}
@@ -11269,7 +11269,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1546)
 																		}
 																		{
-																			add(ruleAction88, position)
+																			add(ruleAction87, position)
 																		}
 																		add(ruleLdd, position1545)
 																	}
@@ -11343,7 +11343,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1556)
 																		}
 																		{
-																			add(ruleAction97, position)
+																			add(ruleAction96, position)
 																		}
 																		add(ruleCpdr, position1555)
 																	}
@@ -11402,7 +11402,7 @@ func (p *PegAssembler) Init() {
 																			add(rulePegText, position1567)
 																		}
 																		{
-																			add(ruleAction89, position)
+																			add(ruleAction88, position)
 																		}
 																		add(ruleCpd, position1566)
 																	}
@@ -11492,7 +11492,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1580)
 														}
 														{
-															add(ruleAction65, position)
+															add(ruleAction64, position)
 														}
 														add(ruleRlca, position1579)
 													}
@@ -11566,7 +11566,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1592)
 														}
 														{
-															add(ruleAction66, position)
+															add(ruleAction65, position)
 														}
 														add(ruleRrca, position1591)
 													}
@@ -11625,7 +11625,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1604)
 														}
 														{
-															add(ruleAction67, position)
+															add(ruleAction66, position)
 														}
 														add(ruleRla, position1603)
 													}
@@ -11684,7 +11684,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1614)
 														}
 														{
-															add(ruleAction69, position)
+															add(ruleAction68, position)
 														}
 														add(ruleDaa, position1613)
 													}
@@ -11743,7 +11743,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1624)
 														}
 														{
-															add(ruleAction70, position)
+															add(ruleAction69, position)
 														}
 														add(ruleCpl, position1623)
 													}
@@ -11802,7 +11802,7 @@ func (p *PegAssembler) Init() {
 															add(rulePegText, position1634)
 														}
 														{
-															add(ruleAction73, position)
+															add(ruleAction72, position)
 														}
 														add(ruleExx, position1633)
 													}
@@ -11849,7 +11849,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1644)
 																}
 																{
-																	add(ruleAction75, position)
+																	add(ruleAction74, position)
 																}
 																add(ruleEi, position1643)
 															}
@@ -11892,7 +11892,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1651)
 																}
 																{
-																	add(ruleAction74, position)
+																	add(ruleAction73, position)
 																}
 																add(ruleDi, position1650)
 															}
@@ -11950,7 +11950,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1658)
 																}
 																{
-																	add(ruleAction72, position)
+																	add(ruleAction71, position)
 																}
 																add(ruleCcf, position1657)
 															}
@@ -12008,7 +12008,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1667)
 																}
 																{
-																	add(ruleAction71, position)
+																	add(ruleAction70, position)
 																}
 																add(ruleScf, position1666)
 															}
@@ -12066,7 +12066,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1676)
 																}
 																{
-																	add(ruleAction68, position)
+																	add(ruleAction67, position)
 																}
 																add(ruleRra, position1675)
 															}
@@ -12139,7 +12139,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1685)
 																}
 																{
-																	add(ruleAction64, position)
+																	add(ruleAction63, position)
 																}
 																add(ruleHalt, position1684)
 															}
@@ -12197,7 +12197,7 @@ func (p *PegAssembler) Init() {
 																	add(rulePegText, position1696)
 																}
 																{
-																	add(ruleAction63, position)
+																	add(ruleAction62, position)
 																}
 																add(ruleNop, position1695)
 															}
@@ -12270,7 +12270,7 @@ func (p *PegAssembler) Init() {
 															goto l1707
 														}
 														{
-															add(ruleAction100, position)
+															add(ruleAction99, position)
 														}
 														add(ruleRst, position1708)
 													}
@@ -12329,7 +12329,7 @@ func (p *PegAssembler) Init() {
 															goto l1716
 														}
 														{
-															add(ruleAction103, position)
+															add(ruleAction102, position)
 														}
 														add(ruleJp, position1717)
 													}
@@ -12408,7 +12408,7 @@ func (p *PegAssembler) Init() {
 																	goto l1704
 																}
 																{
-																	add(ruleAction105, position)
+																	add(ruleAction104, position)
 																}
 																add(ruleDjnz, position1726)
 															}
@@ -12466,7 +12466,7 @@ func (p *PegAssembler) Init() {
 																	goto l1704
 																}
 																{
-																	add(ruleAction104, position)
+																	add(ruleAction103, position)
 																}
 																add(ruleJr, position1736)
 															}
@@ -12533,7 +12533,7 @@ func (p *PegAssembler) Init() {
 																}
 															l1752:
 																{
-																	add(ruleAction102, position)
+																	add(ruleAction101, position)
 																}
 																add(ruleRet, position1744)
 															}
@@ -12621,7 +12621,7 @@ func (p *PegAssembler) Init() {
 																	goto l1704
 																}
 																{
-																	add(ruleAction101, position)
+																	add(ruleAction100, position)
 																}
 																add(ruleCall, position1754)
 															}
@@ -12685,7 +12685,7 @@ func (p *PegAssembler) Init() {
 															goto l1768
 														}
 														{
-															add(ruleAction106, position)
+															add(ruleAction105, position)
 														}
 														add(ruleIN, position1769)
 													}
@@ -12752,7 +12752,7 @@ func (p *PegAssembler) Init() {
 															goto l911
 														}
 														{
-															add(ruleAction107, position)
+															add(ruleAction106, position)
 														}
 														add(ruleOUT, position1775)
 													}
@@ -14284,106 +14284,72 @@ func (p *PegAssembler) Init() {
 						position2049 := position
 						{
 							position2050, tokenIndex2050 := position, tokenIndex
-							if buffer[position] != rune('0') {
-								goto l2050
+							if !_rules[rulezeroHexWord]() {
+								goto l2051
 							}
-							position++
-							goto l2051
-						l2050:
+							goto l2050
+						l2051:
 							position, tokenIndex = position2050, tokenIndex2050
+							if !_rules[rulehexWord]() {
+								goto l2048
+							}
 						}
-					l2051:
+					l2050:
 						{
-							position2052 := position
-							if !_rules[rulehexdigit]() {
-								goto l2048
-							}
-							if !_rules[rulehexdigit]() {
-								goto l2048
-							}
-							if !_rules[rulehexdigit]() {
-								goto l2048
-							}
-							if !_rules[rulehexdigit]() {
-								goto l2048
-							}
-							add(rulePegText, position2052)
-						}
-						{
-							position2053, tokenIndex2053 := position, tokenIndex
+							position2052, tokenIndex2052 := position, tokenIndex
 							if buffer[position] != rune('h') {
-								goto l2054
+								goto l2053
 							}
 							position++
-							goto l2053
-						l2054:
-							position, tokenIndex = position2053, tokenIndex2053
+							goto l2052
+						l2053:
+							position, tokenIndex = position2052, tokenIndex2052
 							if buffer[position] != rune('H') {
 								goto l2048
 							}
 							position++
 						}
-					l2053:
-						{
-							add(ruleAction41, position)
-						}
+					l2052:
 						add(rulehexWordH, position2049)
 					}
 					goto l2043
 				l2048:
 					position, tokenIndex = position2043, tokenIndex2043
 					{
-						position2056 := position
+						position2054 := position
 						if buffer[position] != rune('0') {
 							goto l2041
 						}
 						position++
 						{
-							position2057, tokenIndex2057 := position, tokenIndex
+							position2055, tokenIndex2055 := position, tokenIndex
 							if buffer[position] != rune('x') {
-								goto l2058
+								goto l2056
 							}
 							position++
-							goto l2057
-						l2058:
-							position, tokenIndex = position2057, tokenIndex2057
+							goto l2055
+						l2056:
+							position, tokenIndex = position2055, tokenIndex2055
 							if buffer[position] != rune('X') {
 								goto l2041
 							}
 							position++
 						}
+					l2055:
+						{
+							position2057, tokenIndex2057 := position, tokenIndex
+							if !_rules[rulezeroHexWord]() {
+								goto l2058
+							}
+							goto l2057
+						l2058:
+							position, tokenIndex = position2057, tokenIndex2057
+							if !_rules[rulehexWord]() {
+								goto l2041
+							}
+						}
 					l2057:
-						{
-							position2059, tokenIndex2059 := position, tokenIndex
-							if buffer[position] != rune('0') {
-								goto l2059
-							}
-							position++
-							goto l2060
-						l2059:
-							position, tokenIndex = position2059, tokenIndex2059
-						}
-					l2060:
-						{
-							position2061 := position
-							if !_rules[rulehexdigit]() {
-								goto l2041
-							}
-							if !_rules[rulehexdigit]() {
-								goto l2041
-							}
-							if !_rules[rulehexdigit]() {
-								goto l2041
-							}
-							if !_rules[rulehexdigit]() {
-								goto l2041
-							}
-							add(rulePegText, position2061)
-						}
-						{
-							add(ruleAction42, position)
-						}
-						add(rulehexWord0x, position2056)
+						add(rulehexWord0x, position2054)
 					}
 				}
 			l2043:
@@ -14396,278 +14362,278 @@ func (p *PegAssembler) Init() {
 		},
 		/* 53 disp <- <(signedHexByteH / signedHexByte0x / signedDecimalByte)> */
 		func() bool {
-			position2063, tokenIndex2063 := position, tokenIndex
+			position2059, tokenIndex2059 := position, tokenIndex
 			{
-				position2064 := position
+				position2060 := position
 				{
-					position2065, tokenIndex2065 := position, tokenIndex
+					position2061, tokenIndex2061 := position, tokenIndex
 					{
-						position2067 := position
+						position2063 := position
 						{
-							position2068 := position
+							position2064 := position
 							{
-								position2069, tokenIndex2069 := position, tokenIndex
+								position2065, tokenIndex2065 := position, tokenIndex
 								{
-									position2071, tokenIndex2071 := position, tokenIndex
+									position2067, tokenIndex2067 := position, tokenIndex
 									if buffer[position] != rune('-') {
-										goto l2072
+										goto l2068
 									}
 									position++
-									goto l2071
-								l2072:
-									position, tokenIndex = position2071, tokenIndex2071
+									goto l2067
+								l2068:
+									position, tokenIndex = position2067, tokenIndex2067
 									if buffer[position] != rune('+') {
-										goto l2069
+										goto l2065
 									}
 									position++
 								}
-							l2071:
-								goto l2070
-							l2069:
-								position, tokenIndex = position2069, tokenIndex2069
+							l2067:
+								goto l2066
+							l2065:
+								position, tokenIndex = position2065, tokenIndex2065
 							}
-						l2070:
+						l2066:
 							{
 								switch buffer[position] {
 								case 'A', 'B', 'C', 'D', 'E', 'F':
 									if c := buffer[position]; c < rune('A') || c > rune('F') {
-										goto l2066
+										goto l2062
 									}
 									position++
 									break
 								case 'a', 'b', 'c', 'd', 'e', 'f':
 									if c := buffer[position]; c < rune('a') || c > rune('f') {
-										goto l2066
+										goto l2062
 									}
 									position++
 									break
 								default:
 									if c := buffer[position]; c < rune('0') || c > rune('9') {
-										goto l2066
+										goto l2062
 									}
 									position++
 									break
 								}
 							}
 
-						l2073:
+						l2069:
 							{
-								position2074, tokenIndex2074 := position, tokenIndex
+								position2070, tokenIndex2070 := position, tokenIndex
 								{
 									switch buffer[position] {
 									case 'A', 'B', 'C', 'D', 'E', 'F':
 										if c := buffer[position]; c < rune('A') || c > rune('F') {
-											goto l2074
+											goto l2070
 										}
 										position++
 										break
 									case 'a', 'b', 'c', 'd', 'e', 'f':
 										if c := buffer[position]; c < rune('a') || c > rune('f') {
-											goto l2074
+											goto l2070
 										}
 										position++
 										break
 									default:
 										if c := buffer[position]; c < rune('0') || c > rune('9') {
-											goto l2074
+											goto l2070
 										}
 										position++
 										break
 									}
 								}
 
-								goto l2073
-							l2074:
-								position, tokenIndex = position2074, tokenIndex2074
+								goto l2069
+							l2070:
+								position, tokenIndex = position2070, tokenIndex2070
 							}
-							add(rulePegText, position2068)
+							add(rulePegText, position2064)
 						}
 						{
-							position2077, tokenIndex2077 := position, tokenIndex
+							position2073, tokenIndex2073 := position, tokenIndex
 							if buffer[position] != rune('h') {
-								goto l2078
+								goto l2074
 							}
 							position++
-							goto l2077
-						l2078:
-							position, tokenIndex = position2077, tokenIndex2077
+							goto l2073
+						l2074:
+							position, tokenIndex = position2073, tokenIndex2073
 							if buffer[position] != rune('H') {
-								goto l2066
+								goto l2062
 							}
 							position++
 						}
-					l2077:
+					l2073:
 						{
 							add(ruleAction35, position)
 						}
-						add(rulesignedHexByteH, position2067)
+						add(rulesignedHexByteH, position2063)
 					}
-					goto l2065
-				l2066:
-					position, tokenIndex = position2065, tokenIndex2065
+					goto l2061
+				l2062:
+					position, tokenIndex = position2061, tokenIndex2061
 					{
-						position2081 := position
+						position2077 := position
 						{
-							position2082 := position
+							position2078 := position
 							{
-								position2083, tokenIndex2083 := position, tokenIndex
+								position2079, tokenIndex2079 := position, tokenIndex
 								{
-									position2085, tokenIndex2085 := position, tokenIndex
+									position2081, tokenIndex2081 := position, tokenIndex
 									if buffer[position] != rune('-') {
-										goto l2086
+										goto l2082
 									}
 									position++
-									goto l2085
-								l2086:
-									position, tokenIndex = position2085, tokenIndex2085
+									goto l2081
+								l2082:
+									position, tokenIndex = position2081, tokenIndex2081
 									if buffer[position] != rune('+') {
-										goto l2083
+										goto l2079
 									}
 									position++
 								}
-							l2085:
-								goto l2084
-							l2083:
-								position, tokenIndex = position2083, tokenIndex2083
-							}
-						l2084:
-							if buffer[position] != rune('0') {
+							l2081:
 								goto l2080
+							l2079:
+								position, tokenIndex = position2079, tokenIndex2079
+							}
+						l2080:
+							if buffer[position] != rune('0') {
+								goto l2076
 							}
 							position++
 							{
-								position2087, tokenIndex2087 := position, tokenIndex
+								position2083, tokenIndex2083 := position, tokenIndex
 								if buffer[position] != rune('x') {
-									goto l2088
+									goto l2084
 								}
 								position++
-								goto l2087
-							l2088:
-								position, tokenIndex = position2087, tokenIndex2087
+								goto l2083
+							l2084:
+								position, tokenIndex = position2083, tokenIndex2083
 								if buffer[position] != rune('X') {
-									goto l2080
+									goto l2076
 								}
 								position++
 							}
-						l2087:
+						l2083:
 							{
 								switch buffer[position] {
 								case 'A', 'B', 'C', 'D', 'E', 'F':
 									if c := buffer[position]; c < rune('A') || c > rune('F') {
-										goto l2080
+										goto l2076
 									}
 									position++
 									break
 								case 'a', 'b', 'c', 'd', 'e', 'f':
 									if c := buffer[position]; c < rune('a') || c > rune('f') {
-										goto l2080
+										goto l2076
 									}
 									position++
 									break
 								default:
 									if c := buffer[position]; c < rune('0') || c > rune('9') {
-										goto l2080
+										goto l2076
 									}
 									position++
 									break
 								}
 							}
 
-						l2089:
+						l2085:
 							{
-								position2090, tokenIndex2090 := position, tokenIndex
+								position2086, tokenIndex2086 := position, tokenIndex
 								{
 									switch buffer[position] {
 									case 'A', 'B', 'C', 'D', 'E', 'F':
 										if c := buffer[position]; c < rune('A') || c > rune('F') {
-											goto l2090
+											goto l2086
 										}
 										position++
 										break
 									case 'a', 'b', 'c', 'd', 'e', 'f':
 										if c := buffer[position]; c < rune('a') || c > rune('f') {
-											goto l2090
+											goto l2086
 										}
 										position++
 										break
 									default:
 										if c := buffer[position]; c < rune('0') || c > rune('9') {
-											goto l2090
+											goto l2086
 										}
 										position++
 										break
 									}
 								}
 
-								goto l2089
-							l2090:
-								position, tokenIndex = position2090, tokenIndex2090
+								goto l2085
+							l2086:
+								position, tokenIndex = position2086, tokenIndex2086
 							}
-							add(rulePegText, position2082)
+							add(rulePegText, position2078)
 						}
 						{
 							add(ruleAction36, position)
 						}
-						add(rulesignedHexByte0x, position2081)
+						add(rulesignedHexByte0x, position2077)
 					}
-					goto l2065
-				l2080:
-					position, tokenIndex = position2065, tokenIndex2065
+					goto l2061
+				l2076:
+					position, tokenIndex = position2061, tokenIndex2061
 					{
-						position2094 := position
+						position2090 := position
 						{
-							position2095 := position
+							position2091 := position
 							{
-								position2096, tokenIndex2096 := position, tokenIndex
+								position2092, tokenIndex2092 := position, tokenIndex
 								{
-									position2098, tokenIndex2098 := position, tokenIndex
+									position2094, tokenIndex2094 := position, tokenIndex
 									if buffer[position] != rune('-') {
-										goto l2099
+										goto l2095
 									}
 									position++
-									goto l2098
-								l2099:
-									position, tokenIndex = position2098, tokenIndex2098
+									goto l2094
+								l2095:
+									position, tokenIndex = position2094, tokenIndex2094
 									if buffer[position] != rune('+') {
-										goto l2096
+										goto l2092
 									}
 									position++
 								}
-							l2098:
-								goto l2097
-							l2096:
-								position, tokenIndex = position2096, tokenIndex2096
+							l2094:
+								goto l2093
+							l2092:
+								position, tokenIndex = position2092, tokenIndex2092
 							}
-						l2097:
+						l2093:
 							if c := buffer[position]; c < rune('0') || c > rune('9') {
-								goto l2063
+								goto l2059
 							}
 							position++
-						l2100:
+						l2096:
 							{
-								position2101, tokenIndex2101 := position, tokenIndex
+								position2097, tokenIndex2097 := position, tokenIndex
 								if c := buffer[position]; c < rune('0') || c > rune('9') {
-									goto l2101
+									goto l2097
 								}
 								position++
-								goto l2100
-							l2101:
-								position, tokenIndex = position2101, tokenIndex2101
+								goto l2096
+							l2097:
+								position, tokenIndex = position2097, tokenIndex2097
 							}
-							add(rulePegText, position2095)
+							add(rulePegText, position2091)
 						}
 						{
 							add(ruleAction34, position)
 						}
-						add(rulesignedDecimalByte, position2094)
+						add(rulesignedDecimalByte, position2090)
 					}
 				}
-			l2065:
-				add(ruledisp, position2064)
+			l2061:
+				add(ruledisp, position2060)
 			}
 			return true
-		l2063:
-			position, tokenIndex = position2063, tokenIndex2063
+		l2059:
+			position, tokenIndex = position2059, tokenIndex2059
 			return false
 		},
 		/* 54 signedDecimalByte <- <(<(('-' / '+')? [0-9]+)> Action34)> */
@@ -14684,254 +14650,290 @@ func (p *PegAssembler) Init() {
 		nil,
 		/* 60 LabelNN <- <(<LabelText> Action40)> */
 		nil,
-		/* 61 hexWordH <- <('0'? <(hexdigit hexdigit hexdigit hexdigit)> ('h' / 'H') Action41)> */
+		/* 61 hexWordH <- <((zeroHexWord / hexWord) ('h' / 'H'))> */
 		nil,
-		/* 62 hexWord0x <- <('0' ('x' / 'X') '0'? <(hexdigit hexdigit hexdigit hexdigit)> Action42)> */
+		/* 62 hexWord0x <- <('0' ('x' / 'X') (zeroHexWord / hexWord))> */
 		nil,
-		/* 63 nn_contents <- <('(' nn ')' Action43)> */
+		/* 63 hexWord <- <(<(hexdigit hexdigit hexdigit hexdigit)> Action41)> */
+		func() bool {
+			position2108, tokenIndex2108 := position, tokenIndex
+			{
+				position2109 := position
+				{
+					position2110 := position
+					if !_rules[rulehexdigit]() {
+						goto l2108
+					}
+					if !_rules[rulehexdigit]() {
+						goto l2108
+					}
+					if !_rules[rulehexdigit]() {
+						goto l2108
+					}
+					if !_rules[rulehexdigit]() {
+						goto l2108
+					}
+					add(rulePegText, position2110)
+				}
+				{
+					add(ruleAction41, position)
+				}
+				add(rulehexWord, position2109)
+			}
+			return true
+		l2108:
+			position, tokenIndex = position2108, tokenIndex2108
+			return false
+		},
+		/* 64 zeroHexWord <- <('0' hexWord)> */
 		func() bool {
 			position2112, tokenIndex2112 := position, tokenIndex
 			{
 				position2113 := position
-				if buffer[position] != rune('(') {
+				if buffer[position] != rune('0') {
 					goto l2112
 				}
 				position++
-				if !_rules[rulenn]() {
+				if !_rules[rulehexWord]() {
 					goto l2112
 				}
-				if buffer[position] != rune(')') {
-					goto l2112
-				}
-				position++
-				{
-					add(ruleAction43, position)
-				}
-				add(rulenn_contents, position2113)
+				add(rulezeroHexWord, position2113)
 			}
 			return true
 		l2112:
 			position, tokenIndex = position2112, tokenIndex2112
 			return false
 		},
-		/* 64 Alu <- <(Add / Adc / Sub / ((&('C' | 'c') Cp) | (&('O' | 'o') Or) | (&('X' | 'x') Xor) | (&('A' | 'a') And) | (&('S' | 's') Sbc)))> */
-		nil,
-		/* 65 Add <- <(('a' / 'A') ('d' / 'D') ('d' / 'D') ws ('a' / 'A') sep Src8 Action44)> */
-		nil,
-		/* 66 Adc <- <(('a' / 'A') ('d' / 'D') ('c' / 'C') ws ('a' / 'A') sep Src8 Action45)> */
-		nil,
-		/* 67 Sub <- <(('s' / 'S') ('u' / 'U') ('b' / 'B') ws Src8 Action46)> */
-		nil,
-		/* 68 Sbc <- <(('s' / 'S') ('b' / 'B') ('c' / 'C') ws ('a' / 'A') sep Src8 Action47)> */
-		nil,
-		/* 69 And <- <(('a' / 'A') ('n' / 'N') ('d' / 'D') ws Src8 Action48)> */
-		nil,
-		/* 70 Xor <- <(('x' / 'X') ('o' / 'O') ('r' / 'R') ws Src8 Action49)> */
-		nil,
-		/* 71 Or <- <(('o' / 'O') ('r' / 'R') ws Src8 Action50)> */
-		nil,
-		/* 72 Cp <- <(('c' / 'C') ('p' / 'P') ws Src8 Action51)> */
-		nil,
-		/* 73 BitOp <- <(Rot / ((&('S' | 's') Set) | (&('R' | 'r') Res) | (&('B' | 'b') Bit)))> */
-		nil,
-		/* 74 Rot <- <(Rlc / Rrc / Rl / Rr / Sla / Sra / Sll / Srl)> */
-		nil,
-		/* 75 Rlc <- <(('r' / 'R') ('l' / 'L') ('c' / 'C') ws Loc8 (sep Copy8)? Action52)> */
-		nil,
-		/* 76 Rrc <- <(('r' / 'R') ('r' / 'R') ('c' / 'C') ws Loc8 (sep Copy8)? Action53)> */
-		nil,
-		/* 77 Rl <- <(('r' / 'R') ('l' / 'L') ws Loc8 (sep Copy8)? Action54)> */
-		nil,
-		/* 78 Rr <- <(('r' / 'R') ('r' / 'R') ws Loc8 (sep Copy8)? Action55)> */
-		nil,
-		/* 79 Sla <- <(('s' / 'S') ('l' / 'L') ('a' / 'A') ws Loc8 (sep Copy8)? Action56)> */
-		nil,
-		/* 80 Sra <- <(('s' / 'S') ('r' / 'R') ('a' / 'A') ws Loc8 (sep Copy8)? Action57)> */
-		nil,
-		/* 81 Sll <- <(('s' / 'S') ('l' / 'L') ('l' / 'L') ws Loc8 (sep Copy8)? Action58)> */
-		nil,
-		/* 82 Srl <- <(('s' / 'S') ('r' / 'R') ('l' / 'L') ws Loc8 (sep Copy8)? Action59)> */
-		nil,
-		/* 83 Bit <- <(('b' / 'B') ('i' / 'I') ('t' / 'T') ws octaldigit sep Loc8 Action60)> */
-		nil,
-		/* 84 Res <- <(('r' / 'R') ('e' / 'E') ('s' / 'S') ws octaldigit sep Loc8 (sep Copy8)? Action61)> */
-		nil,
-		/* 85 Set <- <(('s' / 'S') ('e' / 'E') ('t' / 'T') ws octaldigit sep Loc8 (sep Copy8)? Action62)> */
-		nil,
-		/* 86 Simple <- <(Rlca / Rrca / Rla / Daa / Cpl / Exx / ((&('E' | 'e') Ei) | (&('D' | 'd') Di) | (&('C' | 'c') Ccf) | (&('S' | 's') Scf) | (&('R' | 'r') Rra) | (&('H' | 'h') Halt) | (&('N' | 'n') Nop)))> */
-		nil,
-		/* 87 Nop <- <(<(('n' / 'N') ('o' / 'O') ('p' / 'P'))> Action63)> */
-		nil,
-		/* 88 Halt <- <(<(('h' / 'H') ('a' / 'A') ('l' / 'L') ('t' / 'T'))> Action64)> */
-		nil,
-		/* 89 Rlca <- <(<(('r' / 'R') ('l' / 'L') ('c' / 'C') ('a' / 'A'))> Action65)> */
-		nil,
-		/* 90 Rrca <- <(<(('r' / 'R') ('r' / 'R') ('c' / 'C') ('a' / 'A'))> Action66)> */
-		nil,
-		/* 91 Rla <- <(<(('r' / 'R') ('l' / 'L') ('a' / 'A'))> Action67)> */
-		nil,
-		/* 92 Rra <- <(<(('r' / 'R') ('r' / 'R') ('a' / 'A'))> Action68)> */
-		nil,
-		/* 93 Daa <- <(<(('d' / 'D') ('a' / 'A') ('a' / 'A'))> Action69)> */
-		nil,
-		/* 94 Cpl <- <(<(('c' / 'C') ('p' / 'P') ('l' / 'L'))> Action70)> */
-		nil,
-		/* 95 Scf <- <(<(('s' / 'S') ('c' / 'C') ('f' / 'F'))> Action71)> */
-		nil,
-		/* 96 Ccf <- <(<(('c' / 'C') ('c' / 'C') ('f' / 'F'))> Action72)> */
-		nil,
-		/* 97 Exx <- <(<(('e' / 'E') ('x' / 'X') ('x' / 'X'))> Action73)> */
-		nil,
-		/* 98 Di <- <(<(('d' / 'D') ('i' / 'I'))> Action74)> */
-		nil,
-		/* 99 Ei <- <(<(('e' / 'E') ('i' / 'I'))> Action75)> */
-		nil,
-		/* 100 EDSimple <- <(Retn / Reti / Rrd / Im0 / Im1 / Im2 / ((&('I' | 'O' | 'i' | 'o') BlitIO) | (&('R' | 'r') Rld) | (&('N' | 'n') Neg) | (&('C' | 'L' | 'c' | 'l') Blit)))> */
-		nil,
-		/* 101 Neg <- <(<(('n' / 'N') ('e' / 'E') ('g' / 'G'))> Action76)> */
-		nil,
-		/* 102 Retn <- <(<(('r' / 'R') ('e' / 'E') ('t' / 'T') ('n' / 'N'))> Action77)> */
-		nil,
-		/* 103 Reti <- <(<(('r' / 'R') ('e' / 'E') ('t' / 'T') ('i' / 'I'))> Action78)> */
-		nil,
-		/* 104 Rrd <- <(<(('r' / 'R') ('r' / 'R') ('d' / 'D'))> Action79)> */
-		nil,
-		/* 105 Rld <- <(<(('r' / 'R') ('l' / 'L') ('d' / 'D'))> Action80)> */
-		nil,
-		/* 106 Im0 <- <(<(('i' / 'I') ('m' / 'M') ' ' '0')> Action81)> */
-		nil,
-		/* 107 Im1 <- <(<(('i' / 'I') ('m' / 'M') ' ' '1')> Action82)> */
-		nil,
-		/* 108 Im2 <- <(<(('i' / 'I') ('m' / 'M') ' ' '2')> Action83)> */
-		nil,
-		/* 109 Blit <- <(Ldir / Ldi / Cpir / Cpi / Lddr / Ldd / Cpdr / Cpd)> */
-		nil,
-		/* 110 BlitIO <- <(Inir / Ini / Otir / Outi / Indr / Ind / Otdr / Outd)> */
-		nil,
-		/* 111 Ldi <- <(<(('l' / 'L') ('d' / 'D') ('i' / 'I'))> Action84)> */
-		nil,
-		/* 112 Cpi <- <(<(('c' / 'C') ('p' / 'P') ('i' / 'I'))> Action85)> */
-		nil,
-		/* 113 Ini <- <(<(('i' / 'I') ('n' / 'N') ('i' / 'I'))> Action86)> */
-		nil,
-		/* 114 Outi <- <(<(('o' / 'O') ('u' / 'U') ('t' / 'T') ('i' / 'I'))> Action87)> */
-		nil,
-		/* 115 Ldd <- <(<(('l' / 'L') ('d' / 'D') ('d' / 'D'))> Action88)> */
-		nil,
-		/* 116 Cpd <- <(<(('c' / 'C') ('p' / 'P') ('d' / 'D'))> Action89)> */
-		nil,
-		/* 117 Ind <- <(<(('i' / 'I') ('n' / 'N') ('d' / 'D'))> Action90)> */
-		nil,
-		/* 118 Outd <- <(<(('o' / 'O') ('u' / 'U') ('t' / 'T') ('d' / 'D'))> Action91)> */
-		nil,
-		/* 119 Ldir <- <(<(('l' / 'L') ('d' / 'D') ('i' / 'I') ('r' / 'R'))> Action92)> */
-		nil,
-		/* 120 Cpir <- <(<(('c' / 'C') ('p' / 'P') ('i' / 'I') ('r' / 'R'))> Action93)> */
-		nil,
-		/* 121 Inir <- <(<(('i' / 'I') ('n' / 'N') ('i' / 'I') ('r' / 'R'))> Action94)> */
-		nil,
-		/* 122 Otir <- <(<(('o' / 'O') ('t' / 'T') ('i' / 'I') ('r' / 'R'))> Action95)> */
-		nil,
-		/* 123 Lddr <- <(<(('l' / 'L') ('d' / 'D') ('d' / 'D') ('r' / 'R'))> Action96)> */
-		nil,
-		/* 124 Cpdr <- <(<(('c' / 'C') ('p' / 'P') ('d' / 'D') ('r' / 'R'))> Action97)> */
-		nil,
-		/* 125 Indr <- <(<(('i' / 'I') ('n' / 'N') ('d' / 'D') ('r' / 'R'))> Action98)> */
-		nil,
-		/* 126 Otdr <- <(<(('o' / 'O') ('t' / 'T') ('d' / 'D') ('r' / 'R'))> Action99)> */
-		nil,
-		/* 127 Jump <- <(Rst / Jp / ((&('D' | 'd') Djnz) | (&('J' | 'j') Jr) | (&('R' | 'r') Ret) | (&('C' | 'c') Call)))> */
-		nil,
-		/* 128 Rst <- <(('r' / 'R') ('s' / 'S') ('t' / 'T') ws n Action100)> */
-		nil,
-		/* 129 Call <- <(('c' / 'C') ('a' / 'A') ('l' / 'L') ('l' / 'L') ws (cc sep)? Src16 Action101)> */
-		nil,
-		/* 130 Ret <- <(('r' / 'R') ('e' / 'E') ('t' / 'T') (ws cc)? Action102)> */
-		nil,
-		/* 131 Jp <- <(('j' / 'J') ('p' / 'P') ws (cc sep)? Src16 Action103)> */
-		nil,
-		/* 132 Jr <- <(('j' / 'J') ('r' / 'R') ws (cc sep)? disp Action104)> */
-		nil,
-		/* 133 Djnz <- <(('d' / 'D') ('j' / 'J') ('n' / 'N') ('z' / 'Z') ws disp Action105)> */
-		nil,
-		/* 134 IO <- <(IN / OUT)> */
-		nil,
-		/* 135 IN <- <(('i' / 'I') ('n' / 'N') ws Reg8 sep Port Action106)> */
-		nil,
-		/* 136 OUT <- <(('o' / 'O') ('u' / 'U') ('t' / 'T') ws Port sep Reg8 Action107)> */
-		nil,
-		/* 137 Port <- <(('(' ('c' / 'C') ')') / ('(' n ')'))> */
+		/* 65 nn_contents <- <('(' nn ')' Action42)> */
 		func() bool {
-			position2188, tokenIndex2188 := position, tokenIndex
+			position2114, tokenIndex2114 := position, tokenIndex
 			{
-				position2189 := position
+				position2115 := position
+				if buffer[position] != rune('(') {
+					goto l2114
+				}
+				position++
+				if !_rules[rulenn]() {
+					goto l2114
+				}
+				if buffer[position] != rune(')') {
+					goto l2114
+				}
+				position++
 				{
-					position2190, tokenIndex2190 := position, tokenIndex
+					add(ruleAction42, position)
+				}
+				add(rulenn_contents, position2115)
+			}
+			return true
+		l2114:
+			position, tokenIndex = position2114, tokenIndex2114
+			return false
+		},
+		/* 66 Alu <- <(Add / Adc / Sub / ((&('C' | 'c') Cp) | (&('O' | 'o') Or) | (&('X' | 'x') Xor) | (&('A' | 'a') And) | (&('S' | 's') Sbc)))> */
+		nil,
+		/* 67 Add <- <(('a' / 'A') ('d' / 'D') ('d' / 'D') ws ('a' / 'A') sep Src8 Action43)> */
+		nil,
+		/* 68 Adc <- <(('a' / 'A') ('d' / 'D') ('c' / 'C') ws ('a' / 'A') sep Src8 Action44)> */
+		nil,
+		/* 69 Sub <- <(('s' / 'S') ('u' / 'U') ('b' / 'B') ws Src8 Action45)> */
+		nil,
+		/* 70 Sbc <- <(('s' / 'S') ('b' / 'B') ('c' / 'C') ws ('a' / 'A') sep Src8 Action46)> */
+		nil,
+		/* 71 And <- <(('a' / 'A') ('n' / 'N') ('d' / 'D') ws Src8 Action47)> */
+		nil,
+		/* 72 Xor <- <(('x' / 'X') ('o' / 'O') ('r' / 'R') ws Src8 Action48)> */
+		nil,
+		/* 73 Or <- <(('o' / 'O') ('r' / 'R') ws Src8 Action49)> */
+		nil,
+		/* 74 Cp <- <(('c' / 'C') ('p' / 'P') ws Src8 Action50)> */
+		nil,
+		/* 75 BitOp <- <(Rot / ((&('S' | 's') Set) | (&('R' | 'r') Res) | (&('B' | 'b') Bit)))> */
+		nil,
+		/* 76 Rot <- <(Rlc / Rrc / Rl / Rr / Sla / Sra / Sll / Srl)> */
+		nil,
+		/* 77 Rlc <- <(('r' / 'R') ('l' / 'L') ('c' / 'C') ws Loc8 (sep Copy8)? Action51)> */
+		nil,
+		/* 78 Rrc <- <(('r' / 'R') ('r' / 'R') ('c' / 'C') ws Loc8 (sep Copy8)? Action52)> */
+		nil,
+		/* 79 Rl <- <(('r' / 'R') ('l' / 'L') ws Loc8 (sep Copy8)? Action53)> */
+		nil,
+		/* 80 Rr <- <(('r' / 'R') ('r' / 'R') ws Loc8 (sep Copy8)? Action54)> */
+		nil,
+		/* 81 Sla <- <(('s' / 'S') ('l' / 'L') ('a' / 'A') ws Loc8 (sep Copy8)? Action55)> */
+		nil,
+		/* 82 Sra <- <(('s' / 'S') ('r' / 'R') ('a' / 'A') ws Loc8 (sep Copy8)? Action56)> */
+		nil,
+		/* 83 Sll <- <(('s' / 'S') ('l' / 'L') ('l' / 'L') ws Loc8 (sep Copy8)? Action57)> */
+		nil,
+		/* 84 Srl <- <(('s' / 'S') ('r' / 'R') ('l' / 'L') ws Loc8 (sep Copy8)? Action58)> */
+		nil,
+		/* 85 Bit <- <(('b' / 'B') ('i' / 'I') ('t' / 'T') ws octaldigit sep Loc8 Action59)> */
+		nil,
+		/* 86 Res <- <(('r' / 'R') ('e' / 'E') ('s' / 'S') ws octaldigit sep Loc8 (sep Copy8)? Action60)> */
+		nil,
+		/* 87 Set <- <(('s' / 'S') ('e' / 'E') ('t' / 'T') ws octaldigit sep Loc8 (sep Copy8)? Action61)> */
+		nil,
+		/* 88 Simple <- <(Rlca / Rrca / Rla / Daa / Cpl / Exx / ((&('E' | 'e') Ei) | (&('D' | 'd') Di) | (&('C' | 'c') Ccf) | (&('S' | 's') Scf) | (&('R' | 'r') Rra) | (&('H' | 'h') Halt) | (&('N' | 'n') Nop)))> */
+		nil,
+		/* 89 Nop <- <(<(('n' / 'N') ('o' / 'O') ('p' / 'P'))> Action62)> */
+		nil,
+		/* 90 Halt <- <(<(('h' / 'H') ('a' / 'A') ('l' / 'L') ('t' / 'T'))> Action63)> */
+		nil,
+		/* 91 Rlca <- <(<(('r' / 'R') ('l' / 'L') ('c' / 'C') ('a' / 'A'))> Action64)> */
+		nil,
+		/* 92 Rrca <- <(<(('r' / 'R') ('r' / 'R') ('c' / 'C') ('a' / 'A'))> Action65)> */
+		nil,
+		/* 93 Rla <- <(<(('r' / 'R') ('l' / 'L') ('a' / 'A'))> Action66)> */
+		nil,
+		/* 94 Rra <- <(<(('r' / 'R') ('r' / 'R') ('a' / 'A'))> Action67)> */
+		nil,
+		/* 95 Daa <- <(<(('d' / 'D') ('a' / 'A') ('a' / 'A'))> Action68)> */
+		nil,
+		/* 96 Cpl <- <(<(('c' / 'C') ('p' / 'P') ('l' / 'L'))> Action69)> */
+		nil,
+		/* 97 Scf <- <(<(('s' / 'S') ('c' / 'C') ('f' / 'F'))> Action70)> */
+		nil,
+		/* 98 Ccf <- <(<(('c' / 'C') ('c' / 'C') ('f' / 'F'))> Action71)> */
+		nil,
+		/* 99 Exx <- <(<(('e' / 'E') ('x' / 'X') ('x' / 'X'))> Action72)> */
+		nil,
+		/* 100 Di <- <(<(('d' / 'D') ('i' / 'I'))> Action73)> */
+		nil,
+		/* 101 Ei <- <(<(('e' / 'E') ('i' / 'I'))> Action74)> */
+		nil,
+		/* 102 EDSimple <- <(Retn / Reti / Rrd / Im0 / Im1 / Im2 / ((&('I' | 'O' | 'i' | 'o') BlitIO) | (&('R' | 'r') Rld) | (&('N' | 'n') Neg) | (&('C' | 'L' | 'c' | 'l') Blit)))> */
+		nil,
+		/* 103 Neg <- <(<(('n' / 'N') ('e' / 'E') ('g' / 'G'))> Action75)> */
+		nil,
+		/* 104 Retn <- <(<(('r' / 'R') ('e' / 'E') ('t' / 'T') ('n' / 'N'))> Action76)> */
+		nil,
+		/* 105 Reti <- <(<(('r' / 'R') ('e' / 'E') ('t' / 'T') ('i' / 'I'))> Action77)> */
+		nil,
+		/* 106 Rrd <- <(<(('r' / 'R') ('r' / 'R') ('d' / 'D'))> Action78)> */
+		nil,
+		/* 107 Rld <- <(<(('r' / 'R') ('l' / 'L') ('d' / 'D'))> Action79)> */
+		nil,
+		/* 108 Im0 <- <(<(('i' / 'I') ('m' / 'M') ' ' '0')> Action80)> */
+		nil,
+		/* 109 Im1 <- <(<(('i' / 'I') ('m' / 'M') ' ' '1')> Action81)> */
+		nil,
+		/* 110 Im2 <- <(<(('i' / 'I') ('m' / 'M') ' ' '2')> Action82)> */
+		nil,
+		/* 111 Blit <- <(Ldir / Ldi / Cpir / Cpi / Lddr / Ldd / Cpdr / Cpd)> */
+		nil,
+		/* 112 BlitIO <- <(Inir / Ini / Otir / Outi / Indr / Ind / Otdr / Outd)> */
+		nil,
+		/* 113 Ldi <- <(<(('l' / 'L') ('d' / 'D') ('i' / 'I'))> Action83)> */
+		nil,
+		/* 114 Cpi <- <(<(('c' / 'C') ('p' / 'P') ('i' / 'I'))> Action84)> */
+		nil,
+		/* 115 Ini <- <(<(('i' / 'I') ('n' / 'N') ('i' / 'I'))> Action85)> */
+		nil,
+		/* 116 Outi <- <(<(('o' / 'O') ('u' / 'U') ('t' / 'T') ('i' / 'I'))> Action86)> */
+		nil,
+		/* 117 Ldd <- <(<(('l' / 'L') ('d' / 'D') ('d' / 'D'))> Action87)> */
+		nil,
+		/* 118 Cpd <- <(<(('c' / 'C') ('p' / 'P') ('d' / 'D'))> Action88)> */
+		nil,
+		/* 119 Ind <- <(<(('i' / 'I') ('n' / 'N') ('d' / 'D'))> Action89)> */
+		nil,
+		/* 120 Outd <- <(<(('o' / 'O') ('u' / 'U') ('t' / 'T') ('d' / 'D'))> Action90)> */
+		nil,
+		/* 121 Ldir <- <(<(('l' / 'L') ('d' / 'D') ('i' / 'I') ('r' / 'R'))> Action91)> */
+		nil,
+		/* 122 Cpir <- <(<(('c' / 'C') ('p' / 'P') ('i' / 'I') ('r' / 'R'))> Action92)> */
+		nil,
+		/* 123 Inir <- <(<(('i' / 'I') ('n' / 'N') ('i' / 'I') ('r' / 'R'))> Action93)> */
+		nil,
+		/* 124 Otir <- <(<(('o' / 'O') ('t' / 'T') ('i' / 'I') ('r' / 'R'))> Action94)> */
+		nil,
+		/* 125 Lddr <- <(<(('l' / 'L') ('d' / 'D') ('d' / 'D') ('r' / 'R'))> Action95)> */
+		nil,
+		/* 126 Cpdr <- <(<(('c' / 'C') ('p' / 'P') ('d' / 'D') ('r' / 'R'))> Action96)> */
+		nil,
+		/* 127 Indr <- <(<(('i' / 'I') ('n' / 'N') ('d' / 'D') ('r' / 'R'))> Action97)> */
+		nil,
+		/* 128 Otdr <- <(<(('o' / 'O') ('t' / 'T') ('d' / 'D') ('r' / 'R'))> Action98)> */
+		nil,
+		/* 129 Jump <- <(Rst / Jp / ((&('D' | 'd') Djnz) | (&('J' | 'j') Jr) | (&('R' | 'r') Ret) | (&('C' | 'c') Call)))> */
+		nil,
+		/* 130 Rst <- <(('r' / 'R') ('s' / 'S') ('t' / 'T') ws n Action99)> */
+		nil,
+		/* 131 Call <- <(('c' / 'C') ('a' / 'A') ('l' / 'L') ('l' / 'L') ws (cc sep)? Src16 Action100)> */
+		nil,
+		/* 132 Ret <- <(('r' / 'R') ('e' / 'E') ('t' / 'T') (ws cc)? Action101)> */
+		nil,
+		/* 133 Jp <- <(('j' / 'J') ('p' / 'P') ws (cc sep)? Src16 Action102)> */
+		nil,
+		/* 134 Jr <- <(('j' / 'J') ('r' / 'R') ws (cc sep)? disp Action103)> */
+		nil,
+		/* 135 Djnz <- <(('d' / 'D') ('j' / 'J') ('n' / 'N') ('z' / 'Z') ws disp Action104)> */
+		nil,
+		/* 136 IO <- <(IN / OUT)> */
+		nil,
+		/* 137 IN <- <(('i' / 'I') ('n' / 'N') ws Reg8 sep Port Action105)> */
+		nil,
+		/* 138 OUT <- <(('o' / 'O') ('u' / 'U') ('t' / 'T') ws Port sep Reg8 Action106)> */
+		nil,
+		/* 139 Port <- <(('(' ('c' / 'C') ')') / ('(' n ')'))> */
+		func() bool {
+			position2190, tokenIndex2190 := position, tokenIndex
+			{
+				position2191 := position
+				{
+					position2192, tokenIndex2192 := position, tokenIndex
 					if buffer[position] != rune('(') {
-						goto l2191
+						goto l2193
 					}
 					position++
 					{
-						position2192, tokenIndex2192 := position, tokenIndex
+						position2194, tokenIndex2194 := position, tokenIndex
 						if buffer[position] != rune('c') {
+							goto l2195
+						}
+						position++
+						goto l2194
+					l2195:
+						position, tokenIndex = position2194, tokenIndex2194
+						if buffer[position] != rune('C') {
 							goto l2193
 						}
 						position++
-						goto l2192
-					l2193:
-						position, tokenIndex = position2192, tokenIndex2192
-						if buffer[position] != rune('C') {
-							goto l2191
-						}
-						position++
 					}
-				l2192:
+				l2194:
 					if buffer[position] != rune(')') {
-						goto l2191
+						goto l2193
 					}
 					position++
-					goto l2190
-				l2191:
-					position, tokenIndex = position2190, tokenIndex2190
+					goto l2192
+				l2193:
+					position, tokenIndex = position2192, tokenIndex2192
 					if buffer[position] != rune('(') {
-						goto l2188
+						goto l2190
 					}
 					position++
 					if !_rules[rulen]() {
-						goto l2188
+						goto l2190
 					}
 					if buffer[position] != rune(')') {
-						goto l2188
+						goto l2190
 					}
 					position++
 				}
-			l2190:
-				add(rulePort, position2189)
+			l2192:
+				add(rulePort, position2191)
 			}
 			return true
-		l2188:
-			position, tokenIndex = position2188, tokenIndex2188
+		l2190:
+			position, tokenIndex = position2190, tokenIndex2190
 			return false
 		},
-		/* 138 sep <- <(ws? ',' ws?)> */
+		/* 140 sep <- <(ws? ',' ws?)> */
 		func() bool {
-			position2194, tokenIndex2194 := position, tokenIndex
+			position2196, tokenIndex2196 := position, tokenIndex
 			{
-				position2195 := position
-				{
-					position2196, tokenIndex2196 := position, tokenIndex
-					if !_rules[rulews]() {
-						goto l2196
-					}
-					goto l2197
-				l2196:
-					position, tokenIndex = position2196, tokenIndex2196
-				}
-			l2197:
-				if buffer[position] != rune(',') {
-					goto l2194
-				}
-				position++
+				position2197 := position
 				{
 					position2198, tokenIndex2198 := position, tokenIndex
 					if !_rules[rulews]() {
@@ -14942,693 +14944,705 @@ func (p *PegAssembler) Init() {
 					position, tokenIndex = position2198, tokenIndex2198
 				}
 			l2199:
-				add(rulesep, position2195)
-			}
-			return true
-		l2194:
-			position, tokenIndex = position2194, tokenIndex2194
-			return false
-		},
-		/* 139 ws <- <(' ' / '\t')+> */
-		func() bool {
-			position2200, tokenIndex2200 := position, tokenIndex
-			{
-				position2201 := position
+				if buffer[position] != rune(',') {
+					goto l2196
+				}
+				position++
 				{
-					position2204, tokenIndex2204 := position, tokenIndex
-					if buffer[position] != rune(' ') {
-						goto l2205
-					}
-					position++
-					goto l2204
-				l2205:
-					position, tokenIndex = position2204, tokenIndex2204
-					if buffer[position] != rune('\t') {
+					position2200, tokenIndex2200 := position, tokenIndex
+					if !_rules[rulews]() {
 						goto l2200
 					}
+					goto l2201
+				l2200:
+					position, tokenIndex = position2200, tokenIndex2200
+				}
+			l2201:
+				add(rulesep, position2197)
+			}
+			return true
+		l2196:
+			position, tokenIndex = position2196, tokenIndex2196
+			return false
+		},
+		/* 141 ws <- <(' ' / '\t')+> */
+		func() bool {
+			position2202, tokenIndex2202 := position, tokenIndex
+			{
+				position2203 := position
+				{
+					position2206, tokenIndex2206 := position, tokenIndex
+					if buffer[position] != rune(' ') {
+						goto l2207
+					}
+					position++
+					goto l2206
+				l2207:
+					position, tokenIndex = position2206, tokenIndex2206
+					if buffer[position] != rune('\t') {
+						goto l2202
+					}
 					position++
 				}
+			l2206:
 			l2204:
-			l2202:
 				{
-					position2203, tokenIndex2203 := position, tokenIndex
+					position2205, tokenIndex2205 := position, tokenIndex
 					{
-						position2206, tokenIndex2206 := position, tokenIndex
+						position2208, tokenIndex2208 := position, tokenIndex
 						if buffer[position] != rune(' ') {
-							goto l2207
+							goto l2209
 						}
 						position++
-						goto l2206
-					l2207:
-						position, tokenIndex = position2206, tokenIndex2206
+						goto l2208
+					l2209:
+						position, tokenIndex = position2208, tokenIndex2208
 						if buffer[position] != rune('\t') {
-							goto l2203
+							goto l2205
 						}
 						position++
 					}
-				l2206:
-					goto l2202
-				l2203:
-					position, tokenIndex = position2203, tokenIndex2203
+				l2208:
+					goto l2204
+				l2205:
+					position, tokenIndex = position2205, tokenIndex2205
 				}
-				add(rulews, position2201)
+				add(rulews, position2203)
 			}
 			return true
-		l2200:
-			position, tokenIndex = position2200, tokenIndex2200
+		l2202:
+			position, tokenIndex = position2202, tokenIndex2202
 			return false
 		},
-		/* 140 A <- <('a' / 'A')> */
+		/* 142 A <- <('a' / 'A')> */
 		nil,
-		/* 141 F <- <('f' / 'F')> */
+		/* 143 F <- <('f' / 'F')> */
 		nil,
-		/* 142 B <- <('b' / 'B')> */
+		/* 144 B <- <('b' / 'B')> */
 		nil,
-		/* 143 C <- <('c' / 'C')> */
+		/* 145 C <- <('c' / 'C')> */
 		nil,
-		/* 144 D <- <('d' / 'D')> */
+		/* 146 D <- <('d' / 'D')> */
 		nil,
-		/* 145 E <- <('e' / 'E')> */
+		/* 147 E <- <('e' / 'E')> */
 		nil,
-		/* 146 H <- <('h' / 'H')> */
+		/* 148 H <- <('h' / 'H')> */
 		nil,
-		/* 147 L <- <('l' / 'L')> */
+		/* 149 L <- <('l' / 'L')> */
 		nil,
-		/* 148 IXH <- <(('i' / 'I') ('x' / 'X') ('h' / 'H'))> */
+		/* 150 IXH <- <(('i' / 'I') ('x' / 'X') ('h' / 'H'))> */
 		nil,
-		/* 149 IXL <- <(('i' / 'I') ('x' / 'X') ('l' / 'L'))> */
+		/* 151 IXL <- <(('i' / 'I') ('x' / 'X') ('l' / 'L'))> */
 		nil,
-		/* 150 IYH <- <(('i' / 'I') ('y' / 'Y') ('h' / 'H'))> */
+		/* 152 IYH <- <(('i' / 'I') ('y' / 'Y') ('h' / 'H'))> */
 		nil,
-		/* 151 IYL <- <(('i' / 'I') ('y' / 'Y') ('l' / 'L'))> */
+		/* 153 IYL <- <(('i' / 'I') ('y' / 'Y') ('l' / 'L'))> */
 		nil,
-		/* 152 I <- <('i' / 'I')> */
+		/* 154 I <- <('i' / 'I')> */
 		nil,
-		/* 153 R <- <('r' / 'R')> */
+		/* 155 R <- <('r' / 'R')> */
 		nil,
-		/* 154 AF <- <(('a' / 'A') ('f' / 'F'))> */
+		/* 156 AF <- <(('a' / 'A') ('f' / 'F'))> */
 		nil,
-		/* 155 AF_PRIME <- <(('a' / 'A') ('f' / 'F') '\'')> */
+		/* 157 AF_PRIME <- <(('a' / 'A') ('f' / 'F') '\'')> */
 		nil,
-		/* 156 BC <- <(('b' / 'B') ('c' / 'C'))> */
+		/* 158 BC <- <(('b' / 'B') ('c' / 'C'))> */
 		nil,
-		/* 157 DE <- <(('d' / 'D') ('e' / 'E'))> */
+		/* 159 DE <- <(('d' / 'D') ('e' / 'E'))> */
 		nil,
-		/* 158 HL <- <(('h' / 'H') ('l' / 'L'))> */
+		/* 160 HL <- <(('h' / 'H') ('l' / 'L'))> */
 		nil,
-		/* 159 IX <- <(('i' / 'I') ('x' / 'X'))> */
+		/* 161 IX <- <(('i' / 'I') ('x' / 'X'))> */
 		nil,
-		/* 160 IY <- <(('i' / 'I') ('y' / 'Y'))> */
+		/* 162 IY <- <(('i' / 'I') ('y' / 'Y'))> */
 		nil,
-		/* 161 SP <- <(('s' / 'S') ('p' / 'P'))> */
+		/* 163 SP <- <(('s' / 'S') ('p' / 'P'))> */
 		nil,
-		/* 162 hexdigit <- <([0-9] / ([a-f] / [A-F]))> */
+		/* 164 hexdigit <- <([0-9] / ([a-f] / [A-F]))> */
 		func() bool {
-			position2230, tokenIndex2230 := position, tokenIndex
+			position2232, tokenIndex2232 := position, tokenIndex
 			{
-				position2231 := position
+				position2233 := position
 				{
-					position2232, tokenIndex2232 := position, tokenIndex
+					position2234, tokenIndex2234 := position, tokenIndex
 					if c := buffer[position]; c < rune('0') || c > rune('9') {
-						goto l2233
+						goto l2235
 					}
 					position++
-					goto l2232
-				l2233:
-					position, tokenIndex = position2232, tokenIndex2232
+					goto l2234
+				l2235:
+					position, tokenIndex = position2234, tokenIndex2234
 					{
-						position2234, tokenIndex2234 := position, tokenIndex
+						position2236, tokenIndex2236 := position, tokenIndex
 						if c := buffer[position]; c < rune('a') || c > rune('f') {
-							goto l2235
+							goto l2237
 						}
 						position++
-						goto l2234
-					l2235:
-						position, tokenIndex = position2234, tokenIndex2234
+						goto l2236
+					l2237:
+						position, tokenIndex = position2236, tokenIndex2236
 						if c := buffer[position]; c < rune('A') || c > rune('F') {
-							goto l2230
+							goto l2232
 						}
 						position++
 					}
-				l2234:
+				l2236:
 				}
-			l2232:
-				add(rulehexdigit, position2231)
+			l2234:
+				add(rulehexdigit, position2233)
 			}
 			return true
-		l2230:
-			position, tokenIndex = position2230, tokenIndex2230
+		l2232:
+			position, tokenIndex = position2232, tokenIndex2232
 			return false
 		},
-		/* 163 octaldigit <- <(<[0-7]> Action108)> */
+		/* 165 octaldigit <- <(<[0-7]> Action107)> */
 		func() bool {
-			position2236, tokenIndex2236 := position, tokenIndex
+			position2238, tokenIndex2238 := position, tokenIndex
 			{
-				position2237 := position
+				position2239 := position
 				{
-					position2238 := position
+					position2240 := position
 					if c := buffer[position]; c < rune('0') || c > rune('7') {
-						goto l2236
+						goto l2238
 					}
 					position++
-					add(rulePegText, position2238)
+					add(rulePegText, position2240)
 				}
 				{
-					add(ruleAction108, position)
+					add(ruleAction107, position)
 				}
-				add(ruleoctaldigit, position2237)
+				add(ruleoctaldigit, position2239)
 			}
 			return true
-		l2236:
-			position, tokenIndex = position2236, tokenIndex2236
+		l2238:
+			position, tokenIndex = position2238, tokenIndex2238
 			return false
 		},
-		/* 164 cc <- <(FT_NZ / FT_PO / FT_PE / ((&('M' | 'm') FT_M) | (&('P' | 'p') FT_P) | (&('C' | 'c') FT_C) | (&('N' | 'n') FT_NC) | (&('Z' | 'z') FT_Z)))> */
+		/* 166 cc <- <(FT_NZ / FT_PO / FT_PE / ((&('M' | 'm') FT_M) | (&('P' | 'p') FT_P) | (&('C' | 'c') FT_C) | (&('N' | 'n') FT_NC) | (&('Z' | 'z') FT_Z)))> */
 		func() bool {
-			position2240, tokenIndex2240 := position, tokenIndex
+			position2242, tokenIndex2242 := position, tokenIndex
 			{
-				position2241 := position
+				position2243 := position
 				{
-					position2242, tokenIndex2242 := position, tokenIndex
+					position2244, tokenIndex2244 := position, tokenIndex
 					{
-						position2244 := position
-						{
-							position2245, tokenIndex2245 := position, tokenIndex
-							if buffer[position] != rune('n') {
-								goto l2246
-							}
-							position++
-							goto l2245
-						l2246:
-							position, tokenIndex = position2245, tokenIndex2245
-							if buffer[position] != rune('N') {
-								goto l2243
-							}
-							position++
-						}
-					l2245:
+						position2246 := position
 						{
 							position2247, tokenIndex2247 := position, tokenIndex
-							if buffer[position] != rune('z') {
+							if buffer[position] != rune('n') {
 								goto l2248
 							}
 							position++
 							goto l2247
 						l2248:
 							position, tokenIndex = position2247, tokenIndex2247
-							if buffer[position] != rune('Z') {
-								goto l2243
+							if buffer[position] != rune('N') {
+								goto l2245
 							}
 							position++
 						}
 					l2247:
 						{
-							add(ruleAction109, position)
-						}
-						add(ruleFT_NZ, position2244)
-					}
-					goto l2242
-				l2243:
-					position, tokenIndex = position2242, tokenIndex2242
-					{
-						position2251 := position
-						{
-							position2252, tokenIndex2252 := position, tokenIndex
-							if buffer[position] != rune('p') {
-								goto l2253
-							}
-							position++
-							goto l2252
-						l2253:
-							position, tokenIndex = position2252, tokenIndex2252
-							if buffer[position] != rune('P') {
+							position2249, tokenIndex2249 := position, tokenIndex
+							if buffer[position] != rune('z') {
 								goto l2250
 							}
 							position++
+							goto l2249
+						l2250:
+							position, tokenIndex = position2249, tokenIndex2249
+							if buffer[position] != rune('Z') {
+								goto l2245
+							}
+							position++
 						}
-					l2252:
+					l2249:
+						{
+							add(ruleAction108, position)
+						}
+						add(ruleFT_NZ, position2246)
+					}
+					goto l2244
+				l2245:
+					position, tokenIndex = position2244, tokenIndex2244
+					{
+						position2253 := position
 						{
 							position2254, tokenIndex2254 := position, tokenIndex
-							if buffer[position] != rune('o') {
+							if buffer[position] != rune('p') {
 								goto l2255
 							}
 							position++
 							goto l2254
 						l2255:
 							position, tokenIndex = position2254, tokenIndex2254
-							if buffer[position] != rune('O') {
-								goto l2250
+							if buffer[position] != rune('P') {
+								goto l2252
 							}
 							position++
 						}
 					l2254:
 						{
-							add(ruleAction113, position)
-						}
-						add(ruleFT_PO, position2251)
-					}
-					goto l2242
-				l2250:
-					position, tokenIndex = position2242, tokenIndex2242
-					{
-						position2258 := position
-						{
-							position2259, tokenIndex2259 := position, tokenIndex
-							if buffer[position] != rune('p') {
-								goto l2260
-							}
-							position++
-							goto l2259
-						l2260:
-							position, tokenIndex = position2259, tokenIndex2259
-							if buffer[position] != rune('P') {
+							position2256, tokenIndex2256 := position, tokenIndex
+							if buffer[position] != rune('o') {
 								goto l2257
 							}
 							position++
+							goto l2256
+						l2257:
+							position, tokenIndex = position2256, tokenIndex2256
+							if buffer[position] != rune('O') {
+								goto l2252
+							}
+							position++
 						}
-					l2259:
+					l2256:
+						{
+							add(ruleAction112, position)
+						}
+						add(ruleFT_PO, position2253)
+					}
+					goto l2244
+				l2252:
+					position, tokenIndex = position2244, tokenIndex2244
+					{
+						position2260 := position
 						{
 							position2261, tokenIndex2261 := position, tokenIndex
-							if buffer[position] != rune('e') {
+							if buffer[position] != rune('p') {
 								goto l2262
 							}
 							position++
 							goto l2261
 						l2262:
 							position, tokenIndex = position2261, tokenIndex2261
-							if buffer[position] != rune('E') {
-								goto l2257
+							if buffer[position] != rune('P') {
+								goto l2259
 							}
 							position++
 						}
 					l2261:
 						{
-							add(ruleAction114, position)
+							position2263, tokenIndex2263 := position, tokenIndex
+							if buffer[position] != rune('e') {
+								goto l2264
+							}
+							position++
+							goto l2263
+						l2264:
+							position, tokenIndex = position2263, tokenIndex2263
+							if buffer[position] != rune('E') {
+								goto l2259
+							}
+							position++
 						}
-						add(ruleFT_PE, position2258)
+					l2263:
+						{
+							add(ruleAction113, position)
+						}
+						add(ruleFT_PE, position2260)
 					}
-					goto l2242
-				l2257:
-					position, tokenIndex = position2242, tokenIndex2242
+					goto l2244
+				l2259:
+					position, tokenIndex = position2244, tokenIndex2244
 					{
 						switch buffer[position] {
 						case 'M', 'm':
 							{
-								position2265 := position
+								position2267 := position
 								{
-									position2266, tokenIndex2266 := position, tokenIndex
+									position2268, tokenIndex2268 := position, tokenIndex
 									if buffer[position] != rune('m') {
-										goto l2267
+										goto l2269
 									}
 									position++
-									goto l2266
-								l2267:
-									position, tokenIndex = position2266, tokenIndex2266
+									goto l2268
+								l2269:
+									position, tokenIndex = position2268, tokenIndex2268
 									if buffer[position] != rune('M') {
-										goto l2240
+										goto l2242
 									}
 									position++
 								}
-							l2266:
+							l2268:
 								{
-									add(ruleAction116, position)
+									add(ruleAction115, position)
 								}
-								add(ruleFT_M, position2265)
+								add(ruleFT_M, position2267)
 							}
 							break
 						case 'P', 'p':
 							{
-								position2269 := position
+								position2271 := position
 								{
-									position2270, tokenIndex2270 := position, tokenIndex
+									position2272, tokenIndex2272 := position, tokenIndex
 									if buffer[position] != rune('p') {
-										goto l2271
+										goto l2273
 									}
 									position++
-									goto l2270
-								l2271:
-									position, tokenIndex = position2270, tokenIndex2270
+									goto l2272
+								l2273:
+									position, tokenIndex = position2272, tokenIndex2272
 									if buffer[position] != rune('P') {
-										goto l2240
+										goto l2242
 									}
 									position++
 								}
-							l2270:
+							l2272:
 								{
-									add(ruleAction115, position)
+									add(ruleAction114, position)
 								}
-								add(ruleFT_P, position2269)
+								add(ruleFT_P, position2271)
 							}
 							break
 						case 'C', 'c':
 							{
-								position2273 := position
+								position2275 := position
 								{
-									position2274, tokenIndex2274 := position, tokenIndex
+									position2276, tokenIndex2276 := position, tokenIndex
 									if buffer[position] != rune('c') {
-										goto l2275
+										goto l2277
 									}
 									position++
-									goto l2274
-								l2275:
-									position, tokenIndex = position2274, tokenIndex2274
+									goto l2276
+								l2277:
+									position, tokenIndex = position2276, tokenIndex2276
 									if buffer[position] != rune('C') {
-										goto l2240
+										goto l2242
 									}
 									position++
 								}
-							l2274:
+							l2276:
 								{
-									add(ruleAction112, position)
+									add(ruleAction111, position)
 								}
-								add(ruleFT_C, position2273)
+								add(ruleFT_C, position2275)
 							}
 							break
 						case 'N', 'n':
 							{
-								position2277 := position
-								{
-									position2278, tokenIndex2278 := position, tokenIndex
-									if buffer[position] != rune('n') {
-										goto l2279
-									}
-									position++
-									goto l2278
-								l2279:
-									position, tokenIndex = position2278, tokenIndex2278
-									if buffer[position] != rune('N') {
-										goto l2240
-									}
-									position++
-								}
-							l2278:
+								position2279 := position
 								{
 									position2280, tokenIndex2280 := position, tokenIndex
-									if buffer[position] != rune('c') {
+									if buffer[position] != rune('n') {
 										goto l2281
 									}
 									position++
 									goto l2280
 								l2281:
 									position, tokenIndex = position2280, tokenIndex2280
-									if buffer[position] != rune('C') {
-										goto l2240
+									if buffer[position] != rune('N') {
+										goto l2242
 									}
 									position++
 								}
 							l2280:
 								{
-									add(ruleAction111, position)
+									position2282, tokenIndex2282 := position, tokenIndex
+									if buffer[position] != rune('c') {
+										goto l2283
+									}
+									position++
+									goto l2282
+								l2283:
+									position, tokenIndex = position2282, tokenIndex2282
+									if buffer[position] != rune('C') {
+										goto l2242
+									}
+									position++
 								}
-								add(ruleFT_NC, position2277)
+							l2282:
+								{
+									add(ruleAction110, position)
+								}
+								add(ruleFT_NC, position2279)
 							}
 							break
 						default:
 							{
-								position2283 := position
+								position2285 := position
 								{
-									position2284, tokenIndex2284 := position, tokenIndex
+									position2286, tokenIndex2286 := position, tokenIndex
 									if buffer[position] != rune('z') {
-										goto l2285
+										goto l2287
 									}
 									position++
-									goto l2284
-								l2285:
-									position, tokenIndex = position2284, tokenIndex2284
+									goto l2286
+								l2287:
+									position, tokenIndex = position2286, tokenIndex2286
 									if buffer[position] != rune('Z') {
-										goto l2240
+										goto l2242
 									}
 									position++
 								}
-							l2284:
+							l2286:
 								{
-									add(ruleAction110, position)
+									add(ruleAction109, position)
 								}
-								add(ruleFT_Z, position2283)
+								add(ruleFT_Z, position2285)
 							}
 							break
 						}
 					}
 
 				}
-			l2242:
-				add(rulecc, position2241)
+			l2244:
+				add(rulecc, position2243)
 			}
 			return true
-		l2240:
-			position, tokenIndex = position2240, tokenIndex2240
+		l2242:
+			position, tokenIndex = position2242, tokenIndex2242
 			return false
 		},
-		/* 165 FT_NZ <- <(('n' / 'N') ('z' / 'Z') Action109)> */
+		/* 167 FT_NZ <- <(('n' / 'N') ('z' / 'Z') Action108)> */
 		nil,
-		/* 166 FT_Z <- <(('z' / 'Z') Action110)> */
+		/* 168 FT_Z <- <(('z' / 'Z') Action109)> */
 		nil,
-		/* 167 FT_NC <- <(('n' / 'N') ('c' / 'C') Action111)> */
+		/* 169 FT_NC <- <(('n' / 'N') ('c' / 'C') Action110)> */
 		nil,
-		/* 168 FT_C <- <(('c' / 'C') Action112)> */
+		/* 170 FT_C <- <(('c' / 'C') Action111)> */
 		nil,
-		/* 169 FT_PO <- <(('p' / 'P') ('o' / 'O') Action113)> */
+		/* 171 FT_PO <- <(('p' / 'P') ('o' / 'O') Action112)> */
 		nil,
-		/* 170 FT_PE <- <(('p' / 'P') ('e' / 'E') Action114)> */
+		/* 172 FT_PE <- <(('p' / 'P') ('e' / 'E') Action113)> */
 		nil,
-		/* 171 FT_P <- <(('p' / 'P') Action115)> */
+		/* 173 FT_P <- <(('p' / 'P') Action114)> */
 		nil,
-		/* 172 FT_M <- <(('m' / 'M') Action116)> */
+		/* 174 FT_M <- <(('m' / 'M') Action115)> */
 		nil,
-		/* 174 Action0 <- <{ p.Emit() }> */
+		/* 176 Action0 <- <{ p.Emit() }> */
 		nil,
-		/* 175 Action1 <- <{ p.Org() }> */
+		/* 177 Action1 <- <{ p.Org() }> */
 		nil,
-		/* 176 Action2 <- <{ p.DefByte() }> */
+		/* 178 Action2 <- <{ p.DefByte() }> */
 		nil,
-		/* 177 Action3 <- <{ p.DefWord() }> */
+		/* 179 Action3 <- <{ p.DefWord() }> */
 		nil,
-		/* 178 Action4 <- <{ p.DefSpace() }> */
+		/* 180 Action4 <- <{ p.DefSpace() }> */
 		nil,
-		/* 179 Action5 <- <{ p.LabelDefn(buffer[begin:end])}> */
+		/* 181 Action5 <- <{ p.LabelDefn(buffer[begin:end])}> */
 		nil,
 		nil,
-		/* 181 Action6 <- <{ p.LD8() }> */
+		/* 183 Action6 <- <{ p.LD8() }> */
 		nil,
-		/* 182 Action7 <- <{ p.LD16() }> */
+		/* 184 Action7 <- <{ p.LD16() }> */
 		nil,
-		/* 183 Action8 <- <{ p.Push() }> */
+		/* 185 Action8 <- <{ p.Push() }> */
 		nil,
-		/* 184 Action9 <- <{ p.Pop() }> */
+		/* 186 Action9 <- <{ p.Pop() }> */
 		nil,
-		/* 185 Action10 <- <{ p.Ex() }> */
+		/* 187 Action10 <- <{ p.Ex() }> */
 		nil,
-		/* 186 Action11 <- <{ p.Inc8() }> */
+		/* 188 Action11 <- <{ p.Inc8() }> */
 		nil,
-		/* 187 Action12 <- <{ p.Inc8() }> */
+		/* 189 Action12 <- <{ p.Inc8() }> */
 		nil,
-		/* 188 Action13 <- <{ p.Inc16() }> */
+		/* 190 Action13 <- <{ p.Inc16() }> */
 		nil,
-		/* 189 Action14 <- <{ p.Dec8() }> */
+		/* 191 Action14 <- <{ p.Dec8() }> */
 		nil,
-		/* 190 Action15 <- <{ p.Dec8() }> */
+		/* 192 Action15 <- <{ p.Dec8() }> */
 		nil,
-		/* 191 Action16 <- <{ p.Dec16() }> */
+		/* 193 Action16 <- <{ p.Dec16() }> */
 		nil,
-		/* 192 Action17 <- <{ p.Add16() }> */
+		/* 194 Action17 <- <{ p.Add16() }> */
 		nil,
-		/* 193 Action18 <- <{ p.Adc16() }> */
+		/* 195 Action18 <- <{ p.Adc16() }> */
 		nil,
-		/* 194 Action19 <- <{ p.Sbc16() }> */
+		/* 196 Action19 <- <{ p.Sbc16() }> */
 		nil,
-		/* 195 Action20 <- <{ p.Dst8() }> */
+		/* 197 Action20 <- <{ p.Dst8() }> */
 		nil,
-		/* 196 Action21 <- <{ p.Src8() }> */
+		/* 198 Action21 <- <{ p.Src8() }> */
 		nil,
-		/* 197 Action22 <- <{ p.Loc8() }> */
+		/* 199 Action22 <- <{ p.Loc8() }> */
 		nil,
-		/* 198 Action23 <- <{ p.Copy8() }> */
+		/* 200 Action23 <- <{ p.Copy8() }> */
 		nil,
-		/* 199 Action24 <- <{ p.Loc8() }> */
+		/* 201 Action24 <- <{ p.Loc8() }> */
 		nil,
-		/* 200 Action25 <- <{ p.R8(buffer[begin:end]) }> */
+		/* 202 Action25 <- <{ p.R8(buffer[begin:end]) }> */
 		nil,
-		/* 201 Action26 <- <{ p.R8(buffer[begin:end]) }> */
+		/* 203 Action26 <- <{ p.R8(buffer[begin:end]) }> */
 		nil,
-		/* 202 Action27 <- <{ p.Dst16() }> */
+		/* 204 Action27 <- <{ p.Dst16() }> */
 		nil,
-		/* 203 Action28 <- <{ p.Src16() }> */
+		/* 205 Action28 <- <{ p.Src16() }> */
 		nil,
-		/* 204 Action29 <- <{ p.Loc16() }> */
+		/* 206 Action29 <- <{ p.Loc16() }> */
 		nil,
-		/* 205 Action30 <- <{ p.R16(buffer[begin:end]) }> */
+		/* 207 Action30 <- <{ p.R16(buffer[begin:end]) }> */
 		nil,
-		/* 206 Action31 <- <{ p.R16(buffer[begin:end]) }> */
+		/* 208 Action31 <- <{ p.R16(buffer[begin:end]) }> */
 		nil,
-		/* 207 Action32 <- <{ p.R16Contents() }> */
+		/* 209 Action32 <- <{ p.R16Contents() }> */
 		nil,
-		/* 208 Action33 <- <{ p.IR16Contents() }> */
+		/* 210 Action33 <- <{ p.IR16Contents() }> */
 		nil,
-		/* 209 Action34 <- <{ p.DispDecimal(buffer[begin:end]) }> */
+		/* 211 Action34 <- <{ p.DispDecimal(buffer[begin:end]) }> */
 		nil,
-		/* 210 Action35 <- <{ p.DispHex(buffer[begin:end]) }> */
+		/* 212 Action35 <- <{ p.DispHex(buffer[begin:end]) }> */
 		nil,
-		/* 211 Action36 <- <{ p.Disp0xHex(buffer[begin:end]) }> */
+		/* 213 Action36 <- <{ p.Disp0xHex(buffer[begin:end]) }> */
 		nil,
-		/* 212 Action37 <- <{ p.Nhex(buffer[begin:end]) }> */
+		/* 214 Action37 <- <{ p.Nhex(buffer[begin:end]) }> */
 		nil,
-		/* 213 Action38 <- <{ p.Nhex(buffer[begin:end]) }> */
+		/* 215 Action38 <- <{ p.Nhex(buffer[begin:end]) }> */
 		nil,
-		/* 214 Action39 <- <{ p.Ndec(buffer[begin:end]) }> */
+		/* 216 Action39 <- <{ p.Ndec(buffer[begin:end]) }> */
 		nil,
-		/* 215 Action40 <- <{ p.NNLabel(buffer[begin:end]) }> */
+		/* 217 Action40 <- <{ p.NNLabel(buffer[begin:end]) }> */
 		nil,
-		/* 216 Action41 <- <{ p.NNhex(buffer[begin:end]) }> */
+		/* 218 Action41 <- <{ p.NNhex(buffer[begin:end]) }> */
 		nil,
-		/* 217 Action42 <- <{ p.NNhex(buffer[begin:end]) }> */
+		/* 219 Action42 <- <{ p.NNContents() }> */
 		nil,
-		/* 218 Action43 <- <{ p.NNContents() }> */
+		/* 220 Action43 <- <{ p.Accum("ADD") }> */
 		nil,
-		/* 219 Action44 <- <{ p.Accum("ADD") }> */
+		/* 221 Action44 <- <{ p.Accum("ADC") }> */
 		nil,
-		/* 220 Action45 <- <{ p.Accum("ADC") }> */
+		/* 222 Action45 <- <{ p.Accum("SUB") }> */
 		nil,
-		/* 221 Action46 <- <{ p.Accum("SUB") }> */
+		/* 223 Action46 <- <{ p.Accum("SBC") }> */
 		nil,
-		/* 222 Action47 <- <{ p.Accum("SBC") }> */
+		/* 224 Action47 <- <{ p.Accum("AND") }> */
 		nil,
-		/* 223 Action48 <- <{ p.Accum("AND") }> */
+		/* 225 Action48 <- <{ p.Accum("XOR") }> */
 		nil,
-		/* 224 Action49 <- <{ p.Accum("XOR") }> */
+		/* 226 Action49 <- <{ p.Accum("OR") }> */
 		nil,
-		/* 225 Action50 <- <{ p.Accum("OR") }> */
+		/* 227 Action50 <- <{ p.Accum("CP") }> */
 		nil,
-		/* 226 Action51 <- <{ p.Accum("CP") }> */
+		/* 228 Action51 <- <{ p.Rot("RLC") }> */
 		nil,
-		/* 227 Action52 <- <{ p.Rot("RLC") }> */
+		/* 229 Action52 <- <{ p.Rot("RRC") }> */
 		nil,
-		/* 228 Action53 <- <{ p.Rot("RRC") }> */
+		/* 230 Action53 <- <{ p.Rot("RL") }> */
 		nil,
-		/* 229 Action54 <- <{ p.Rot("RL") }> */
+		/* 231 Action54 <- <{ p.Rot("RR") }> */
 		nil,
-		/* 230 Action55 <- <{ p.Rot("RR") }> */
+		/* 232 Action55 <- <{ p.Rot("SLA") }> */
 		nil,
-		/* 231 Action56 <- <{ p.Rot("SLA") }> */
+		/* 233 Action56 <- <{ p.Rot("SRA") }> */
 		nil,
-		/* 232 Action57 <- <{ p.Rot("SRA") }> */
+		/* 234 Action57 <- <{ p.Rot("SLL") }> */
 		nil,
-		/* 233 Action58 <- <{ p.Rot("SLL") }> */
+		/* 235 Action58 <- <{ p.Rot("SRL") }> */
 		nil,
-		/* 234 Action59 <- <{ p.Rot("SRL") }> */
+		/* 236 Action59 <- <{ p.Bit() }> */
 		nil,
-		/* 235 Action60 <- <{ p.Bit() }> */
+		/* 237 Action60 <- <{ p.Res() }> */
 		nil,
-		/* 236 Action61 <- <{ p.Res() }> */
+		/* 238 Action61 <- <{ p.Set() }> */
 		nil,
-		/* 237 Action62 <- <{ p.Set() }> */
+		/* 239 Action62 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 238 Action63 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 240 Action63 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 239 Action64 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 241 Action64 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 240 Action65 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 242 Action65 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 241 Action66 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 243 Action66 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 242 Action67 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 244 Action67 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 243 Action68 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 245 Action68 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 244 Action69 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 246 Action69 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 245 Action70 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 247 Action70 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 246 Action71 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 248 Action71 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 247 Action72 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 249 Action72 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 248 Action73 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 250 Action73 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 249 Action74 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 251 Action74 <- <{ p.Simple(buffer[begin:end]) }> */
 		nil,
-		/* 250 Action75 <- <{ p.Simple(buffer[begin:end]) }> */
+		/* 252 Action75 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 251 Action76 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 253 Action76 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 252 Action77 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 254 Action77 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 253 Action78 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 255 Action78 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 254 Action79 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 256 Action79 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 255 Action80 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 257 Action80 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 256 Action81 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 258 Action81 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 257 Action82 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 259 Action82 <- <{ p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 258 Action83 <- <{ p.EDSimple(buffer[begin:end]) }> */
+		/* 260 Action83 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 259 Action84 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 261 Action84 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 260 Action85 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 262 Action85 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 261 Action86 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 263 Action86 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 262 Action87 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 264 Action87 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 263 Action88 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 265 Action88 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 264 Action89 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 266 Action89 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 265 Action90 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 267 Action90 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 266 Action91 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 268 Action91 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 267 Action92 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 269 Action92 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 268 Action93 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 270 Action93 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 269 Action94 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 271 Action94 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 270 Action95 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 272 Action95 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 271 Action96 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 273 Action96 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 272 Action97 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 274 Action97 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 273 Action98 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 275 Action98 <- <{  p.EDSimple(buffer[begin:end]) }> */
 		nil,
-		/* 274 Action99 <- <{  p.EDSimple(buffer[begin:end]) }> */
+		/* 276 Action99 <- <{ p.Rst() }> */
 		nil,
-		/* 275 Action100 <- <{ p.Rst() }> */
+		/* 277 Action100 <- <{ p.Call() }> */
 		nil,
-		/* 276 Action101 <- <{ p.Call() }> */
+		/* 278 Action101 <- <{ p.Ret() }> */
 		nil,
-		/* 277 Action102 <- <{ p.Ret() }> */
+		/* 279 Action102 <- <{ p.Jp() }> */
 		nil,
-		/* 278 Action103 <- <{ p.Jp() }> */
+		/* 280 Action103 <- <{ p.Jr() }> */
 		nil,
-		/* 279 Action104 <- <{ p.Jr() }> */
+		/* 281 Action104 <- <{ p.Djnz() }> */
 		nil,
-		/* 280 Action105 <- <{ p.Djnz() }> */
+		/* 282 Action105 <- <{ p.In() }> */
 		nil,
-		/* 281 Action106 <- <{ p.In() }> */
+		/* 283 Action106 <- <{ p.Out() }> */
 		nil,
-		/* 282 Action107 <- <{ p.Out() }> */
+		/* 284 Action107 <- <{ p.ODigit(buffer[begin:end]) }> */
 		nil,
-		/* 283 Action108 <- <{ p.ODigit(buffer[begin:end]) }> */
+		/* 285 Action108 <- <{ p.Conditional(Not{FT_Z}) }> */
 		nil,
-		/* 284 Action109 <- <{ p.Conditional(Not{FT_Z}) }> */
+		/* 286 Action109 <- <{ p.Conditional(FT_Z) }> */
 		nil,
-		/* 285 Action110 <- <{ p.Conditional(FT_Z) }> */
+		/* 287 Action110 <- <{ p.Conditional(Not{FT_C}) }> */
 		nil,
-		/* 286 Action111 <- <{ p.Conditional(Not{FT_C}) }> */
+		/* 288 Action111 <- <{ p.Conditional(FT_C) }> */
 		nil,
-		/* 287 Action112 <- <{ p.Conditional(FT_C) }> */
+		/* 289 Action112 <- <{ p.Conditional(FT_PO) }> */
 		nil,
-		/* 288 Action113 <- <{ p.Conditional(FT_PO) }> */
+		/* 290 Action113 <- <{ p.Conditional(FT_PE) }> */
 		nil,
-		/* 289 Action114 <- <{ p.Conditional(FT_PE) }> */
+		/* 291 Action114 <- <{ p.Conditional(FT_P) }> */
 		nil,
-		/* 290 Action115 <- <{ p.Conditional(FT_P) }> */
-		nil,
-		/* 291 Action116 <- <{ p.Conditional(FT_M) }> */
+		/* 292 Action115 <- <{ p.Conditional(FT_M) }> */
 		nil,
 	}
 	p.rules = _rules

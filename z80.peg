@@ -92,8 +92,10 @@ hexByte0x   <- "0x" <hexdigit hexdigit>                       { p.Nhex(buffer[be
 decimalByte <- <[0-9]+>                                       { p.Ndec(buffer[begin:end]) }
 
 LabelNN     <- <LabelText>                                    { p.NNLabel(buffer[begin:end]) }
-hexWordH    <- '0'? <hexdigit hexdigit hexdigit hexdigit> "h"      { p.NNhex(buffer[begin:end]) }
-hexWord0x   <- "0x" '0'? <hexdigit hexdigit hexdigit hexdigit>     { p.NNhex(buffer[begin:end]) }
+hexWordH    <- ( zeroHexWord / hexWord ) "h"
+hexWord0x   <- "0x" ( zeroHexWord / hexWord )
+hexWord   <- <hexdigit hexdigit hexdigit hexdigit>     { p.NNhex(buffer[begin:end]) }
+zeroHexWord   <- '0' hexWord
 
 
 nn_contents <- '(' nn ')'                                 { p.NNContents() }
