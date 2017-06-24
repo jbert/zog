@@ -38,9 +38,28 @@ type Assembly struct {
 	BaseAddr uint16
 	Linsts   []LabelledInstruction
 	Labels   map[string]int
+	resolved bool
+}
+
+func (a *Assembly) Encode() ([]byte, error) {
+	err := a.ResolveAddresses()
+	if err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, 0)
+	for _, linst := range a.Linsts {
+		instBuf := linst.Inst.Encode()
+		buf = append(buf, instBuf...)
+	}
+	return buf, nil
 }
 
 func (a *Assembly) ResolveAddresses() error {
+	if a.resolved {
+		return nil
+	}
+
 	// One pass to work out addresses for instructions
 	addr := a.BaseAddr
 	for i := range a.Linsts {
@@ -56,6 +75,7 @@ func (a *Assembly) ResolveAddresses() error {
 		}
 		fmt.Printf("%04X: %s\n", a.Linsts[i].Addr, a.Linsts[i].Inst)
 	}
+	a.resolved = true
 	return nil
 }
 

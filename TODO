@@ -5,48 +5,57 @@ DONE - need to resolve labels at some pt
   - method on instruction?
     - or type-switch in assembler
 
-- add (labelled) defb/defw etc http://www.nongnu.org/z80asm/directives.html
-  msbt:	ds	14
-
-
-- parsing assembly needs to include the notion of address
-  instead of building []Insts, need to build the byte array (instead or as well)
-  labels refer to byte positions in the byte array
-  org statements change where we assemble
-  labels map[string]uint16
-
-- improve assembler to the point it can assemble zexall/zexdoc
-  DONE - parse args
-  DONE - write to output file. Default stdout
-  NO - support writing text format instructions, default to binary
-    - useful for test. Dom't worry about label preserving
-  - how to parse labels etc?
-    - add to peg grammar?
-  - have sep grammars for assembly format and instructions?
-    - comments, labels, defbytes
-    - macros?
-    .title
-    aseg
-    org
-    label:
-    named label in instructions (call, etc)
-    ditto for relative instructions
-    dw (can be followed by label)
-    arithmetic in constants (label+X)
-
-    
-  - then add support routines/modes to emulator
+- emulator
+  - implement some debug hook (zexall compatible)
     - conout to write to console
     - jp 0 to "reboot cp/m"
-    - halt
+    - halt and assert on Locations in test?
+  - add interface elt (with stubs) and driver
+  - implement LD
+  - start some basic tests
+  - zexdoc
+  - zexall
 
+- add emulator
+  - make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
+
+ASSEMBLER:
+
+  - use zmac instead
+
+  - add (labelled) defb/defw etc http://www.nongnu.org/z80asm/directives.html
+    msbt:	ds	14
+
+  - parsing assembly needs to include the notion of address
+    instead of building []Insts, need to build the byte array (instead or as well)
+    labels refer to byte positions in the byte array
+    org statements change where we assemble
+    labels map[string]uint16
+
+  - improve assembler to the point it can assemble zexall/zexdoc
+    DONE - parse args
+    DONE - write to output file. Default stdout
+    NO - support writing text format instructions, default to binary
+      - useful for test. Dom't worry about label preserving
+    - how to parse labels etc?
+      - add to peg grammar?
+    - have sep grammars for assembly format and instructions?
+      - comments, labels, defbytes
+      - macros?
+      .title
+      aseg
+      org
+      label:
+      named label in instructions (call, etc)
+      ditto for relative instructions
+      dw (can be followed by label)
+      arithmetic in constants (label+X)
+
+      
 - add cmdline disassembler
   - try on some big files
   - add (made up) labels for jump targets in disassembler
   - add some directives (org, data bytes)
-
-- add emulator
-  - make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
 
 - find sample z80 to use as tests for emulator
   - spectrum rom!

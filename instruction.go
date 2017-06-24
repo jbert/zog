@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -9,6 +10,7 @@ type Instruction interface {
 	String() string
 	Encode() []byte
 	Resolve(a *Assembly) error
+	Execute(z *Zog) error
 }
 
 type Data struct {
@@ -26,6 +28,9 @@ func (d *Data) Encode() []byte {
 }
 func (d *Data) Resolve(a *Assembly) error {
 	return nil
+}
+func (d *Data) Execute(z *Zog) error {
+	return errors.New("Error - trying to execute dummy data instruction")
 }
 
 type LD8 struct {
@@ -99,6 +104,9 @@ func (l *LD8) Encode() []byte {
 		panic("Unknown src type in LD8")
 	}
 }
+func (l *LD8) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type INC8 struct {
 	InstU8
@@ -118,6 +126,9 @@ func (i *INC8) Encode() []byte {
 	b := encodeXYZ(0, i.lInfo.idxTable, 4)
 	return idxEncodeHelper([]byte{b}, i.idx)
 }
+func (i *INC8) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type DEC8 struct {
 	InstU8
@@ -136,6 +147,9 @@ func (d *DEC8) Encode() []byte {
 	}
 	b := encodeXYZ(0, d.lInfo.idxTable, 5)
 	return idxEncodeHelper([]byte{b}, d.idx)
+}
+func (d *DEC8) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type LD16 struct {
@@ -204,6 +218,9 @@ func (l *LD16) Encode() []byte {
 		panic("Unknown src type in LD16")
 	}
 }
+func (l *LD16) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type ADD16 struct {
 	InstBin16
@@ -236,6 +253,9 @@ func (a *ADD16) Encode() []byte {
 		panic("Unknown src type in ADD16")
 	}
 }
+func (a *ADD16) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type ADC16 struct {
 	InstBin16
@@ -255,6 +275,9 @@ func (a *ADC16) Encode() []byte {
 	buf := []byte{0xed, encodeXPQZ(1, a.srcInfo.idxTable, 1, 2)}
 	return idxEncodeHelper(buf, a.idx)
 }
+func (a *ADC16) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type SBC16 struct {
 	InstBin16
@@ -269,10 +292,13 @@ func (s *SBC16) String() string {
 func (s *SBC16) Encode() []byte {
 	s.inspect()
 	if s.srcInfo.ltype != tableRP {
-		panic("Non-tableRP src in ADC16")
+		panic("Non-tableRP src in SBC16")
 	}
 	buf := []byte{0xed, encodeXPQZ(1, s.srcInfo.idxTable, 0, 2)}
 	return idxEncodeHelper(buf, s.idx)
+}
+func (s *SBC16) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type INC16 struct {
@@ -294,6 +320,9 @@ func (i *INC16) Encode() []byte {
 	b := encodeXPQZ(0, i.lInfo.idxTable, 0, 3)
 	return idxEncodeHelper([]byte{b}, i.idx)
 }
+func (i *INC16) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type DEC16 struct {
 	InstU16
@@ -312,6 +341,9 @@ func (d *DEC16) Encode() []byte {
 	}
 	b := encodeXPQZ(0, d.lInfo.idxTable, 1, 3)
 	return idxEncodeHelper([]byte{b}, d.idx)
+}
+func (d *DEC16) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type EX struct {
@@ -342,6 +374,9 @@ func (ex *EX) Encode() []byte {
 
 	panic("Unrecognised EX instruction")
 }
+func (ex *EX) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type DJNZ struct {
 	d Disp
@@ -356,6 +391,9 @@ func (d *DJNZ) Encode() []byte {
 }
 func (d *DJNZ) Resolve(a *Assembly) error {
 	return nil
+}
+func (d *DJNZ) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type JR struct {
@@ -383,6 +421,9 @@ func (j *JR) Encode() []byte {
 }
 func (j *JR) Resolve(a *Assembly) error {
 	return nil
+}
+func (j *JR) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type JP struct {
@@ -423,6 +464,9 @@ func (jp *JP) Encode() []byte {
 	buf = append(buf, jp.lInfo.imm16...)
 	return buf
 }
+func (jp *JP) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type CALL struct {
 	InstU16
@@ -451,6 +495,9 @@ func (c *CALL) Encode() []byte {
 	buf = append(buf, c.lInfo.imm16...)
 	return buf
 }
+func (c *CALL) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type OUT struct {
 	port  Loc8
@@ -478,6 +525,9 @@ func (o *OUT) Encode() []byte {
 }
 func (o *OUT) Resolve(a *Assembly) error {
 	return nil
+}
+func (o *OUT) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type IN struct {
@@ -512,6 +562,9 @@ func (i *IN) Encode() []byte {
 func (i *IN) Resolve(a *Assembly) error {
 	return nil
 }
+func (i *IN) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type PUSH struct {
 	InstU16
@@ -530,6 +583,9 @@ func (p *PUSH) Encode() []byte {
 	}
 	buf := []byte{encodeXPQZ(3, p.lInfo.idxTable, 0, 5)}
 	return idxEncodeHelper(buf, p.idx)
+}
+func (p *PUSH) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type POP struct {
@@ -550,6 +606,9 @@ func (p *POP) Encode() []byte {
 	buf := []byte{encodeXPQZ(3, p.lInfo.idxTable, 0, 1)}
 	return idxEncodeHelper(buf, p.idx)
 }
+func (p *POP) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type RST struct {
 	addr byte
@@ -564,6 +623,9 @@ func (r *RST) Encode() []byte {
 }
 func (r *RST) Resolve(a *Assembly) error {
 	return nil
+}
+func (r *RST) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type RET struct {
@@ -586,6 +648,9 @@ func (r *RET) Encode() []byte {
 }
 func (r *RET) Resolve(a *Assembly) error {
 	return nil
+}
+func (r *RET) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 func NewAccum(name string, l Loc8) *accum {
@@ -623,6 +688,9 @@ func (a accum) Encode() []byte {
 	}
 	return idxEncodeHelper(buf, a.idx)
 }
+func (a accum) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type rot struct {
 	InstU8
@@ -654,6 +722,9 @@ func (r *rot) Encode() []byte {
 	buf := []byte{0xcb, encodeXYZ(0, y, z)}
 	return ddcbHelper(buf, r.idx)
 }
+func (r *rot) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type BIT struct {
 	InstU8
@@ -674,6 +745,9 @@ func (b *BIT) Encode() []byte {
 	z := b.lInfo.idxTable
 	enc := encodeXYZ(1, b.num, z)
 	return ddcbHelper([]byte{0xcb, enc}, b.idx)
+}
+func (b *BIT) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type RES struct {
@@ -704,6 +778,9 @@ func (r *RES) Encode() []byte {
 	enc := encodeXYZ(2, r.num, z)
 	return ddcbHelper([]byte{0xcb, enc}, r.idx)
 }
+func (r *RES) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
+}
 
 type SET struct {
 	InstU8
@@ -732,6 +809,9 @@ func (s *SET) Encode() []byte {
 	}
 	enc := encodeXYZ(3, s.num, z)
 	return ddcbHelper([]byte{0xcb, enc}, s.idx)
+}
+func (s *SET) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 type Simple byte
@@ -795,6 +875,9 @@ func (s Simple) Encode() []byte {
 }
 func (s Simple) Resolve(a *Assembly) error {
 	return nil
+}
+func (s Simple) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 func LookupSimpleName(name string) Simple {
@@ -889,6 +972,9 @@ func (s EDSimple) Encode() []byte {
 }
 func (s EDSimple) Resolve(a *Assembly) error {
 	return nil
+}
+func (s EDSimple) Execute(z *Zog) error {
+	return errors.New("TODO - impl")
 }
 
 func LookupEDSimpleName(name string) EDSimple {

@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"errors"
 	"fmt"
 	"log"
 )
@@ -10,6 +11,11 @@ func Decode(inCh chan byte) (chan Instruction, chan error) {
 	iCh := make(chan Instruction)
 	go decode(inCh, iCh, errCh)
 	return iCh, errCh
+}
+
+func DecodeOne(inCh chan byte) (Instruction, error) {
+	t := NewDecodeTable(inCh)
+	return decodeOne(inCh, t)
 }
 
 func DecodeBytes(buf []byte) ([]Instruction, error) {
@@ -77,12 +83,29 @@ func getImmNN(inCh chan byte) (Imm16, error) {
 }
 
 func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
+	t := NewDecodeTable(inCh)
+	for {
+		inst, err := decodeOne(inCh, t)
+		if err == ErrEOF {
+			break
+		}
+		if err != nil {
+			errCh <- err
+			continue
+		}
+		iCh <- inst
+	}
+	close(iCh)
+	close(errCh)
+}
+
+var ErrEOF = errors.New("End of input")
+
+func decodeOne(inCh chan byte, t *DecodeTable) (Instruction, error) {
 
 	// Set to 0 if no prefix in effect
 	var opPrefix byte
 	var indexPrefix byte
-
-	t := NewDecodeTable(inCh)
 
 	for n := range inCh {
 
@@ -134,16 +157,15 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 			if err == nil {
 				err = fmt.Errorf("TODO - impl %02X [%02X] (%02X)", n, opPrefix, indexPrefix)
 			}
-			errCh <- err
-		} else {
-			iCh <- inst
+			return nil, err
 		}
 
-		opPrefix = 0
-		indexPrefix = 0
+		return inst, nil
 	}
-	close(iCh)
-	close(errCh)
+
+	// We return in the loop when we have an instruction
+	// if we get here, the channel must be closed
+	return nil, ErrEOF
 }
 
 func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte, disp byte) (Instruction, error) {
