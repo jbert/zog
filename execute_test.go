@@ -27,7 +27,11 @@ type executeTestCase struct {
 }
 
 func TestExecuteBasic(t *testing.T) {
+	addr := uint16(0x100)
 	testCases := []executeTestCase{
+		{"LD A,10h : LD HL, 0x0100 : LD (HL), A", []executeAssertion{{Contents{Imm16(addr)}, 0x10}}},
+		{"LD A,10h : LD HL, 0x0100 : LD (HL), A : LD B, (HL)", []executeAssertion{{B, 0x10}}},
+
 		{"LD A,10h", []executeAssertion{{A, 0x10}, {B, 0x00}}},
 		{"LD B,10h", []executeAssertion{{B, 0x10}, {A, 0x00}}},
 		{"LD C,10h", []executeAssertion{{C, 0x10}, {A, 0x00}}},
@@ -48,6 +52,13 @@ func TestExecuteBasic(t *testing.T) {
 		{"LD A,10h : LD E, A", []executeAssertion{{E, 0x10}}},
 		{"LD A,10h : LD H, A", []executeAssertion{{H, 0x10}}},
 		{"LD A,10h : LD L, A", []executeAssertion{{L, 0x10}}},
+
+		{"LD B,10h : LD A, B", []executeAssertion{{A, 0x10}}},
+		{"LD C,10h : LD A, C", []executeAssertion{{A, 0x10}}},
+		{"LD D,10h : LD A, D", []executeAssertion{{A, 0x10}}},
+		{"LD E,10h : LD A, E", []executeAssertion{{A, 0x10}}},
+		{"LD H,10h : LD A, H", []executeAssertion{{A, 0x10}}},
+		{"LD L,10h : LD A, L", []executeAssertion{{A, 0x10}}},
 	}
 	for _, tc := range testCases {
 		fmt.Printf("Assemble: %s\n", tc.prog)

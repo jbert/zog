@@ -343,14 +343,27 @@ func (c Contents) String() string {
 	return fmt.Sprintf("(%s)", c.addr)
 }
 func (c Contents) Read8(z *Zog) (byte, error) {
-	// TODO: debug
-	var n byte
-	fmt.Printf("Z: %02X <- %s\n", n, c.addr)
+	addr, err := c.addr.Read16(z)
+	if err != nil {
+		return 0, fmt.Errorf("Can't get contents of [%s]: %s", c.addr, err)
+	}
+	n, err := z.mem.Peek(addr)
+	if err != nil {
+		return 0, fmt.Errorf("Can't read contents of [%s]: %s", c, err)
+	}
+	fmt.Printf("Z: %02X <- %s\n", n, c)
 	return n, nil
 }
 func (c Contents) Write8(z *Zog, n byte) error {
-	// TODO: debug
-	fmt.Printf("Z: %s <- %02X\n", c.addr, n)
+	addr, err := c.addr.Read16(z)
+	if err != nil {
+		return fmt.Errorf("Can't get contents of [%s]: %s", c.addr, err)
+	}
+	err = z.mem.Poke(addr, n)
+	if err != nil {
+		return fmt.Errorf("Can't write contents of [%s]: %s", c, err)
+	}
+	fmt.Printf("Z: %s <- %02X\n", c, n)
 	return nil
 }
 
