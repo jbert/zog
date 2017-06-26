@@ -41,6 +41,13 @@ func TestExecuteBasic(t *testing.T) {
 		{"LD HL,1234h", []executeAssertion{{H, 0x12}, {L, 0x34}, {A, 0x00}}},
 		{"LD IX,1234h", []executeAssertion{{IXH, 0x12}, {IXL, 0x34}, {A, 0x00}}},
 		{"LD IY,1234h", []executeAssertion{{IYH, 0x12}, {IYL, 0x34}, {A, 0x00}}},
+
+		{"LD A,10h : LD B, A", []executeAssertion{{B, 0x10}}},
+		{"LD A,10h : LD C, A", []executeAssertion{{C, 0x10}}},
+		{"LD A,10h : LD D, A", []executeAssertion{{D, 0x10}}},
+		{"LD A,10h : LD E, A", []executeAssertion{{E, 0x10}}},
+		{"LD A,10h : LD H, A", []executeAssertion{{H, 0x10}}},
+		{"LD A,10h : LD L, A", []executeAssertion{{L, 0x10}}},
 	}
 	for _, tc := range testCases {
 		fmt.Printf("Assemble: %s\n", tc.prog)
