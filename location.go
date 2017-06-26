@@ -97,6 +97,8 @@ func (r *Registers) Read8(l R8) byte {
 	case E:
 		return r.E
 	case H:
+		return r.H
+	case L:
 		return r.L
 	case IXL:
 		return r.IXL
@@ -131,6 +133,8 @@ func (r *Registers) Write8(l R8, n byte) {
 		r.E = n
 	case H:
 		r.H = n
+	case L:
+		r.L = n
 	case IXL:
 		r.IXL = n
 	case IXH:

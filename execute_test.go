@@ -30,7 +30,17 @@ func TestExecuteBasic(t *testing.T) {
 	testCases := []executeTestCase{
 		{"LD A,10h", []executeAssertion{{A, 0x10}, {B, 0x00}}},
 		{"LD B,10h", []executeAssertion{{B, 0x10}, {A, 0x00}}},
+		{"LD C,10h", []executeAssertion{{C, 0x10}, {A, 0x00}}},
+		{"LD D,10h", []executeAssertion{{D, 0x10}, {A, 0x00}}},
+		{"LD E,10h", []executeAssertion{{E, 0x10}, {A, 0x00}}},
+		{"LD H,10h", []executeAssertion{{H, 0x10}, {A, 0x00}}},
+		{"LD L,10h", []executeAssertion{{L, 0x10}, {A, 0x00}}},
+
 		{"LD BC,1234h", []executeAssertion{{B, 0x12}, {C, 0x34}, {A, 0x00}}},
+		{"LD DE,1234h", []executeAssertion{{D, 0x12}, {E, 0x34}, {A, 0x00}}},
+		{"LD HL,1234h", []executeAssertion{{H, 0x12}, {L, 0x34}, {A, 0x00}}},
+		{"LD IX,1234h", []executeAssertion{{IXH, 0x12}, {IXL, 0x34}, {A, 0x00}}},
+		{"LD IY,1234h", []executeAssertion{{IYH, 0x12}, {IYL, 0x34}, {A, 0x00}}},
 	}
 	for _, tc := range testCases {
 		fmt.Printf("Assemble: %s\n", tc.prog)
