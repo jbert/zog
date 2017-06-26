@@ -29,6 +29,9 @@ type executeTestCase struct {
 func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	testCases := []executeTestCase{
+		{"LD A,10h : LD IX, 0x0100 : LD (IX+3), A", []executeAssertion{{Contents{Imm16(addr + 3)}, 0x10}}},
+		{"LD A,10h : LD IX, 0x0100 : LD (IX+3), A : LD B, (IX+3)", []executeAssertion{{B, 0x10}}},
+
 		{"LD HL,1234h : LD (0100h), HL", []executeAssertion{
 			{Contents{Imm16(addr)}, 0x34},
 			{Contents{Imm16(addr + 1)}, 0x12},
@@ -86,7 +89,7 @@ func TestExecuteBasic(t *testing.T) {
 		for _, assertion := range tc.assertions {
 			err := assertion.check(z)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 		}
 	}

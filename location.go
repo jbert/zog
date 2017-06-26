@@ -401,14 +401,29 @@ func (ic IndexedContents) String() string {
 	return fmt.Sprintf("(%s%+d)", ic.addr, int8(ic.d))
 }
 func (ic IndexedContents) Read8(z *Zog) (byte, error) {
-	// TODO: debug
-	var n byte
-	fmt.Printf("Z: %02X <- %s\n", n, ic.addr)
+	addr, err := ic.addr.Read16(z)
+	if err != nil {
+		return 0, fmt.Errorf("Can't get contents of [%s]: %s", ic.addr, err)
+	}
+	addr += uint16(ic.d)
+	n, err := z.mem.Peek(addr)
+	if err != nil {
+		return 0, fmt.Errorf("Can't read contents of [%s]: %s", ic, err)
+	}
+	fmt.Printf("Z: %02X <- %s\n", n, ic)
 	return n, nil
 }
 func (ic IndexedContents) Write8(z *Zog, n byte) error {
-	// TODO: debug
-	fmt.Printf("Z: %s <- %02X\n", ic.addr, n)
+	addr, err := ic.addr.Read16(z)
+	if err != nil {
+		return fmt.Errorf("Can't get contents of [%s]: %s", ic.addr, err)
+	}
+	addr += uint16(ic.d)
+	err = z.mem.Poke(addr, n)
+	if err != nil {
+		return fmt.Errorf("Can't write contents of [%s]: %s", ic, err)
+	}
+	fmt.Printf("Z: %s <- %02X\n", ic, n)
 	return nil
 }
 
