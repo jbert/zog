@@ -172,8 +172,8 @@ func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte, disp byte) (I
 	var err error
 	var inst Instruction
 
-	x, y, z, p, q := decomposeByte(n)
-	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
+	x, y, z, _, _ := decomposeByte(n)
+	//	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
 	if indexPrefix == 0x00 {
 		switch x {
@@ -240,7 +240,7 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 	}
 
 	x, y, z, p, q := decomposeByte(n)
-	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
+	//	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
 	switch x {
 	case 0, 3:
@@ -340,7 +340,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 	}
 
 	x, y, z, p, q := decomposeByte(n)
-	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
+	//	fmt.Printf("D: N %02X, x %d y %d z %d p %d q %d\n", n, x, y, z, p, q)
 
 	switch x {
 	case 0:

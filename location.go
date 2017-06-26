@@ -321,14 +321,13 @@ func (r R16) String() string {
 }
 
 func (r R16) Read16(z *Zog) (uint16, error) {
-	// TODO: debug
-	var nn uint16
-	fmt.Printf("Z: %02X <- %s\n", nn, r)
+	nn := z.reg.Read16(r)
+	fmt.Printf("Z: %04X <- %s\n", nn, r)
 	return nn, nil
 }
 func (r R16) Write16(z *Zog, nn uint16) error {
-	// TODO: debug
-	fmt.Printf("Z: %s <- %02X\n", r, nn)
+	z.reg.Write16(r, nn)
+	fmt.Printf("Z: %s <- %04X\n", r, nn)
 	return nil
 }
 

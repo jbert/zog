@@ -227,7 +227,15 @@ func (l *LD16) Encode() []byte {
 	}
 }
 func (l *LD16) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	nn, err := l.src.Read16(z)
+	if err != nil {
+		return fmt.Errorf("LD16: failed to read: %s", err)
+	}
+	err = l.dst.Write16(z, nn)
+	if err != nil {
+		return fmt.Errorf("LD16: failed to write: %s", err)
+	}
+	return nil
 }
 
 type ADD16 struct {

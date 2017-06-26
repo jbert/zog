@@ -28,7 +28,9 @@ type executeTestCase struct {
 
 func TestExecuteBasic(t *testing.T) {
 	testCases := []executeTestCase{
-		{"LD A,10h", []executeAssertion{{A, 0x10}}},
+		{"LD A,10h", []executeAssertion{{A, 0x10}, {B, 0x00}}},
+		{"LD B,10h", []executeAssertion{{B, 0x10}, {A, 0x00}}},
+		{"LD BC,1234h", []executeAssertion{{B, 0x12}, {C, 0x34}, {A, 0x00}}},
 	}
 	for _, tc := range testCases {
 		fmt.Printf("Assemble: %s\n", tc.prog)
