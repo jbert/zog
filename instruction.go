@@ -105,7 +105,15 @@ func (l *LD8) Encode() []byte {
 	}
 }
 func (l *LD8) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	v, err := l.src.Read8(z)
+	if err != nil {
+		return fmt.Errorf("LD8: failed to read: %s", err)
+	}
+	err = l.dst.Write8(z, v)
+	if err != nil {
+		return fmt.Errorf("LD8: failed to write: %s", err)
+	}
+	return nil
 }
 
 type INC8 struct {
@@ -877,7 +885,12 @@ func (s Simple) Resolve(a *Assembly) error {
 	return nil
 }
 func (s Simple) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	switch s {
+	case HALT:
+		return ErrHalted
+	default:
+		return errors.New("TODO - impl")
+	}
 }
 
 func LookupSimpleName(name string) Simple {

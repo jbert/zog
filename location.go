@@ -26,6 +26,43 @@ type Loc interface {
 	String() string
 }
 
+type Registers struct {
+	A, F byte
+	B, C byte
+	D, E byte
+	H, L byte
+
+	IXH, IXL byte
+	IYH, IYL byte
+
+	I, R byte
+
+	// Alternate register set
+	A_PRIME, F_PRIME byte
+	B_PRIME, C_PRIME byte
+	D_PRIME, E_PRIME byte
+	H_PRIME, L_PRIME byte
+
+	SP uint16
+	PC uint16
+}
+
+func (r Registers) String() string {
+	return fmt.Sprintf("AF %04X BC %04X DE %04X HL %04X AF' %04X BC' %04X DE' %04X HL' %04X SP %04X PC %04X IX %04X IY %04X",
+		r.Read16(AF),
+		r.Read16(BC),
+		r.Read16(DE),
+		r.Read16(HL),
+		r.Read16(AF_PRIME),
+		r.Read16(BC_PRIME),
+		r.Read16(DE_PRIME),
+		r.Read16(HL_PRIME),
+		r.Read16(SP),
+		r.Read16(PC),
+		r.Read16(IX),
+		r.Read16(IY))
+}
+
 type R8 int
 
 const (
@@ -44,6 +81,72 @@ const (
 	I
 	R
 )
+
+func (r *Registers) Read8(l R8) byte {
+	switch l {
+	case A:
+		return r.A
+	case F:
+		return r.F
+	case B:
+		return r.B
+	case C:
+		return r.C
+	case D:
+		return r.D
+	case E:
+		return r.E
+	case H:
+		return r.L
+	case IXL:
+		return r.IXL
+	case IXH:
+		return r.IXH
+	case IYL:
+		return r.IYL
+	case IYH:
+		return r.IYH
+	case I:
+		return r.I
+	case R:
+		return r.R
+	default:
+		panic(fmt.Sprintf("Unknown R8: %d", l))
+	}
+}
+
+func (r *Registers) Write8(l R8, n byte) {
+	switch l {
+	case A:
+		r.A = n
+	case F:
+		r.F = n
+	case B:
+		r.B = n
+	case C:
+		r.C = n
+	case D:
+		r.D = n
+	case E:
+		r.E = n
+	case H:
+		r.H = n
+	case IXL:
+		r.IXL = n
+	case IXH:
+		r.IXH = n
+	case IYL:
+		r.IYL = n
+	case IYH:
+		r.IYH = n
+	case I:
+		r.I = n
+	case R:
+		r.R = n
+	default:
+		panic(fmt.Sprintf("Unknown R8: %d", l))
+	}
+}
 
 type r8name struct {
 	r    R8
@@ -92,13 +195,12 @@ func (r R8) String() string {
 }
 
 func (r R8) Read8(z *Zog) (byte, error) {
-	// TODO: debug
-	var n byte
+	n := z.reg.Read8(r)
 	fmt.Printf("Z: %02X <- %s\n", n, r)
 	return n, nil
 }
 func (r R8) Write8(z *Zog, n byte) error {
-	// TODO: debug
+	z.reg.Write8(r, n)
 	fmt.Printf("Z: %s <- %02X\n", r, n)
 	return nil
 }
@@ -113,8 +215,75 @@ const (
 	IX
 	IY
 	SP
+	PC
 	AF_PRIME
+	BC_PRIME
+	DE_PRIME
+	HL_PRIME
 )
+
+func (r *Registers) Read16(l R16) uint16 {
+	var lo, hi byte
+	switch l {
+	case AF:
+		hi = r.A
+		lo = r.F
+	case BC:
+		hi = r.B
+		lo = r.C
+	case DE:
+		hi = r.D
+		lo = r.E
+	case HL:
+		hi = r.H
+		lo = r.L
+	case IX:
+		hi = r.IXH
+		lo = r.IXL
+	case IY:
+		hi = r.IYH
+		lo = r.IYL
+	case SP:
+		return r.SP
+	case AF_PRIME:
+		hi = r.A_PRIME
+		lo = r.F_PRIME
+	default:
+		panic(fmt.Sprintf("Unknown R16: %d", l))
+	}
+	return (uint16(hi) << 8) | uint16(lo)
+}
+func (r *Registers) Write16(l R16, nn uint16) {
+	hi := byte(nn >> 8)
+	lo := byte(nn)
+	switch l {
+	case AF:
+		r.A = hi
+		r.F = lo
+	case BC:
+		r.B = hi
+		r.C = lo
+	case DE:
+		r.D = hi
+		r.E = lo
+	case HL:
+		r.H = hi
+		r.L = lo
+	case IX:
+		r.IXH = hi
+		r.IXL = lo
+	case IY:
+		r.IYH = hi
+		r.IYL = lo
+	case SP:
+		r.SP = nn
+	case AF_PRIME:
+		r.A_PRIME = hi
+		r.F_PRIME = lo
+	default:
+		panic(fmt.Sprintf("Unknown R16: %d", l))
+	}
+}
 
 type r16name struct {
 	r    R16

@@ -5,18 +5,6 @@ import (
 	"fmt"
 )
 
-type Registers struct {
-	A, F byte
-	B, C byte
-	D, E byte
-	H, L byte
-
-	SP uint16
-	PC uint16
-
-	IX uint16
-	IY uint16
-}
 type Zog struct {
 	mem *Memory
 	reg Registers
@@ -148,9 +136,10 @@ func (z *Zog) Execute(addr uint16) error {
 	}()
 
 	var err error
+	var inst Instruction
 EXECUTING:
 	for {
-		inst, err := DecodeOne(byteCh)
+		inst, err = DecodeOne(byteCh)
 		if err != nil {
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
@@ -158,7 +147,7 @@ EXECUTING:
 		fmt.Printf("I: %s\n", inst)
 		err = inst.Execute(z)
 		if err != nil {
-			fmt.Printf("Error executing: %s\n", err)
+			// Error handling after the loop
 			break EXECUTING
 		}
 	}
