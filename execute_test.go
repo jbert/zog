@@ -9,6 +9,22 @@ type assert interface {
 	check(z *Zog) error
 }
 
+type loc16A struct {
+	loc      Loc16
+	expected uint16
+}
+
+func (la loc16A) check(z *Zog) error {
+	actual, err := la.loc.Read16(z)
+	if err != nil {
+		return fmt.Errorf("assert failed: failed to read location [%s]: %s", la.loc, err)
+	}
+	if actual != la.expected {
+		return fmt.Errorf("assert failed: loc [%s] actual %02X expected %02X", la.loc, actual, la.expected)
+	}
+	return nil
+}
+
 type locA struct {
 	loc      Loc8
 	expected byte
@@ -102,11 +118,37 @@ func TestExecuteBasic(t *testing.T) {
 		{"LD H,10h", []assert{locA{H, 0x10}, locA{A, 0x00}}},
 		{"LD L,10h", []assert{locA{L, 0x10}, locA{A, 0x00}}},
 
-		{"LD BC,1234h", []assert{locA{B, 0x12}, locA{C, 0x34}, locA{A, 0x00}}},
-		{"LD DE,1234h", []assert{locA{D, 0x12}, locA{E, 0x34}, locA{A, 0x00}}},
-		{"LD HL,1234h", []assert{locA{H, 0x12}, locA{L, 0x34}, locA{A, 0x00}}},
-		{"LD IX,1234h", []assert{locA{IXH, 0x12}, locA{IXL, 0x34}, locA{A, 0x00}}},
-		{"LD IY,1234h", []assert{locA{IYH, 0x12}, locA{IYL, 0x34}, locA{A, 0x00}}},
+		// test the loc16a asserts by  testing 8bit and 16bit assertions
+		{"LD BC,1234h", []assert{
+			locA{B, 0x12},
+			locA{C, 0x34},
+			loc16A{BC, 0x1234},
+			locA{A, 0x00},
+		}},
+		{"LD DE,1234h", []assert{
+			locA{D, 0x12},
+			locA{E, 0x34},
+			loc16A{DE, 0x1234},
+			locA{A, 0x00},
+		}},
+		{"LD HL,1234h", []assert{
+			locA{H, 0x12},
+			locA{L, 0x34},
+			loc16A{HL, 0x1234},
+			locA{A, 0x00},
+		}},
+		{"LD IX,1234h", []assert{
+			locA{IXH, 0x12},
+			locA{IXL, 0x34},
+			loc16A{IX, 0x1234},
+			locA{A, 0x00},
+		}},
+		{"LD IY,1234h", []assert{
+			locA{IYH, 0x12},
+			locA{IYL, 0x34},
+			loc16A{IY, 0x1234},
+			locA{A, 0x00},
+		}},
 
 		{"LD A,10h : LD B, A", []assert{locA{B, 0x10}}},
 		{"LD A,10h : LD C, A", []assert{locA{C, 0x10}}},
