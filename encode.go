@@ -152,6 +152,34 @@ func (u *InstU8) inspect() {
 	inspectLoc8(u.l, &u.lInfo, &u.idx)
 }
 
+func (u *InstU8) exec(z *Zog, f func(byte) byte) error {
+	v, err := u.l.Read8(z)
+	if err != nil {
+		return fmt.Errorf("%T: failed to read: %s", u, err)
+	}
+	v = f(v)
+	z.SetFlag(F_S, v >= 0x80)
+	z.SetFlag(F_Z, v == 0)
+
+	err = u.l.Write8(z, v)
+	if err != nil {
+		return fmt.Errorf("%T: failed to write: %s", u, err)
+	}
+	return nil
+}
+
+func (u *InstBin8) exec(z *Zog, f func(byte) byte) error {
+	v, err := u.src.Read8(z)
+	if err != nil {
+		return fmt.Errorf("LD8: failed to read: %s", err)
+	}
+	err = u.dst.Write8(z, v)
+	if err != nil {
+		return fmt.Errorf("LD8: failed to write: %s", err)
+	}
+	return nil
+}
+
 type InstU16 struct {
 	l     Loc16
 	lInfo loc16Info

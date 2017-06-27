@@ -105,15 +105,16 @@ func (l *LD8) Encode() []byte {
 	}
 }
 func (l *LD8) Execute(z *Zog) error {
-	v, err := l.src.Read8(z)
+	// Flags are unchanged for LD
+	f, err := F.Read8(z)
 	if err != nil {
-		return fmt.Errorf("LD8: failed to read: %s", err)
+		return err
 	}
-	err = l.dst.Write8(z, v)
+	err = l.exec(z, func(v byte) byte { return v })
 	if err != nil {
-		return fmt.Errorf("LD8: failed to write: %s", err)
+		return err
 	}
-	return nil
+	return F.Write8(z, f)
 }
 
 type INC8 struct {
@@ -135,7 +136,12 @@ func (i *INC8) Encode() []byte {
 	return idxEncodeHelper([]byte{b}, i.idx)
 }
 func (i *INC8) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	err := i.exec(z, func(v byte) byte {
+		z.SetFlag(F_PV, v == 0xFF)
+		z.SetFlag(F_C, v == 0xFF)
+		return v + 1
+	})
+	return err
 }
 
 type DEC8 struct {
@@ -157,7 +163,12 @@ func (d *DEC8) Encode() []byte {
 	return idxEncodeHelper([]byte{b}, d.idx)
 }
 func (d *DEC8) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	err := d.exec(z, func(v byte) byte {
+		z.SetFlag(F_PV, v == 0x00)
+		z.SetFlag(F_C, v == 0x00)
+		return v - 1
+	})
+	return err
 }
 
 type LD16 struct {
