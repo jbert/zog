@@ -1,3 +1,4 @@
+- write add/adc/sbc16 in terms of exec on Inst16
 - flags:
   - need a way for execute methods to call out to flag setting
   - how to handle half-carry?

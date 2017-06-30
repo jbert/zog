@@ -280,23 +280,10 @@ func (a *ADD16) Encode() []byte {
 	}
 }
 func (a *ADD16) Execute(z *Zog) error {
-	src, err := a.src.Read16(z)
-	if err != nil {
-		return fmt.Errorf("ADD16 : can't read src: %s", a.src, err)
-	}
-	dst, err := a.dst.Read16(z)
-	if err != nil {
-		return fmt.Errorf("ADD16 : can't read dst: %s", a.dst, err)
-	}
-
-	v := dst + src
-	z.SetFlag(F_Z, v == 0)
-
-	err = a.dst.Write16(z, v)
-	if err != nil {
-		return fmt.Errorf("ADD16 : can't write dst: %s", a.dst, err)
-	}
-	return nil
+	return a.exec(z, func(a, b uint16) uint16 {
+		v := a + b
+		return v
+	})
 }
 
 type ADC16 struct {
@@ -318,26 +305,13 @@ func (a *ADC16) Encode() []byte {
 	return idxEncodeHelper(buf, a.idx)
 }
 func (a *ADC16) Execute(z *Zog) error {
-	src, err := a.src.Read16(z)
-	if err != nil {
-		return fmt.Errorf("ADC16 : can't read src: %s", a.src, err)
-	}
-	dst, err := a.dst.Read16(z)
-	if err != nil {
-		return fmt.Errorf("ADC16 : can't read dst: %s", a.dst, err)
-	}
-
-	v := dst + src
-	if z.GetFlag(F_C) {
-		v++
-	}
-	z.SetFlag(F_Z, v == 0)
-
-	err = a.dst.Write16(z, v)
-	if err != nil {
-		return fmt.Errorf("ADC16 : can't write dst: %s", a.dst, err)
-	}
-	return nil
+	return a.exec(z, func(a, b uint16) uint16 {
+		v := a + b
+		if z.GetFlag(F_C) {
+			v++
+		}
+		return v
+	})
 }
 
 type SBC16 struct {
@@ -359,26 +333,13 @@ func (s *SBC16) Encode() []byte {
 	return idxEncodeHelper(buf, s.idx)
 }
 func (s *SBC16) Execute(z *Zog) error {
-	src, err := s.src.Read16(z)
-	if err != nil {
-		return fmt.Errorf("SBC16 : can't read src: %s", s.src, err)
-	}
-	dst, err := s.dst.Read16(z)
-	if err != nil {
-		return fmt.Errorf("SBC16 : can't read dst: %s", s.dst, err)
-	}
-
-	v := dst - src
-	if z.GetFlag(F_C) {
-		v--
-	}
-	z.SetFlag(F_Z, v == 0)
-
-	err = s.dst.Write16(z, v)
-	if err != nil {
-		return fmt.Errorf("SBC16 : can't write dst: %s", s.dst, err)
-	}
-	return nil
+	return s.exec(z, func(dst, src uint16) uint16 {
+		v := dst - src
+		if z.GetFlag(F_C) {
+			v--
+		}
+		return v
+	})
 }
 
 type INC16 struct {

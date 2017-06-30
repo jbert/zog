@@ -168,12 +168,12 @@ func (u *InstU8) exec(z *Zog, f func(byte) byte) error {
 	return nil
 }
 
-func (u *InstBin8) exec(z *Zog, f func(byte) byte) error {
-	v, err := u.src.Read8(z)
+func (i *InstBin8) exec(z *Zog, f func(byte) byte) error {
+	v, err := i.src.Read8(z)
 	if err != nil {
 		return fmt.Errorf("LD8: failed to read: %s", err)
 	}
-	err = u.dst.Write8(z, v)
+	err = i.dst.Write8(z, v)
 	if err != nil {
 		return fmt.Errorf("LD8: failed to write: %s", err)
 	}
@@ -194,6 +194,26 @@ type InstBin16 struct {
 	srcInfo loc16Info
 
 	idx idxInfo
+}
+
+func (i *InstBin16) exec(z *Zog, f func(uint16, uint16) uint16) error {
+	src, err := i.src.Read16(z)
+	if err != nil {
+		return fmt.Errorf("%T : can't read src: %s", i, i.src, err)
+	}
+	dst, err := i.dst.Read16(z)
+	if err != nil {
+		return fmt.Errorf("%T : can't read dst: %s", i, i.dst, err)
+	}
+
+	v := f(dst, src)
+	z.SetFlag(F_Z, v == 0)
+
+	err = i.dst.Write16(z, v)
+	if err != nil {
+		return fmt.Errorf("%T : can't write dst: %s", i, i.dst, err)
+	}
+	return nil
 }
 
 type loc16Info struct {
