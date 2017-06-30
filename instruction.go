@@ -268,7 +268,6 @@ func (a *ADD16) Encode() []byte {
 		panic("Non-tableRP src in ADD16")
 	}
 
-	// TODO: support other ADD16
 	if !a.dstInfo.isHLLike() {
 		panic("Non-HL dst in ADD16")
 	}
@@ -681,13 +680,60 @@ func (r *RET) Execute(z *Zog) error {
 }
 
 func NewAccum(name string, l Loc8) *accum {
-	// TODO: lookup func by name, panic on unknown
-	return &accum{name: name, InstU8: InstU8{l: l}}
+	a := &accum{name: name, InstU8: InstU8{l: l}}
+	a.f = findFuncInTableALU(name)
+	return a
 }
 
-type accumFunc func(a, b byte) byte
+func aluAdd(z *Zog, a, b byte) byte {
+	v := a + b
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluAdc(z *Zog, a, b byte) byte {
+	v := a + b
+	if z.GetFlag(F_C) {
+		v++
+	}
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluSub(z *Zog, a, b byte) byte {
+	v := a - b
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluSbc(z *Zog, a, b byte) byte {
+	v := a - b
+	if z.GetFlag(F_C) {
+		v--
+	}
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluAnd(z *Zog, a, b byte) byte {
+	v := a & b
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluXor(z *Zog, a, b byte) byte {
+	v := a ^ b
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluOr(z *Zog, a, b byte) byte {
+	v := a | b
+	z.SetFlag(F_Z, v == 0)
+	return v
+}
+func aluCp(z *Zog, a, b byte) byte {
+	// Note the calling code is special cased, we just do the sub here
+	return aluSub(z, a, b)
+}
+
+type accumFunc func(z *Zog, a, b byte) byte
 type accum struct {
-	//	f    AccumFunc
+	f accumFunc
 	InstU8
 	name string
 }
@@ -716,7 +762,26 @@ func (a accum) Encode() []byte {
 	return idxEncodeHelper(buf, a.idx)
 }
 func (a accum) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	regA, err := A.Read8(z)
+	if err != nil {
+		return fmt.Errorf("Accum [%s] : can't read A: %s", a.name, err)
+	}
+	arg, err := a.l.Read8(z)
+	if err != nil {
+		return fmt.Errorf("Accum [%s] : can't read %s: %s", a.name, a.l, err)
+	}
+
+	v := a.f(z, regA, arg)
+
+	// Hack - CP runs a SUB, but we don't save the value to accum here
+	if strings.ToLower(a.name) != "cp" {
+		err = A.Write8(z, v)
+		if err != nil {
+			return fmt.Errorf("Accum [%s] : can't write A: %s", a.name, err)
+		}
+	}
+
+	return nil
 }
 
 type rot struct {

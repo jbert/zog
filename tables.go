@@ -103,18 +103,27 @@ func (t *DecodeTable) LookupBLI(a, b byte) Instruction {
 
 type AccumInfo struct {
 	name string
-	//	f    AccumFunc
+	f    accumFunc
 }
 
 var tableALU []AccumInfo = []AccumInfo{
-	{"ADD"},
-	{"ADC"},
-	{"SUB"},
-	{"SBC"},
-	{"AND"},
-	{"XOR"},
-	{"OR"},
-	{"CP"},
+	{"ADD", aluAdd},
+	{"ADC", aluAdc},
+	{"SUB", aluSub},
+	{"SBC", aluSbc},
+	{"AND", aluAnd},
+	{"XOR", aluXor},
+	{"OR", aluOr},
+	{"CP", aluCp},
+}
+
+func findFuncInTableALU(name string) accumFunc {
+	for _, info := range tableALU {
+		if info.name == name {
+			return info.f
+		}
+	}
+	panic(fmt.Sprintf("Not found in tableALU: %s", name))
 }
 
 type RotInfo struct {

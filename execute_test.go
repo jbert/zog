@@ -5,71 +5,6 @@ import (
 	"testing"
 )
 
-type assert interface {
-	check(z *Zog) error
-}
-
-type memA struct {
-	addr     uint16
-	expected byte
-}
-
-func (ma memA) check(z *Zog) error {
-	actual, err := z.mem.Peek(ma.addr)
-	if err != nil {
-		return fmt.Errorf("assert failed: failed to peek addr [%04X]: %s", ma.addr, err)
-	}
-	if actual != ma.expected {
-		return fmt.Errorf("assert failed: addr [%04X] actual %02X expected %02X", ma.addr, actual, ma.expected)
-	}
-	return nil
-}
-
-type loc16A struct {
-	loc      Loc16
-	expected uint16
-}
-
-func (la loc16A) check(z *Zog) error {
-	actual, err := la.loc.Read16(z)
-	if err != nil {
-		return fmt.Errorf("assert failed: failed to read location [%s]: %s", la.loc, err)
-	}
-	if actual != la.expected {
-		return fmt.Errorf("assert failed: loc [%s] actual %02X expected %02X", la.loc, actual, la.expected)
-	}
-	return nil
-}
-
-type locA struct {
-	loc      Loc8
-	expected byte
-}
-
-func (la locA) check(z *Zog) error {
-	actual, err := la.loc.Read8(z)
-	if err != nil {
-		return fmt.Errorf("assert failed: failed to read location [%s]: %s", la.loc, err)
-	}
-	if actual != la.expected {
-		return fmt.Errorf("assert failed: loc [%s] actual %02X expected %02X", la.loc, actual, la.expected)
-	}
-	return nil
-}
-
-type flagA struct {
-	f        flag
-	expected bool
-}
-
-func (fa flagA) check(z *Zog) error {
-	actual := z.GetFlag(fa.f)
-	if actual != fa.expected {
-		return fmt.Errorf("assert failed: flag [%s] actual %v expected %v", fa.f, actual, fa.expected)
-	}
-	return nil
-}
-
 type executeTestCase struct {
 	prog       string
 	assertions []assert
@@ -78,12 +13,12 @@ type executeTestCase struct {
 func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	testCases := []executeTestCase{
-		//		{"LD A,10h : LD B,05h : ADD A,B", []assert{
-		//			locA{A, 0x15},
-		//		}},
 		//{"LD HL,1111h : LD DE, 2222h : ADD HL, DE", []assert{
 		//	loc16A{HL, 0x3333},
 		//}},
+		{"LD A,10h : LD B,05h : ADD A,B", []assert{
+			locA{A, 0x15},
+		}},
 		{"LD HL,1234h : LD (0100h), HL", []assert{
 			memA{0x0100, 0x34},
 			memA{0x0101, 0x12},

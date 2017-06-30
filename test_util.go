@@ -483,3 +483,68 @@ var allInstructions = []testInstruction{
 	{0xFE, "cp N", "set 7,(hl)", ""},
 	{0xFF, "rst 56", "set 7,a", " 	"},
 }
+
+type assert interface {
+	check(z *Zog) error
+}
+
+type memA struct {
+	addr     uint16
+	expected byte
+}
+
+func (ma memA) check(z *Zog) error {
+	actual, err := z.mem.Peek(ma.addr)
+	if err != nil {
+		return fmt.Errorf("assert failed: failed to peek addr [%04X]: %s", ma.addr, err)
+	}
+	if actual != ma.expected {
+		return fmt.Errorf("assert failed: addr [%04X] actual %02X expected %02X", ma.addr, actual, ma.expected)
+	}
+	return nil
+}
+
+type loc16A struct {
+	loc      Loc16
+	expected uint16
+}
+
+func (la loc16A) check(z *Zog) error {
+	actual, err := la.loc.Read16(z)
+	if err != nil {
+		return fmt.Errorf("assert failed: failed to read location [%s]: %s", la.loc, err)
+	}
+	if actual != la.expected {
+		return fmt.Errorf("assert failed: loc [%s] actual %02X expected %02X", la.loc, actual, la.expected)
+	}
+	return nil
+}
+
+type locA struct {
+	loc      Loc8
+	expected byte
+}
+
+func (la locA) check(z *Zog) error {
+	actual, err := la.loc.Read8(z)
+	if err != nil {
+		return fmt.Errorf("assert failed: failed to read location [%s]: %s", la.loc, err)
+	}
+	if actual != la.expected {
+		return fmt.Errorf("assert failed: loc [%s] actual %02X expected %02X", la.loc, actual, la.expected)
+	}
+	return nil
+}
+
+type flagA struct {
+	f        flag
+	expected bool
+}
+
+func (fa flagA) check(z *Zog) error {
+	actual := z.GetFlag(fa.f)
+	if actual != fa.expected {
+		return fmt.Errorf("assert failed: flag [%s] actual %v expected %v", fa.f, actual, fa.expected)
+	}
+	return nil
+}

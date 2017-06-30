@@ -1,3 +1,7 @@
+- flags:
+  - need a way for execute methods to call out to flag setting
+  - how to handle half-carry?
+
 DONE - labels need to be usable everywhere an NN is used
 
 DONE - need to resolve labels at some pt
@@ -9,12 +13,25 @@ DONE - need to resolve labels at some pt
   - implement some debug hook (zexall compatible)
     - conout to write to console
     - jp 0 to "reboot cp/m"
-    - halt and assert on Locations in test?
-  - add interface elt (with stubs) and driver
-  - implement LD
-  - start some basic tests
+    DONE - halt and assert on Locations in test?
+  DONE - add interface elt (with stubs) and driver
+  DONE - implement LD
+  DONE - start some basic tests
+  DONE - flag assertions
+    DONE - check LD doesn't change flags
+      - locA on F register for at least one
+  - Accum
+  - PUSH/POP, add a test which fails if stack goes the wrong way
+  DONE - Loc16 assertions
+  DONE - mem assertions
+
   - zexdoc
   - zexall
+
+- consider collapsing a lot of the instruction types into a table driven binary/unary instruction
+  - far fewer types
+  - behaviour (including code) table driven
+  - can keep ctors....
 
 - add emulator
   - make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
