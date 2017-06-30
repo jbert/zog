@@ -280,7 +280,23 @@ func (a *ADD16) Encode() []byte {
 	}
 }
 func (a *ADD16) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	src, err := a.src.Read16(z)
+	if err != nil {
+		return fmt.Errorf("ADD16 : can't read src: %s", a.src, err)
+	}
+	dst, err := a.dst.Read16(z)
+	if err != nil {
+		return fmt.Errorf("ADD16 : can't read dst: %s", a.dst, err)
+	}
+
+	v := dst + src
+	z.SetFlag(F_Z, v == 0)
+
+	err = a.dst.Write16(z, v)
+	if err != nil {
+		return fmt.Errorf("ADD16 : can't write dst: %s", a.dst, err)
+	}
+	return nil
 }
 
 type ADC16 struct {

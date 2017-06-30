@@ -2,6 +2,9 @@
   - need a way for execute methods to call out to flag setting
   - how to handle half-carry?
 
+  - push everything into func like accum
+    - have enum?
+
 DONE - labels need to be usable everywhere an NN is used
 
 DONE - need to resolve labels at some pt
