@@ -302,7 +302,26 @@ func (a *ADC16) Encode() []byte {
 	return idxEncodeHelper(buf, a.idx)
 }
 func (a *ADC16) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	src, err := a.src.Read16(z)
+	if err != nil {
+		return fmt.Errorf("ADC16 : can't read src: %s", a.src, err)
+	}
+	dst, err := a.dst.Read16(z)
+	if err != nil {
+		return fmt.Errorf("ADC16 : can't read dst: %s", a.dst, err)
+	}
+
+	v := dst + src
+	if z.GetFlag(F_C) {
+		v++
+	}
+	z.SetFlag(F_Z, v == 0)
+
+	err = a.dst.Write16(z, v)
+	if err != nil {
+		return fmt.Errorf("ADC16 : can't write dst: %s", a.dst, err)
+	}
+	return nil
 }
 
 type SBC16 struct {
