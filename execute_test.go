@@ -13,6 +13,13 @@ type executeTestCase struct {
 func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	testCases := []executeTestCase{
+		{"LD A, FFh : INC A : LD HL,4444h : LD DE, 3333h : SBC HL, DE", []assert{
+			loc16A{HL, 0x1110},
+		}},
+		{"LD HL,4444h : LD DE, 3333h : SBC HL, DE", []assert{
+			loc16A{HL, 0x1111},
+		}},
+
 		{"LD HL,1111h : LD DE, 2222h : ADD HL, DE", []assert{
 			loc16A{HL, 0x3333},
 		}},
