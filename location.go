@@ -479,6 +479,7 @@ func (n Imm8) Write8(z *Zog, tmp byte) error {
 
 type Conditional interface {
 	String() string
+	IsTrue(z *Zog) bool
 }
 
 type FlagTest int
@@ -510,13 +511,34 @@ func (ft FlagTest) String() string {
 		panic(fmt.Sprintf("Unknown flag test [%d]", int(ft)))
 	}
 }
+func (ft FlagTest) IsTrue(z *Zog) bool {
+	switch ft {
+	case FT_Z:
+		return z.GetFlag(F_Z)
+	case FT_C:
+		return z.GetFlag(F_C)
+	case FT_PO:
+		return z.GetFlag(F_PV)
+	case FT_PE:
+		return !z.GetFlag(F_PV)
+	case FT_P:
+		return z.GetFlag(F_S)
+	case FT_M:
+		return !z.GetFlag(F_S)
+	default:
+		panic(fmt.Sprintf("Unknown flag test [%d]", int(ft)))
+	}
+}
 
-type LogicConstant struct{}
+type TrueLogicConstant struct{}
 
-var True LogicConstant
+var True TrueLogicConstant
 
-func (l LogicConstant) String() string {
+func (l TrueLogicConstant) String() string {
 	panic("Attempt to render 'true' as string")
+}
+func (l TrueLogicConstant) IsTrue(z *Zog) bool {
+	return true
 }
 
 type Not struct {
@@ -525,6 +547,9 @@ type Not struct {
 
 func (n Not) String() string {
 	return fmt.Sprintf("N%s", n.ft)
+}
+func (n Not) IsTrue(z *Zog) bool {
+	return !n.ft.IsTrue(z)
 }
 
 type Disp int8

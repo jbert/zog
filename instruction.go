@@ -501,7 +501,11 @@ func (j *JR) Resolve(a *Assembly) error {
 	return nil
 }
 func (j *JR) Execute(z *Zog) error {
-	return errors.New("TODO - impl1")
+	takeJump := j.c.IsTrue(z)
+	if takeJump {
+		z.jr(int8(j.d))
+	}
+	return nil
 }
 
 type JP struct {
