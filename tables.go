@@ -1,9 +1,12 @@
 package zog
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 type DecodeTable struct {
-	inCh   chan byte
+	r      io.Reader
 	wantIX bool
 	wantIY bool
 }
@@ -24,8 +27,8 @@ var tableBLI [][]Instruction = [][]Instruction{
 	[]Instruction{LDDR, CPDR, INDR, OTDR},
 }
 
-func NewDecodeTable(inCh chan byte) *DecodeTable {
-	return &DecodeTable{inCh: inCh}
+func NewDecodeTable(r io.Reader) *DecodeTable {
+	return &DecodeTable{r: r}
 }
 
 func (t *DecodeTable) ResetPrefix(n byte) {
@@ -57,7 +60,7 @@ func (t *DecodeTable) LookupR(i byte) Loc8 {
 			l = IYL
 		}
 	case 6: // (HL)
-		d, err := getImmd(t.inCh)
+		d, err := getImmd(t.r)
 		// TODO: panic is messy here- opens us up to panic on decode
 		if err != nil {
 			panic(fmt.Errorf("Can't get index displacemnt: %s", err))

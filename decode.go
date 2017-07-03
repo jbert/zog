@@ -1,39 +1,34 @@
 package zog
 
 import (
-	"errors"
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 )
 
-func Decode(inCh chan byte) (chan Instruction, chan error) {
+func Decode(r io.Reader) (chan Instruction, chan error) {
 	errCh := make(chan error)
 	iCh := make(chan Instruction)
-	go decode(inCh, iCh, errCh)
+	go decode(r, iCh, errCh)
 	return iCh, errCh
 }
 
-func DecodeOne(inCh chan byte) (Instruction, error) {
-	t := NewDecodeTable(inCh)
-	return decodeOne(inCh, t)
+func DecodeOne(r io.Reader) (Instruction, error) {
+	t := NewDecodeTable(r)
+	return decodeOne(r, t)
 }
 
 func DecodeBytes(buf []byte) ([]Instruction, error) {
 
-	ch := make(chan byte)
-
-	go func() {
-		for _, n := range buf {
-			ch <- n
-		}
-		close(ch)
-	}()
+	r := bytes.NewReader(buf)
 
 	var insts []Instruction
 	var err error
 	var ok bool
 
-	instCh, errCh := Decode(ch)
+	instCh, errCh := Decode(r)
+
 	looping := true
 	for looping {
 		select {
@@ -55,38 +50,53 @@ func DecodeBytes(buf []byte) ([]Instruction, error) {
 	return insts, err
 }
 
-func getImmd(inCh chan byte) (Disp, error) {
-	d, ok := <-inCh
-	if !ok {
-		return 0, fmt.Errorf("getImmd: Can't get byte")
+func getByte(r io.Reader) (byte, error) {
+	buf := make([]byte, 1)
+	n, err := r.Read(buf)
+	if err == io.EOF {
+		return 0, err
 	}
-	return Disp(d), nil
+	if err != nil {
+		return 0, fmt.Errorf("getImmd: Can't get byte: %s", err)
+	}
+	if n != 1 {
+		return 0, fmt.Errorf("getImmd: Can't get byte - read %d", n)
+	}
+	return buf[0], nil
 }
-func getImmN(inCh chan byte) (Imm8, error) {
-	n, ok := <-inCh
-	if !ok {
-		return 0, fmt.Errorf("getImmN: Can't get byte")
+
+func getImmd(r io.Reader) (Disp, error) {
+	n, err := getByte(r)
+	if err != nil {
+		return 0, err
+	}
+	return Disp(n), nil
+}
+func getImmN(r io.Reader) (Imm8, error) {
+	n, err := getByte(r)
+	if err != nil {
+		return 0, err
 	}
 	return Imm8(n), nil
 }
 
-func getImmNN(inCh chan byte) (Imm16, error) {
-	l, ok := <-inCh
-	if !ok {
-		return 0, fmt.Errorf("getImmNN: Can't get lo byte")
+func getImmNN(r io.Reader) (Imm16, error) {
+	l, err := getByte(r)
+	if err != nil {
+		return 0, err
 	}
-	h, ok := <-inCh
-	if !ok {
-		return 0, fmt.Errorf("getImmNN: Can't get hi byte")
+	h, err := getByte(r)
+	if err != nil {
+		return 0, err
 	}
 	return Imm16(uint16(h)<<8 | uint16(l)), nil
 }
 
-func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
-	t := NewDecodeTable(inCh)
+func decode(r io.Reader, iCh chan Instruction, errCh chan error) {
+	t := NewDecodeTable(r)
 	for {
-		inst, err := decodeOne(inCh, t)
-		if err == ErrEOF {
+		inst, err := decodeOne(r, t)
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
@@ -99,15 +109,17 @@ func decode(inCh chan byte, iCh chan Instruction, errCh chan error) {
 	close(errCh)
 }
 
-var ErrEOF = errors.New("End of input")
-
-func decodeOne(inCh chan byte, t *DecodeTable) (Instruction, error) {
+func decodeOne(r io.Reader, t *DecodeTable) (Instruction, error) {
 
 	// Set to 0 if no prefix in effect
 	var opPrefix byte
 	var indexPrefix byte
 
-	for n := range inCh {
+	for {
+		n, err := getByte(r)
+		if err != nil {
+			return nil, err
+		}
 
 		if opPrefix == 0 {
 			switch n {
@@ -128,27 +140,25 @@ func decodeOne(inCh chan byte, t *DecodeTable) (Instruction, error) {
 		t.ResetPrefix(indexPrefix)
 
 		var inst Instruction
-		var err error
 
 		switch opPrefix {
 		case 0:
-			inst, err = baseDecode(t, inCh, indexPrefix, n)
+			inst, err = baseDecode(t, r, indexPrefix, n)
 		case 0xcb:
 			var disp byte
 			if indexPrefix != 0x00 {
 				// DDCB - displacement byte comes before instruction...
 				disp = n
-				var ok bool
-				n, ok = <-inCh
-				if !ok {
-					err = fmt.Errorf("DDCB: Can't get instruction after displacement")
+				n, err = getByte(r)
+				if err != nil {
+					err = fmt.Errorf("DDCB: Can't get instruction after displacement: %s", err)
 				}
 			}
 			if err == nil {
-				inst, err = cbDecode(t, inCh, indexPrefix, n, disp)
+				inst, err = cbDecode(t, r, indexPrefix, n, disp)
 			}
 		case 0xed:
-			inst, err = edDecode(t, inCh, indexPrefix, n)
+			inst, err = edDecode(t, r, indexPrefix, n)
 		}
 
 		fmt.Printf("D: inst [%v] err [%v]\n", inst, err)
@@ -162,13 +172,9 @@ func decodeOne(inCh chan byte, t *DecodeTable) (Instruction, error) {
 
 		return inst, nil
 	}
-
-	// We return in the loop when we have an instruction
-	// if we get here, the channel must be closed
-	return nil, ErrEOF
 }
 
-func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte, disp byte) (Instruction, error) {
+func cbDecode(t *DecodeTable, r io.Reader, indexPrefix, n byte, disp byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 
@@ -228,7 +234,7 @@ func cbDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte, disp byte) (I
 	return inst, err
 }
 
-func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
+func edDecode(t *DecodeTable, r io.Reader, indexPrefix, n byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 
@@ -268,7 +274,7 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 				inst = NewADC16(hl, t.LookupRP(p))
 			}
 		case 3:
-			nn, err := getImmNN(inCh)
+			nn, err := getImmNN(r)
 			if err == nil {
 				if q == 0 {
 					inst = NewLD16(Contents{nn}, t.LookupRP(p))
@@ -326,7 +332,7 @@ func edDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction,
 	return inst, err
 }
 
-func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instruction, error) {
+func baseDecode(t *DecodeTable, r io.Reader, indexPrefix, n byte) (Instruction, error) {
 	var err error
 	var inst Instruction
 
@@ -352,24 +358,24 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			case 1:
 				inst = NewEX(AF, AF_PRIME)
 			case 2:
-				d, err := getImmd(inCh)
+				d, err := getImmd(r)
 				if err == nil {
 					inst = &DJNZ{d}
 				}
 			case 3:
-				d, err := getImmd(inCh)
+				d, err := getImmd(r)
 				if err == nil {
 					inst = &JR{True, d}
 				}
 			case 4, 5, 6, 7:
-				d, err := getImmd(inCh)
+				d, err := getImmd(r)
 				if err == nil {
 					inst = &JR{tableCC[y-4], d}
 				}
 			}
 		case 1:
 			if q == 0 {
-				nn, err := getImmNN(inCh)
+				nn, err := getImmNN(r)
 				if err == nil {
 					inst = NewLD16(t.LookupRP(p), nn)
 				}
@@ -384,12 +390,12 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 1:
 					inst = NewLD8(Contents{DE}, A)
 				case 2:
-					nn, err := getImmNN(inCh)
+					nn, err := getImmNN(r)
 					if err == nil {
 						inst = NewLD16(Contents{nn}, hl)
 					}
 				case 3:
-					nn, err := getImmNN(inCh)
+					nn, err := getImmNN(r)
 					if err == nil {
 						inst = NewLD8(Contents{nn}, A)
 					}
@@ -401,12 +407,12 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				case 1:
 					inst = NewLD8(A, Contents{DE})
 				case 2:
-					nn, err := getImmNN(inCh)
+					nn, err := getImmNN(r)
 					if err == nil {
 						inst = NewLD16(hl, Contents{nn})
 					}
 				case 3:
-					nn, err := getImmNN(inCh)
+					nn, err := getImmNN(r)
 					if err == nil {
 						inst = NewLD8(A, Contents{nn})
 					}
@@ -424,10 +430,10 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			inst = NewDEC8(t.LookupR(y))
 		case 6:
 			// Lookup before immmediate, so we handle IX/IY index before immediate N
-			r := t.LookupR(y)
-			n, err := getImmN(inCh)
+			reg := t.LookupR(y)
+			n, err := getImmN(r)
 			if err == nil {
-				inst = NewLD8(r, n)
+				inst = NewLD8(reg, n)
 			}
 		case 7:
 			switch y {
@@ -489,26 +495,26 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				}
 			}
 		case 2:
-			nn, err := getImmNN(inCh)
+			nn, err := getImmNN(r)
 			if err == nil {
 				inst = NewJP(tableCC[y], nn)
 			}
 		case 3:
 			switch y {
 			case 0:
-				nn, err := getImmNN(inCh)
+				nn, err := getImmNN(r)
 				if err == nil {
 					inst = NewJP(True, nn)
 				}
 			case 1:
 				panic(fmt.Sprintf("Decoding CB [%02X] as instruction, not prefix", n))
 			case 2:
-				n, err := getImmN(inCh)
+				n, err := getImmN(r)
 				if err == nil {
 					inst = &OUT{n, A}
 				}
 			case 3:
-				n, err := getImmN(inCh)
+				n, err := getImmN(r)
 				if err == nil {
 					inst = &IN{A, n}
 				}
@@ -523,7 +529,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				inst = EI
 			}
 		case 4:
-			nn, err := getImmNN(inCh)
+			nn, err := getImmNN(r)
 			if err == nil {
 				inst = NewCALL(tableCC[y], nn)
 			}
@@ -533,7 +539,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 			} else {
 				switch p {
 				case 0:
-					nn, err := getImmNN(inCh)
+					nn, err := getImmNN(r)
 					if err == nil {
 						inst = NewCALL(True, nn)
 					}
@@ -546,7 +552,7 @@ func baseDecode(t *DecodeTable, inCh chan byte, indexPrefix, n byte) (Instructio
 				}
 			}
 		case 6:
-			n, err := getImmN(inCh)
+			n, err := getImmN(r)
 			if err == nil {
 				info := tableALU[y]
 				inst = NewAccum(info.name, n)

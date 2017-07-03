@@ -111,35 +111,27 @@ func (z *Zog) Run(a *Assembly) error {
 	return z.Execute(a.BaseAddr)
 }
 
+// Implement io.Reader
+func (z *Zog) Read(buf []byte) (int, error) {
+	if len(buf) != 1 {
+		panic("Non-byte read")
+	}
+	n, err := z.mem.Peek(z.reg.PC)
+	if err != nil {
+		return 0, fmt.Errorf("Error reading: %s", err)
+	}
+	z.reg.PC++
+	buf[0] = n
+	return 1, nil
+}
+
 func (z *Zog) Execute(addr uint16) error {
-	byteCh := make(chan byte)
-
-	shutdown := make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case <-shutdown:
-				break
-			default:
-				n, err := z.mem.Peek(z.reg.PC)
-				if err != nil {
-					fmt.Printf("Error reading: %s\n", err)
-					break
-				}
-				byteCh <- n
-				z.reg.PC++
-				fmt.Printf("PC: %04X %02X\n", z.reg.PC, n)
-			}
-		}
-		close(byteCh)
-	}()
 
 	var err error
 	var inst Instruction
 EXECUTING:
 	for {
-		inst, err = DecodeOne(byteCh)
+		inst, err = DecodeOne(z)
 		if err != nil {
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
@@ -151,7 +143,6 @@ EXECUTING:
 			break EXECUTING
 		}
 	}
-	close(shutdown)
 	// The only return should be on HALT. nil is bad here.
 	if err == ErrHalted {
 		return nil

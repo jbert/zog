@@ -1,7 +1,7 @@
-- remove byte channel from decode
-  - can't impl jr/jp
-  - write to channel needs to know what value to write while blocking?
-  - use getNext() approach instead
+DONE - remove byte channel from decode
+  DONE - can't impl jr/jp
+  DONE - write to channel needs to know what value to write while blocking?
+  NO - use getNext() approach instead
 
 DONE - write add/adc/sbc16 in terms of exec on Inst16
 - flags:
