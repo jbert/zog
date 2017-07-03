@@ -547,7 +547,15 @@ func (jp *JP) Encode() []byte {
 	return buf
 }
 func (jp *JP) Execute(z *Zog) error {
-	return errors.New("TODO - impl2")
+	takeJump := jp.c.IsTrue(z)
+	if takeJump {
+		addr, err := jp.l.Read16(z)
+		if err != nil {
+			return err
+		}
+		z.jp(addr)
+	}
+	return nil
 }
 
 type CALL struct {
