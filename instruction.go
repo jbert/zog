@@ -702,7 +702,12 @@ func (p *POP) Encode() []byte {
 	return idxEncodeHelper(buf, p.idx)
 }
 func (p *POP) Execute(z *Zog) error {
-	return errors.New("TODO - impl7")
+	nn := z.pop()
+	err := p.l.Write16(z, nn)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type RST struct {

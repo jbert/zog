@@ -14,9 +14,9 @@ func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
-		//		{"LD BC, 1234h : PUSH BC : POP DE", []assert{
-		//			loc16A{DE, 0x1234},
-		//		}},
+		{"LD BC, 1234h : PUSH BC : POP DE", []assert{
+			loc16A{DE, 0x1234},
+		}},
 		{"LD BC, 1234h : PUSH BC", []assert{
 			memA{memSize - 1, 0x12},
 			memA{memSize - 2, 0x34},
