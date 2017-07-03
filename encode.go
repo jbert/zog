@@ -186,6 +186,21 @@ type InstU16 struct {
 	idx   idxInfo
 }
 
+func (u *InstU16) exec(z *Zog, f func(uint16) uint16) error {
+	v, err := u.l.Read16(z)
+	if err != nil {
+		return fmt.Errorf("%T: failed to read: %s", u, err)
+	}
+	v = f(v)
+	z.SetFlag(F_Z, v == 0)
+
+	err = u.l.Write16(z, v)
+	if err != nil {
+		return fmt.Errorf("%T: failed to write: %s", u, err)
+	}
+	return nil
+}
+
 type InstBin16 struct {
 	dst Loc16
 	src Loc16

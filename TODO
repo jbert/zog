@@ -1,4 +1,9 @@
-- write add/adc/sbc16 in terms of exec on Inst16
+- remove byte channel from decode
+  - can't impl jr/jp
+  - write to channel needs to know what value to write while blocking?
+  - use getNext() approach instead
+
+DONE - write add/adc/sbc16 in terms of exec on Inst16
 - flags:
   - need a way for execute methods to call out to flag setting
   - how to handle half-carry?

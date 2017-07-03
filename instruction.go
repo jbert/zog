@@ -362,7 +362,10 @@ func (i *INC16) Encode() []byte {
 	return idxEncodeHelper([]byte{b}, i.idx)
 }
 func (i *INC16) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	err := i.exec(z, func(v uint16) uint16 {
+		return v + 1
+	})
+	return err
 }
 
 type DEC16 struct {
@@ -384,7 +387,10 @@ func (d *DEC16) Encode() []byte {
 	return idxEncodeHelper([]byte{b}, d.idx)
 }
 func (d *DEC16) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	err := d.exec(z, func(v uint16) uint16 {
+		return v - 1
+	})
+	return err
 }
 
 type EX struct {
@@ -416,7 +422,24 @@ func (ex *EX) Encode() []byte {
 	panic("Unrecognised EX instruction")
 }
 func (ex *EX) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	a, err := ex.src.Read16(z)
+	if err != nil {
+		return fmt.Errorf("%s : can't read src: %s", ex, ex.src, err)
+	}
+	b, err := ex.dst.Read16(z)
+	if err != nil {
+		return fmt.Errorf("%s : can't read dst: %s", ex, ex.dst, err)
+	}
+
+	err = ex.dst.Write16(z, a)
+	if err != nil {
+		return fmt.Errorf("%s : can't write dst: %s", ex, ex.dst, err)
+	}
+	err = ex.src.Write16(z, b)
+	if err != nil {
+		return fmt.Errorf("%s : can't write dst: %s", ex, ex.dst, err)
+	}
+	return nil
 }
 
 type DJNZ struct {
@@ -434,7 +457,24 @@ func (d *DJNZ) Resolve(a *Assembly) error {
 	return nil
 }
 func (d *DJNZ) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	panic("TODO impl")
+	/*
+	bReg, err := B.Read8(z)
+	if err != nil {
+		return fmt.Errorf("Can't read B: %s", err)
+	}
+	bReg--
+	err = B.Write8(z, bReg)
+	if err != nil {
+		return fmt.Errorf("Can't write B: %s", err)
+	}
+	zero := bReg == 0
+	z.SetFlag(F_Z, zero)
+	if !zero {
+		z.jr(byte(d.d))
+	}
+	return nil
+	*/
 }
 
 type JR struct {
