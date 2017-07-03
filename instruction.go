@@ -675,7 +675,12 @@ func (p *PUSH) Encode() []byte {
 	return idxEncodeHelper(buf, p.idx)
 }
 func (p *PUSH) Execute(z *Zog) error {
-	return errors.New("TODO - impl6")
+	nn, err := p.l.Read16(z)
+	if err != nil {
+		return err
+	}
+	z.push(nn)
+	return nil
 }
 
 type POP struct {

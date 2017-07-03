@@ -18,12 +18,12 @@ func (m *Memory) SetDebug(debug bool) {
 	m.debug = debug
 }
 
-func (m *Memory) Len() int {
-	return len(m.buf)
+func (m *Memory) Len() uint16 {
+	return uint16(len(m.buf))
 }
 
 func (m *Memory) Peek(addr uint16) (byte, error) {
-	if int(addr) >= m.Len() {
+	if addr >= m.Len() {
 		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
 	}
 	n := m.buf[addr]
@@ -34,7 +34,7 @@ func (m *Memory) Peek(addr uint16) (byte, error) {
 }
 
 func (m *Memory) Poke(addr uint16, n byte) error {
-	if int(addr) >= m.Len() {
+	if addr >= m.Len() {
 		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
 	}
 	m.buf[addr] = n
@@ -71,11 +71,11 @@ func (m *Memory) Poke16(addr uint16, nn uint16) error {
 }
 
 func (m *Memory) Clear() {
-	m.buf = make([]byte, m.Len())
+	m.buf = make([]byte, int(m.Len()))
 }
 
 func (m *Memory) Copy(addr uint16, buf []byte) error {
-	if int(addr)+len(buf) >= m.Len() {
+	if int(addr)+len(buf) >= int(m.Len()) {
 		panic(fmt.Sprintf("Can't load - base addr %04X length %04X memsize %04X", addr, len(buf), m.Len()))
 	}
 	for i := 0; i < len(buf); i++ {

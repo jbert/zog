@@ -12,7 +12,15 @@ type executeTestCase struct {
 
 func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
+	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
+		//		{"LD BC, 1234h : PUSH BC : POP DE", []assert{
+		//			loc16A{DE, 0x1234},
+		//		}},
+		{"LD BC, 1234h : PUSH BC", []assert{
+			memA{memSize - 1, 0x12},
+			memA{memSize - 2, 0x34},
+		}},
 		{"LD B, 00h : LD A,22h : INC B : DEC A : JP NZ, 0004h", []assert{
 			locA{B, 0x22},
 		}},
@@ -167,7 +175,7 @@ func TestExecuteBasic(t *testing.T) {
 			t.Fatalf("Failed to assemble [%s]: %s", prog, err)
 		}
 
-		z := New(0x1000)
+		z := New(memSize)
 		err = z.Run(assembly)
 		if err != nil {
 			t.Fatalf("Failed to execute [%s]: %s", prog, err)

@@ -21,6 +21,7 @@ func New(memSize uint16) *Zog {
 func (z *Zog) Clear() {
 	z.mem.Clear()
 	z.reg = Registers{}
+	z.reg.SP = z.mem.Len()
 }
 
 func (z *Zog) Load(a *Assembly) error {
@@ -131,6 +132,25 @@ func (z *Zog) jp(addr uint16) {
 
 func (z *Zog) jr(d int8) {
 	z.reg.PC += uint16(d) // Wrapping works out
+}
+
+func (z *Zog) push(nn uint16) {
+	z.reg.SP--
+	z.reg.SP--
+	err := z.mem.Poke16(z.reg.SP, nn)
+	if err != nil {
+		panic(fmt.Sprintf("Can't write to SP [%04X]: %s", z.reg.SP, err))
+	}
+}
+
+func (z *Zog) pop() uint16 {
+	nn, err := z.mem.Peek16(z.reg.SP)
+	if err != nil {
+		panic(fmt.Sprintf("Can't write to SP [%04X]: %s", z.reg.SP, err))
+	}
+	z.reg.SP++
+	z.reg.SP++
+	return nn
 }
 
 func (z *Zog) Execute(addr uint16) error {
