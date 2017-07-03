@@ -457,8 +457,6 @@ func (d *DJNZ) Resolve(a *Assembly) error {
 	return nil
 }
 func (d *DJNZ) Execute(z *Zog) error {
-	panic("TODO impl")
-	/*
 	bReg, err := B.Read8(z)
 	if err != nil {
 		return fmt.Errorf("Can't read B: %s", err)
@@ -471,10 +469,9 @@ func (d *DJNZ) Execute(z *Zog) error {
 	zero := bReg == 0
 	z.SetFlag(F_Z, zero)
 	if !zero {
-		z.jr(byte(d.d))
+		z.jr(int8(d.d))
 	}
 	return nil
-	*/
 }
 
 type JR struct {
@@ -504,7 +501,7 @@ func (j *JR) Resolve(a *Assembly) error {
 	return nil
 }
 func (j *JR) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl1")
 }
 
 type JP struct {
@@ -546,7 +543,7 @@ func (jp *JP) Encode() []byte {
 	return buf
 }
 func (jp *JP) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl2")
 }
 
 type CALL struct {
@@ -577,7 +574,7 @@ func (c *CALL) Encode() []byte {
 	return buf
 }
 func (c *CALL) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl3")
 }
 
 type OUT struct {
@@ -608,7 +605,7 @@ func (o *OUT) Resolve(a *Assembly) error {
 	return nil
 }
 func (o *OUT) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl4")
 }
 
 type IN struct {
@@ -644,7 +641,7 @@ func (i *IN) Resolve(a *Assembly) error {
 	return nil
 }
 func (i *IN) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl5")
 }
 
 type PUSH struct {
@@ -666,7 +663,7 @@ func (p *PUSH) Encode() []byte {
 	return idxEncodeHelper(buf, p.idx)
 }
 func (p *PUSH) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl6")
 }
 
 type POP struct {
@@ -688,7 +685,7 @@ func (p *POP) Encode() []byte {
 	return idxEncodeHelper(buf, p.idx)
 }
 func (p *POP) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl7")
 }
 
 type RST struct {
@@ -706,7 +703,7 @@ func (r *RST) Resolve(a *Assembly) error {
 	return nil
 }
 func (r *RST) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl8")
 }
 
 type RET struct {
@@ -731,7 +728,7 @@ func (r *RET) Resolve(a *Assembly) error {
 	return nil
 }
 func (r *RET) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl9")
 }
 
 func NewAccum(name string, l Loc8) *accum {
@@ -870,7 +867,7 @@ func (r *rot) Encode() []byte {
 	return ddcbHelper(buf, r.idx)
 }
 func (r *rot) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl10")
 }
 
 type BIT struct {
@@ -894,7 +891,7 @@ func (b *BIT) Encode() []byte {
 	return ddcbHelper([]byte{0xcb, enc}, b.idx)
 }
 func (b *BIT) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl11")
 }
 
 type RES struct {
@@ -926,7 +923,7 @@ func (r *RES) Encode() []byte {
 	return ddcbHelper([]byte{0xcb, enc}, r.idx)
 }
 func (r *RES) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl12")
 }
 
 type SET struct {
@@ -958,7 +955,7 @@ func (s *SET) Encode() []byte {
 	return ddcbHelper([]byte{0xcb, enc}, s.idx)
 }
 func (s *SET) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl13")
 }
 
 type Simple byte
@@ -1028,7 +1025,7 @@ func (s Simple) Execute(z *Zog) error {
 	case HALT:
 		return ErrHalted
 	default:
-		return errors.New("TODO - impl")
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	}
 }
 
@@ -1126,7 +1123,7 @@ func (s EDSimple) Resolve(a *Assembly) error {
 	return nil
 }
 func (s EDSimple) Execute(z *Zog) error {
-	return errors.New("TODO - impl")
+	return errors.New("TODO - impl15")
 }
 
 func LookupEDSimpleName(name string) EDSimple {

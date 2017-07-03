@@ -125,6 +125,14 @@ func (z *Zog) Read(buf []byte) (int, error) {
 	return 1, nil
 }
 
+func (z *Zog) jp(addr uint16) {
+	z.reg.PC = addr
+}
+
+func (z *Zog) jr(d int8) {
+	z.reg.PC += uint16(d) // Wrapping works out
+}
+
 func (z *Zog) Execute(addr uint16) error {
 
 	var err error
