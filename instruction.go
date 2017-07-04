@@ -586,7 +586,16 @@ func (c *CALL) Encode() []byte {
 	return buf
 }
 func (c *CALL) Execute(z *Zog) error {
-	return errors.New("TODO - impl3")
+	takeJump := c.c.IsTrue(z)
+	if takeJump {
+		addr, err := c.l.Read16(z)
+		if err != nil {
+			return err
+		}
+		z.push(z.reg.PC)
+		z.jp(addr)
+	}
+	return nil
 }
 
 type OUT struct {
@@ -750,7 +759,12 @@ func (r *RET) Resolve(a *Assembly) error {
 	return nil
 }
 func (r *RET) Execute(z *Zog) error {
-	return errors.New("TODO - impl9")
+	takeJump := r.c.IsTrue(z)
+	if takeJump {
+		addr := z.pop()
+		z.jp(addr)
+	}
+	return nil
 }
 
 func NewAccum(name string, l Loc8) *accum {

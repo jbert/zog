@@ -128,10 +128,12 @@ func (z *Zog) Read(buf []byte) (int, error) {
 
 func (z *Zog) jp(addr uint16) {
 	z.reg.PC = addr
+	//	fmt.Printf("JP: %04X\n", z.reg.PC)
 }
 
 func (z *Zog) jr(d int8) {
 	z.reg.PC += uint16(d) // Wrapping works out
+	//	fmt.Printf("JR: %04X [%d]\n", z.reg.PC, d)
 }
 
 func (z *Zog) push(nn uint16) {

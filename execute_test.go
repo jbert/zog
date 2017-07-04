@@ -14,6 +14,11 @@ func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
+		{"CALL 000ah: LD A, 56h : HALT : NOP : NOP : NOP : NOP : LD BC, 1234h : LD A, 00h : RET", []assert{
+			locA{A, 0x56},
+			loc16A{BC, 0x1234},
+		}},
+
 		{"LD BC, 1234h : PUSH BC : POP DE", []assert{
 			loc16A{DE, 0x1234},
 		}},
@@ -169,7 +174,7 @@ func TestExecuteBasic(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		fmt.Printf("=== Assemble: %s\n", tc.prog)
-		prog := tc.prog + ": HALT"
+		prog := tc.prog + " : HALT"
 		assembly, err := Assemble(prog)
 		if err != nil {
 			t.Fatalf("Failed to assemble [%s]: %s", prog, err)
