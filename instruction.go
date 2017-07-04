@@ -626,7 +626,26 @@ func (o *OUT) Resolve(a *Assembly) error {
 	return nil
 }
 func (o *OUT) Execute(z *Zog) error {
-	return errors.New("TODO - impl4")
+	/*
+		In the IN A and OUT n, A instructions, the I/O device’s n address appears in the lower half
+		of the address bus (A7–A0), while the Accumulator content is transferred in the upper half
+		of the address bus. In all Register Indirect input output instructions, including block I/O
+		transfers, the contents of the C Register are transferred to the lower half of the address bus
+		(device address) while the contents of Register B are transferred to the upper half of the
+		address bus.
+	*/
+	var addr uint16
+	v, err := o.value.Read8(z)
+	if err != nil {
+		return err
+	}
+	if o.port == C {
+		addr = z.reg.Read16(BC)
+	} else {
+		addr = uint16(v) | (uint16(z.reg.A) << 8)
+	}
+	z.out(addr, v)
+	return nil
 }
 
 type IN struct {
@@ -662,7 +681,15 @@ func (i *IN) Resolve(a *Assembly) error {
 	return nil
 }
 func (i *IN) Execute(z *Zog) error {
-	return errors.New("TODO - impl5")
+	// See spec comment in OUT
+	var addr uint16
+	if i.port == C {
+		addr = z.reg.Read16(BC)
+	} else {
+		addr = uint16(z.reg.A) | (uint16(z.reg.A) << 8)
+	}
+	n := z.in(addr)
+	return i.dst.Write8(z, n)
 }
 
 type PUSH struct {

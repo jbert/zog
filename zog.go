@@ -155,6 +155,16 @@ func (z *Zog) pop() uint16 {
 	return nn
 }
 
+func (z *Zog) out(port uint16, n byte) {
+	fmt.Printf("OUT: [%04X] %02X\n", port, n)
+}
+
+func (z *Zog) in(port uint16) byte {
+	n := byte(0)
+	fmt.Printf("IN: [%04X] %02X\n", port, n)
+	return n
+}
+
 func (z *Zog) Execute(addr uint16) error {
 
 	var err error
