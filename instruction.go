@@ -1056,7 +1056,16 @@ func (b *BIT) Encode() []byte {
 	return ddcbHelper([]byte{0xcb, enc}, b.idx)
 }
 func (b *BIT) Execute(z *Zog) error {
-	return errors.New("TODO - impl11")
+	v, err := b.l.Read8(z)
+	if err != nil {
+		return fmt.Errorf("BIT : can't read [%s]: %s", b.l, err)
+	}
+	v = v >> b.num
+	bit := v & 1
+	z.SetFlag(F_Z, bit == 0)
+	z.SetFlag(F_N, false)
+	z.SetFlag(F_H, true)
+	return nil
 }
 
 type RES struct {
