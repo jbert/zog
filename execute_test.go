@@ -14,6 +14,11 @@ func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
+		{"LD B, 12h : SET 0, B", []assert{locA{B, 0x13}}},
+		{"LD B, 12h : SET 1, B", []assert{locA{B, 0x12}}},
+		{"LD B, 12h : SET 7, B", []assert{locA{B, 0x92}}},
+		{"LD B, 12h : SET 4, B", []assert{locA{B, 0x12}}},
+
 		{"LD B, 12h : RES 0, B", []assert{locA{B, 0x12}}},
 		{"LD B, 12h : RES 1, B", []assert{locA{B, 0x10}}},
 		{"LD B, 12h : RES 7, B", []assert{locA{B, 0x12}}},

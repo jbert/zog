@@ -1099,7 +1099,7 @@ func (r *RES) Encode() []byte {
 func (r *RES) Execute(z *Zog) error {
 	v, err := r.l.Read8(z)
 	if err != nil {
-		return fmt.Errorf("BIT : can't read [%s]: %s", r.l, err)
+		return fmt.Errorf("RES : can't read [%s]: %s", r.l, err)
 	}
 	andMask := byte(1) << r.num
 	xorMask := v & andMask
@@ -1126,7 +1126,7 @@ func (s *SET) String() string {
 func (s *SET) Encode() []byte {
 	s.inspect()
 	if s.lInfo.ltype != tableR {
-		panic("Non-tableR src in BIT")
+		panic("Non-tableR src in SET")
 	}
 	z := s.lInfo.idxTable
 	if s.idx.isPrefix && s.cpy != nil {
@@ -1136,7 +1136,13 @@ func (s *SET) Encode() []byte {
 	return ddcbHelper([]byte{0xcb, enc}, s.idx)
 }
 func (s *SET) Execute(z *Zog) error {
-	return errors.New("TODO - impl13")
+	v, err := s.l.Read8(z)
+	if err != nil {
+		return fmt.Errorf("SET : can't read [%s]: %s", s.l, err)
+	}
+	mask := byte(1) << s.num
+	v = v | mask
+	return s.l.Write8(z, v)
 }
 
 type Simple byte
