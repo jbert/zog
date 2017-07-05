@@ -114,6 +114,12 @@ func (l *LD8) Execute(z *Zog) error {
 	if err != nil {
 		return err
 	}
+	/*
+		Whem a Load Register A with Register I (LD A, I) instruction or a Load Register A with Register
+		R (LD A, R) instruction is executed, the state of IFF2 is copied to the parity flag, where it
+		can be tested or stored.
+	*/
+	z.SetFlag(F_PV, z.iff2)
 	return F.Write8(z, f)
 }
 
@@ -1354,15 +1360,32 @@ func (s EDSimple) Execute(z *Zog) error {
 		z.reg.A = aluSub(z, 0, z.reg.A)
 		z.SetFlag(F_N, true)
 		return nil
-		/*
-			case RETN:
-			case RETI:
-			case RRD:
-			case RLD:
-			case IM0:
-			case IM1:
-			case IM2:
+	case RETN:
+		z.iff1 = z.iff2
+		addr := z.pop()
+		z.jp(addr)
+		return nil
+	case RETI:
+		addr := z.pop()
+		z.jp(addr)
+		return nil
+	case RRD:
+		z.reg.A = rotRrd(z, z.reg.A)
+		return nil
+	case RLD:
+		z.reg.A = rotRld(z, z.reg.A)
+		return nil
+	case IM0:
+		z.im(0)
+		return nil
+	case IM1:
+		z.im(1)
+		return nil
+	case IM2:
+		z.im(2)
+		return nil
 
+		/*
 			case LDI:
 			case CPI:
 			case LDD:

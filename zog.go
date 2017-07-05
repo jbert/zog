@@ -8,6 +8,15 @@ import (
 type Zog struct {
 	mem *Memory
 	reg Registers
+
+	/* In the Z80 CPU, there is
+	   an interrupt enable flip-flop (IFF) that is set or reset by the programmer using the Enable
+	   Interrupt (EI) and Disable Interrupt (DI) instructions. When the IFF is reset, an interrupt
+	   cannot be accepted by the CPU.
+	*/
+	iff1 bool
+	iff2 bool
+	im   int
 }
 
 func New(memSize uint16) *Zog {
@@ -22,6 +31,8 @@ func (z *Zog) Clear() {
 	z.mem.Clear()
 	z.reg = Registers{}
 	z.reg.SP = z.mem.Len()
+	z.iff1 = false
+	z.iff2 = false
 }
 
 func (z *Zog) Load(a *Assembly) error {
@@ -137,10 +148,22 @@ func (z *Zog) jr(d int8) {
 }
 
 func (z *Zog) di() error {
+	z.iff1 = false
+	z.iff2 = false
 	return nil
 }
 
 func (z *Zog) ei() error {
+	z.iff1 = true
+	z.iff2 = true
+	return nil
+}
+
+func (z *Zog) im(mode int) error {
+	if mode != 0 && mode != 1 && mode != 2 {
+		panic(fmt.Sprintf("Invalid interrupt mode: %d", mode))
+	}
+	z.im = mode
 	return nil
 }
 
