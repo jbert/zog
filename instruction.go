@@ -1214,9 +1214,13 @@ func (s Simple) Execute(z *Zog) error {
 	case HALT:
 		return ErrHalted
 	case RLCA:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		// TODO - flags different?
+		z.reg.A = rotRlc(z, z.reg.A)
+		return nil
 	case RRCA:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		// TODO - flags different?
+		z.reg.A = rotRrc(z, z.reg.A)
+		return nil
 	case RLA:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	case RRA:
