@@ -1244,7 +1244,13 @@ func (s Simple) Execute(z *Zog) error {
 		return nil
 
 	case EXX:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		z.reg.B, z.reg.B_PRIME = z.reg.B_PRIME, z.reg.B
+		z.reg.C, z.reg.C_PRIME = z.reg.C_PRIME, z.reg.C
+		z.reg.D, z.reg.D_PRIME = z.reg.D_PRIME, z.reg.D
+		z.reg.E, z.reg.E_PRIME = z.reg.E_PRIME, z.reg.E
+		z.reg.H, z.reg.H_PRIME = z.reg.H_PRIME, z.reg.H
+		z.reg.L, z.reg.L_PRIME = z.reg.L_PRIME, z.reg.L
+		return nil
 
 	case DI:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
