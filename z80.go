@@ -153,7 +153,7 @@ func (c *Current) Rst() {
 	if !ok {
 		panic("RST without immediate byte")
 	}
-	c.inst = &RST{byte(imm8 * 8)}
+	c.inst = &RST{byte(imm8)}
 }
 
 func (c *Current) Call() {

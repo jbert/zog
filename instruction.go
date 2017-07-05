@@ -1209,8 +1209,34 @@ func (s Simple) Resolve(a *Assembly) error {
 }
 func (s Simple) Execute(z *Zog) error {
 	switch s {
+	case NOP:
+		return nil
 	case HALT:
 		return ErrHalted
+	case RLCA:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case RRCA:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case RLA:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case RRA:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case DAA:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case CPL:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case SCF:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case CCF:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+
+	case EXX:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+
+	case DI:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+	case EI:
+		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	default:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	}

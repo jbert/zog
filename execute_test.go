@@ -14,6 +14,8 @@ func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
+		{"NOP", []assert{locA{A, 0x00}}},
+
 		{"LD B, 12h : SET 0, B", []assert{locA{B, 0x13}}},
 		{"LD B, 12h : SET 1, B", []assert{locA{B, 0x12}}},
 		{"LD B, 12h : SET 7, B", []assert{locA{B, 0x92}}},
@@ -33,7 +35,7 @@ func TestExecuteBasic(t *testing.T) {
 			locA{B, 0x24},
 		}},
 
-		{"RST 1 : LD A, 56h : HALT : NOP : NOP : NOP : NOP : LD BC, 1234h : LD A, 00h : RET", []assert{
+		{"RST 8 : LD A, 56h : HALT : NOP : NOP : NOP : NOP : LD BC, 1234h : LD A, 00h : RET", []assert{
 			locA{A, 0x56},
 			loc16A{BC, 0x1234},
 		}},
