@@ -1222,17 +1222,23 @@ func (s Simple) Execute(z *Zog) error {
 		z.reg.A = rotRrc(z, z.reg.A)
 		return nil
 	case RLA:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		// TODO - flags different?
+		z.reg.A = rotRl(z, z.reg.A)
+		return nil
 	case RRA:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		// TODO - flags different?
+		z.reg.A = rotRr(z, z.reg.A)
+		return nil
 	case DAA:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	case CPL:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	case SCF:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		z.SetFlag(F_C, true)
+		return nil
 	case CCF:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		z.SetFlag(F_C, false)
+		return nil
 
 	case EXX:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
