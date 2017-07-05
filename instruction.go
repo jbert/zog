@@ -761,7 +761,9 @@ func (r *RST) Resolve(a *Assembly) error {
 	return nil
 }
 func (r *RST) Execute(z *Zog) error {
-	return errors.New("TODO - impl8")
+	z.push(z.reg.PC)
+	z.jp(uint16(r.addr))
+	return nil
 }
 
 type RET struct {
