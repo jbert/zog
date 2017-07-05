@@ -136,6 +136,14 @@ func (z *Zog) jr(d int8) {
 	//	fmt.Printf("JR: %04X [%d]\n", z.reg.PC, d)
 }
 
+func (z *Zog) di() error {
+	return nil
+}
+
+func (z *Zog) ei() error {
+	return nil
+}
+
 func (z *Zog) push(nn uint16) {
 	z.reg.SP--
 	z.reg.SP--

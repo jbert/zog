@@ -1253,9 +1253,9 @@ func (s Simple) Execute(z *Zog) error {
 		return nil
 
 	case DI:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		return z.di()
 	case EI:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		return z.ei()
 	default:
 		return fmt.Errorf("TODO - impl14: %02X", byte(s))
 	}
