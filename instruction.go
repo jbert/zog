@@ -1097,7 +1097,14 @@ func (r *RES) Encode() []byte {
 	return ddcbHelper([]byte{0xcb, enc}, r.idx)
 }
 func (r *RES) Execute(z *Zog) error {
-	return errors.New("TODO - impl12")
+	v, err := r.l.Read8(z)
+	if err != nil {
+		return fmt.Errorf("BIT : can't read [%s]: %s", r.l, err)
+	}
+	andMask := byte(1) << r.num
+	xorMask := v & andMask
+	v = v ^ xorMask
+	return r.l.Write8(z, v)
 }
 
 type SET struct {
