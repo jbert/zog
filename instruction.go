@@ -886,10 +886,7 @@ func (a accum) Encode() []byte {
 	return idxEncodeHelper(buf, a.idx)
 }
 func (a accum) Execute(z *Zog) error {
-	regA, err := A.Read8(z)
-	if err != nil {
-		return fmt.Errorf("Accum [%s] : can't read A: %s", a.name, err)
-	}
+	regA := z.reg.A
 	arg, err := a.l.Read8(z)
 	if err != nil {
 		return fmt.Errorf("Accum [%s] : can't read %s: %s", a.name, a.l, err)
@@ -899,10 +896,7 @@ func (a accum) Execute(z *Zog) error {
 
 	// Hack - CP runs a SUB, but we don't save the value to accum here
 	if strings.ToLower(a.name) != "cp" {
-		err = A.Write8(z, v)
-		if err != nil {
-			return fmt.Errorf("Accum [%s] : can't write A: %s", a.name, err)
-		}
+		z.reg.A = v
 	}
 
 	return nil
@@ -1257,7 +1251,7 @@ func (s Simple) Execute(z *Zog) error {
 	case EI:
 		return z.ei()
 	default:
-		return fmt.Errorf("TODO - impl14: %02X", byte(s))
+		return fmt.Errorf("Unknown simple instruction: %02X", byte(s))
 	}
 }
 
@@ -1355,7 +1349,41 @@ func (s EDSimple) Resolve(a *Assembly) error {
 	return nil
 }
 func (s EDSimple) Execute(z *Zog) error {
-	return errors.New("TODO - impl15")
+	switch s {
+	case NEG:
+		z.reg.A = aluSub(z, 0, z.reg.A)
+		z.SetFlag(F_N, true)
+		return nil
+		/*
+			case RETN:
+			case RETI:
+			case RRD:
+			case RLD:
+			case IM0:
+			case IM1:
+			case IM2:
+
+			case LDI:
+			case CPI:
+			case LDD:
+			case CPD:
+			case LDIR:
+			case CPIR:
+			case LDDR:
+			case CPDR:
+
+			case INI:
+			case OUTI:
+			case IND:
+			case OUTD:
+			case INIR:
+			case OTIR:
+			case INDR:
+			case OTDR:
+		*/
+	default:
+		return fmt.Errorf("Unknown EDSimple instruction: %02X", byte(s))
+	}
 }
 
 func LookupEDSimpleName(name string) EDSimple {
