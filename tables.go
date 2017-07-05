@@ -131,18 +131,18 @@ func findFuncInTableALU(name string) accumFunc {
 
 type RotInfo struct {
 	name string
-	//	f    AccumFunc
+	f    rotFunc
 }
 
 var tableROT []RotInfo = []RotInfo{
-	{"RLC"},
-	{"RRC"},
-	{"RL"},
-	{"RR"},
-	{"SLA"},
-	{"SRA"},
-	{"SLL"},
-	{"SRL"},
+	{"RLC", rotRlc},
+	{"RRC", rotRrc},
+	{"RL", rotRl},
+	{"RR", rotRr},
+	{"SLA", rotSla},
+	{"SRA", rotSra},
+	{"SLL", rotSll},
+	{"SRL", rotSrl},
 }
 
 func findInTableR(l Loc8) byte {
@@ -196,6 +196,15 @@ func findInTableROT(name string) byte {
 	for i, info := range tableROT {
 		if info.name == name {
 			return byte(i)
+		}
+	}
+	panic(fmt.Sprintf("Not found in tableROT: %s", name))
+}
+
+func findFuncInTableROT(name string) rotFunc {
+	for _, info := range tableROT {
+		if info.name == name {
+			return info.f
 		}
 	}
 	panic(fmt.Sprintf("Not found in tableROT: %s", name))

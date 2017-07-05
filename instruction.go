@@ -805,6 +805,7 @@ func NewAccum(name string, l Loc8) *accum {
 func aluAdd(z *Zog, a, b byte) byte {
 	v := a + b
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, v < a)
 	return v
 }
 func aluAdc(z *Zog, a, b byte) byte {
@@ -813,11 +814,13 @@ func aluAdc(z *Zog, a, b byte) byte {
 		v++
 	}
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, v < a)
 	return v
 }
 func aluSub(z *Zog, a, b byte) byte {
 	v := a - b
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, v > a)
 	return v
 }
 func aluSbc(z *Zog, a, b byte) byte {
@@ -826,21 +829,25 @@ func aluSbc(z *Zog, a, b byte) byte {
 		v--
 	}
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, v > a)
 	return v
 }
 func aluAnd(z *Zog, a, b byte) byte {
 	v := a & b
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, false)
 	return v
 }
 func aluXor(z *Zog, a, b byte) byte {
 	v := a ^ b
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, false)
 	return v
 }
 func aluOr(z *Zog, a, b byte) byte {
 	v := a | b
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_C, false)
 	return v
 }
 func aluCp(z *Zog, a, b byte) byte {
@@ -901,14 +908,90 @@ func (a accum) Execute(z *Zog) error {
 	return nil
 }
 
+type rotFunc func(z *Zog, v byte) byte
 type rot struct {
 	InstU8
 	cpy  Loc8
 	name string
+	f    rotFunc
+}
+
+func getCY(z *Zog) byte {
+	cy := byte(0)
+	if z.GetFlag(F_C) {
+		cy = 1
+	}
+	return cy
+}
+
+func rotRlc(z *Zog, v byte) byte {
+	h := (v & 0x80) >> 7
+	v = v << 1
+
+	z.SetFlag(F_C, h == 1)
+	v = v | h
+	return v
+}
+func rotRrc(z *Zog, v byte) byte {
+	l := v & 0x01
+	v = v >> 1
+
+	z.SetFlag(F_C, l == 1)
+	v = v | l<<7
+	return v
+}
+func rotRl(z *Zog, v byte) byte {
+	h := (v & 0x80) >> 7
+	v = v << 1
+
+	v = v | getCY(z)
+	z.SetFlag(F_C, h == 1)
+	return v
+}
+func rotRr(z *Zog, v byte) byte {
+	l := v & 0x01
+	v = v >> 1
+
+	z.SetFlag(F_C, l == 1)
+	v = v | (getCY(z) << 7)
+	return v
+}
+func rotSla(z *Zog, v byte) byte {
+	h := (v & 0x80) >> 7
+	v = v << 1
+
+	z.SetFlag(F_C, h == 1)
+	return v
+}
+func rotSra(z *Zog, v byte) byte {
+	l := v & 0x01
+	h := (v & 0x80) >> 7
+	v = v >> 1
+
+	z.SetFlag(F_C, l == 1)
+	v = v | h
+	return v
+}
+func rotSll(z *Zog, v byte) byte {
+	h := (v & 0x80) >> 7
+	v = v << 1
+	v = v | 1
+
+	z.SetFlag(F_C, h == 1)
+	return v
+}
+func rotSrl(z *Zog, v byte) byte {
+	l := v & 0x01
+	v = v >> 1
+
+	z.SetFlag(F_C, l == 1)
+	return v
 }
 
 func NewRot(name string, l Loc8, cpy Loc8) *rot {
-	return &rot{InstU8: InstU8{l: l}, cpy: cpy, name: name}
+	r := &rot{InstU8: InstU8{l: l}, cpy: cpy, name: name}
+	r.f = findFuncInTableROT(name)
+	return r
 }
 
 func (r *rot) String() string {
@@ -932,7 +1015,24 @@ func (r *rot) Encode() []byte {
 	return ddcbHelper(buf, r.idx)
 }
 func (r *rot) Execute(z *Zog) error {
-	return errors.New("TODO - impl10")
+	v, err := r.l.Read8(z)
+	if err != nil {
+		return fmt.Errorf("Rot [%s] : can't read [%s]: %s", r.name, r.l, err)
+	}
+
+	v = r.f(z, v)
+
+	err = r.l.Write8(z, v)
+	if err != nil {
+		return fmt.Errorf("Rot [%s] : can't write [%s]: %s", r.name, r.l, err)
+	}
+	if r.cpy != nil {
+		err = r.cpy.Write8(z, v)
+		if err != nil {
+			return fmt.Errorf("Rot [%s] : can't write copy [%s]: %s", r.name, r.cpy, err)
+		}
+	}
+	return nil
 }
 
 type BIT struct {
