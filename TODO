@@ -1,87 +1,25 @@
-DONE - remove byte channel from decode
-  DONE - can't impl jr/jp
-  DONE - write to channel needs to know what value to write while blocking?
-  NO - use getNext() approach instead
+- get a cmdline tool to run a binary file
+  - assemble some examples with zmac assembler
+  - grab a ROM and see where it dies! (spectrum-roms ubuntu pkg)
+  - try and find some example programs
 
-DONE - write add/adc/sbc16 in terms of exec on Inst16
-- flags:
-  - need a way for execute methods to call out to flag setting
+  - write a test rom/prelude of some kind
+
+- improve flags
   - how to handle half-carry?
 
-  - push everything into func like accum
-    - have enum?
-
-DONE - labels need to be usable everywhere an NN is used
-
-DONE - need to resolve labels at some pt
-  - second pass on assembler?
-  - method on instruction?
-    - or type-switch in assembler
 
 - emulator
   - implement some debug hook (zexall compatible)
     - conout to write to console
+    - RST 16 :-)
     - jp 0 to "reboot cp/m"
-    DONE - halt and assert on Locations in test?
-  DONE - add interface elt (with stubs) and driver
-  DONE - implement LD
-  DONE - start some basic tests
-  DONE - flag assertions
-    DONE - check LD doesn't change flags
-      - locA on F register for at least one
-  - Accum
-  - PUSH/POP, add a test which fails if stack goes the wrong way
-  DONE - Loc16 assertions
-  DONE - mem assertions
+
 
   - zexdoc
   - zexall
 
-- consider collapsing a lot of the instruction types into a table driven binary/unary instruction
-  - far fewer types
-  - behaviour (including code) table driven
-  - can keep ctors....
-
-- add emulator
-  - make IN/OUT use a Loc16 (BC) instead of (C) internally for Execute()
-
-ASSEMBLER:
-
-  - use zmac instead
-
-  - add (labelled) defb/defw etc http://www.nongnu.org/z80asm/directives.html
-    msbt:	ds	14
-
-  - parsing assembly needs to include the notion of address
-    instead of building []Insts, need to build the byte array (instead or as well)
-    labels refer to byte positions in the byte array
-    org statements change where we assemble
-    labels map[string]uint16
-
-  - improve assembler to the point it can assemble zexall/zexdoc
-    DONE - parse args
-    DONE - write to output file. Default stdout
-    NO - support writing text format instructions, default to binary
-      - useful for test. Dom't worry about label preserving
-    - how to parse labels etc?
-      - add to peg grammar?
-    - have sep grammars for assembly format and instructions?
-      - comments, labels, defbytes
-      - macros?
-      .title
-      aseg
-      org
-      label:
-      named label in instructions (call, etc)
-      ditto for relative instructions
-      dw (can be followed by label)
-      arithmetic in constants (label+X)
-
-      
 - add cmdline disassembler
   - try on some big files
   - add (made up) labels for jump targets in disassembler
   - add some directives (org, data bytes)
-
-- find sample z80 to use as tests for emulator
-  - spectrum rom!
