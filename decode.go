@@ -161,7 +161,7 @@ func decodeOne(r io.Reader, t *DecodeTable) (Instruction, error) {
 			inst, err = edDecode(t, r, indexPrefix, n)
 		}
 
-		fmt.Printf("D: inst [%v] err [%v]\n", inst, err)
+		//		fmt.Printf("D: inst [%v] err [%v]\n", inst, err)
 
 		if inst == nil {
 			if err == nil {

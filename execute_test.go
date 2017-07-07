@@ -14,6 +14,44 @@ func TestExecuteBasic(t *testing.T) {
 	addr := uint16(0x100)
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
+
+		{"LD BC, 0003h : LD HL, 0003h : LD DE, 0020h : LDD : HALT", []assert{
+			memA{0x0020, 0x21},
+			memA{0x0021, 0x00},
+			memA{0x0022, 0x00},
+			loc16A{HL, 0x0002},
+			loc16A{DE, 0x001f},
+			loc16A{BC, 0x0002},
+		}},
+
+		{"LD BC, 0003h : LD HL, 0003h : LD DE, 0020h : LDIR : HALT", []assert{
+			memA{0x0020, 0x21},
+			memA{0x0021, 0x03},
+			memA{0x0022, 0x00},
+			loc16A{HL, 0x0006},
+			loc16A{DE, 0x0023},
+			loc16A{BC, 0x0000},
+		}},
+
+		{"LD BC, 0003h : LD HL, 0003h : LD DE, 0020h : LDI : HALT", []assert{
+			memA{0x0020, 0x21},
+			memA{0x0021, 0x00},
+			memA{0x0022, 0x00},
+			loc16A{HL, 0x0004},
+			loc16A{DE, 0x0021},
+			loc16A{BC, 0x0002},
+		}},
+
+		{"LD HL, 0100h : LD (HL), 12h : LD A, 03h : RRD", []assert{
+			locA{A, 0x02},
+			memA{0x0100, 0x31},
+		}},
+
+		{"LD HL, 0100h : LD (HL), 12h : LD A, 03h : RLD", []assert{
+			locA{A, 0x01},
+			memA{0x0100, 0x23},
+		}},
+
 		{"LD A, 12h : NEG", []assert{locA{A, 0xee}}},
 
 		{"LD BC, 1234h : EXX", []assert{loc16A{BC, 0x0000}}},

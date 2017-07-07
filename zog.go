@@ -14,9 +14,9 @@ type Zog struct {
 	   Interrupt (EI) and Disable Interrupt (DI) instructions. When the IFF is reset, an interrupt
 	   cannot be accepted by the CPU.
 	*/
-	iff1 bool
-	iff2 bool
-	im   int
+	iff1          bool
+	iff2          bool
+	interruptMode int
 }
 
 func New(memSize uint16) *Zog {
@@ -163,7 +163,7 @@ func (z *Zog) im(mode int) error {
 	if mode != 0 && mode != 1 && mode != 2 {
 		panic(fmt.Sprintf("Invalid interrupt mode: %d", mode))
 	}
-	z.im = mode
+	z.interruptMode = mode
 	return nil
 }
 

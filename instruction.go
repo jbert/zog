@@ -1354,7 +1354,40 @@ func (s EDSimple) Encode() []byte {
 func (s EDSimple) Resolve(a *Assembly) error {
 	return nil
 }
+
 func (s EDSimple) Execute(z *Zog) error {
+
+	ldHelper := func(z *Zog, inc bool) error {
+		bc := z.reg.Read16(BC)
+		de := z.reg.Read16(DE)
+		hl := z.reg.Read16(HL)
+
+		n, err := z.mem.Peek(hl)
+		if err != nil {
+			return err
+		}
+
+		err = z.mem.Poke(de, n)
+		if err != nil {
+			return err
+		}
+
+		bc--
+		z.reg.Write16(BC, bc)
+		if inc {
+			de++
+			hl++
+		} else {
+			de--
+			hl--
+		}
+		z.reg.Write16(DE, de)
+		z.reg.Write16(HL, hl)
+
+		z.SetFlag(F_PV, bc == 0)
+		return nil
+	}
+
 	switch s {
 	case NEG:
 		z.reg.A = aluSub(z, 0, z.reg.A)
@@ -1370,10 +1403,56 @@ func (s EDSimple) Execute(z *Zog) error {
 		z.jp(addr)
 		return nil
 	case RRD:
-		z.reg.A = rotRrd(z, z.reg.A)
+		// Rightwards version of RLD
+		hl := z.reg.Read16(HL)
+		a := z.reg.Read8(A)
+
+		n, err := z.mem.Peek(hl)
+		if err != nil {
+			return err
+		}
+
+		// Three nybbles
+		n3 := a & 0x0f
+		n2 := n & 0xf0 >> 4
+		n1 := n & 0x0f
+
+		// Set low nibble of A to n1
+		a = a & 0xf0
+		a = a | n1
+		z.reg.Write8(A, a)
+		// Set (HL) to n3 n2
+		n = n3<<4 | n2
+		err = z.mem.Poke(hl, n)
+
 		return nil
 	case RLD:
-		z.reg.A = rotRld(z, z.reg.A)
+		/*
+			Performs a 4-bit leftward rotation of the 12-bit number whose 4 most
+			signigifcant bits are the 4 least significant bits of A, and its 8 least
+			significant bits are in (HL).
+		*/
+		hl := z.reg.Read16(HL)
+		a := z.reg.Read8(A)
+
+		n, err := z.mem.Peek(hl)
+		if err != nil {
+			return err
+		}
+
+		// Three nybbles
+		n3 := a & 0x0f
+		n2 := n & 0xf0 >> 4
+		n1 := n & 0x0f
+
+		// Set low nibble of A to n2
+		a = a & 0xf0
+		a = a | n2
+		z.reg.Write8(A, a)
+		// Set (HL) to n1 n3
+		n = n1<<4 | n3
+		err = z.mem.Poke(hl, n)
+
 		return nil
 	case IM0:
 		z.im(0)
@@ -1385,16 +1464,38 @@ func (s EDSimple) Execute(z *Zog) error {
 		z.im(2)
 		return nil
 
-		/*
-			case LDI:
-			case CPI:
-			case LDD:
-			case CPD:
-			case LDIR:
-			case CPIR:
-			case LDDR:
-			case CPDR:
+	case LDI:
+		return ldHelper(z, true)
+		//			case CPI:
+	case LDD:
+		return ldHelper(z, false)
+		//			case CPD:
+	case LDIR:
+		for {
+			err := ldHelper(z, true)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_PV) {
+				break
+			}
+		}
+		return nil
+	//case CPIR:
+	case LDDR:
+		for {
+			err := ldHelper(z, true)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_PV) {
+				break
+			}
+		}
+		return nil
+		//case CPDR:
 
+		/*
 			case INI:
 			case OUTI:
 			case IND:
