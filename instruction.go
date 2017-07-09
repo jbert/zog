@@ -1466,10 +1466,12 @@ func (s EDSimple) Execute(z *Zog) error {
 
 	case LDI:
 		return ldHelper(z, true)
-		//			case CPI:
+	case CPI:
+		return fmt.Errorf("TODO - impl CPI")
 	case LDD:
 		return ldHelper(z, false)
-		//			case CPD:
+	case CPD:
+		return fmt.Errorf("TODO - impl CPD")
 	case LDIR:
 		for {
 			err := ldHelper(z, true)
@@ -1481,7 +1483,8 @@ func (s EDSimple) Execute(z *Zog) error {
 			}
 		}
 		return nil
-	//case CPIR:
+	case CPIR:
+		return fmt.Errorf("TODO - impl CPIR")
 	case LDDR:
 		for {
 			err := ldHelper(z, true)
@@ -1493,18 +1496,25 @@ func (s EDSimple) Execute(z *Zog) error {
 			}
 		}
 		return nil
-		//case CPDR:
+	case CPDR:
+		return fmt.Errorf("TODO - impl CPDR")
 
-		/*
-			case INI:
-			case OUTI:
-			case IND:
-			case OUTD:
-			case INIR:
-			case OTIR:
-			case INDR:
-			case OTDR:
-		*/
+	case INI:
+		return fmt.Errorf("TODO - impl INI")
+	case OUTI:
+		return fmt.Errorf("TODO - impl OUTI")
+	case IND:
+		return fmt.Errorf("TODO - impl IND")
+	case OUTD:
+		return fmt.Errorf("TODO - impl OUTD")
+	case INIR:
+		return fmt.Errorf("TODO - impl INIR")
+	case OTIR:
+		return fmt.Errorf("TODO - impl OTIR")
+	case INDR:
+		return fmt.Errorf("TODO - impl INDR")
+	case OTDR:
+		return fmt.Errorf("TODO - impl OTDR")
 	default:
 		return fmt.Errorf("Unknown EDSimple instruction: %02X", byte(s))
 	}

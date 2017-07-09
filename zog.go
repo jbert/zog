@@ -27,6 +27,30 @@ func New(memSize uint16) *Zog {
 	return z
 }
 
+func (z *Zog) Run(a *Assembly) error {
+	err := z.load(a)
+	if err != nil {
+		return err
+	}
+	return z.execute(a.BaseAddr)
+}
+
+func (z *Zog) RunBytes(addr uint16, buf []byte) error {
+	err := z.LoadBytes(addr, buf)
+	if err != nil {
+		return nil
+	}
+	return z.execute(addr)
+}
+
+func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
+	err := z.mem.Copy(addr, buf)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (z *Zog) Clear() {
 	z.mem.Clear()
 	z.reg = Registers{}
@@ -35,16 +59,12 @@ func (z *Zog) Clear() {
 	z.iff2 = false
 }
 
-func (z *Zog) Load(a *Assembly) error {
+func (z *Zog) load(a *Assembly) error {
 	buf, err := a.Encode()
 	if err != nil {
 		return err
 	}
-	err = z.mem.Copy(a.BaseAddr, buf)
-	if err != nil {
-		return err
-	}
-	return nil
+	return z.LoadBytes(a.BaseAddr, buf)
 }
 
 // F flag register:
@@ -114,14 +134,6 @@ func (z *Zog) GetFlag(f flag) bool {
 }
 
 var ErrHalted = errors.New("HALT called")
-
-func (z *Zog) Run(a *Assembly) error {
-	err := z.Load(a)
-	if err != nil {
-		return err
-	}
-	return z.Execute(a.BaseAddr)
-}
 
 // Implement io.Reader
 func (z *Zog) Read(buf []byte) (int, error) {
@@ -196,7 +208,7 @@ func (z *Zog) in(port uint16) byte {
 	return n
 }
 
-func (z *Zog) Execute(addr uint16) error {
+func (z *Zog) execute(addr uint16) error {
 
 	var err error
 	var inst Instruction
