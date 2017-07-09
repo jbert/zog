@@ -35,12 +35,12 @@ func (z *Zog) Run(a *Assembly) error {
 	return z.execute(a.BaseAddr)
 }
 
-func (z *Zog) RunBytes(addr uint16, buf []byte) error {
-	err := z.LoadBytes(addr, buf)
+func (z *Zog) RunBytes(loadAddr uint16, buf []byte, runAddr uint16) error {
+	err := z.LoadBytes(loadAddr, buf)
 	if err != nil {
 		return nil
 	}
-	return z.execute(addr)
+	return z.execute(runAddr)
 }
 
 func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
@@ -54,7 +54,8 @@ func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
 func (z *Zog) Clear() {
 	z.mem.Clear()
 	z.reg = Registers{}
-	z.reg.SP = z.mem.Len()
+	// 64KB will give zero here, correctly
+	z.reg.SP = uint16(z.mem.Len())
 	z.iff1 = false
 	z.iff2 = false
 }
@@ -212,6 +213,9 @@ func (z *Zog) execute(addr uint16) error {
 
 	var err error
 	var inst Instruction
+
+	z.reg.PC = addr
+
 EXECUTING:
 	for {
 		inst, err = DecodeOne(z)

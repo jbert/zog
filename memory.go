@@ -8,8 +8,12 @@ type Memory struct {
 }
 
 func NewMemory(size uint16) *Memory {
+	intSize := int(size)
+	if intSize == 0 {
+		intSize = 64 * 1024
+	}
 	m := &Memory{
-		buf: make([]byte, size),
+		buf: make([]byte, intSize),
 	}
 	return m
 }
@@ -18,12 +22,12 @@ func (m *Memory) SetDebug(debug bool) {
 	m.debug = debug
 }
 
-func (m *Memory) Len() uint16 {
-	return uint16(len(m.buf))
+func (m *Memory) Len() int {
+	return len(m.buf)
 }
 
 func (m *Memory) Peek(addr uint16) (byte, error) {
-	if addr >= m.Len() {
+	if int(addr) >= m.Len() {
 		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
 	}
 	n := m.buf[addr]
@@ -34,7 +38,7 @@ func (m *Memory) Peek(addr uint16) (byte, error) {
 }
 
 func (m *Memory) Poke(addr uint16, n byte) error {
-	if addr >= m.Len() {
+	if int(addr) >= m.Len() {
 		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
 	}
 	m.buf[addr] = n
