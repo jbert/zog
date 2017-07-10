@@ -17,18 +17,21 @@ type Zog struct {
 	iff1          bool
 	iff2          bool
 	interruptMode int
+
+	outputHandlers map[uint16]func(n byte)
 }
 
 func New(memSize uint16) *Zog {
 	z := &Zog{
-		mem: NewMemory(memSize),
+		mem:            NewMemory(memSize),
+		outputHandlers: make(map[uint16]func(n byte)),
 	}
 	z.Clear()
 	return z
 }
 
 func (z *Zog) Run(a *Assembly) error {
-	err := z.load(a)
+	err := z.Load(a)
 	if err != nil {
 		return err
 	}
@@ -48,7 +51,16 @@ func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("L: %04X [%04X]\n", addr, len(buf))
 	return nil
+}
+
+func (z *Zog) Load(a *Assembly) error {
+	buf, err := a.Encode()
+	if err != nil {
+		return err
+	}
+	return z.LoadBytes(a.BaseAddr, buf)
 }
 
 func (z *Zog) Clear() {
@@ -60,12 +72,13 @@ func (z *Zog) Clear() {
 	z.iff2 = false
 }
 
-func (z *Zog) load(a *Assembly) error {
-	buf, err := a.Encode()
-	if err != nil {
-		return err
+func (z *Zog) RegisterOutputHandler(addr uint16, handler func(n byte)) error {
+	_, ok := z.outputHandlers[addr]
+	if ok {
+		return fmt.Errorf("Addr [%04X] already has an output handler", addr)
 	}
-	return z.LoadBytes(a.BaseAddr, buf)
+	z.outputHandlers[addr] = handler
+	return nil
 }
 
 // F flag register:
@@ -201,6 +214,10 @@ func (z *Zog) pop() uint16 {
 
 func (z *Zog) out(port uint16, n byte) {
 	fmt.Printf("OUT: [%04X] %02X\n", port, n)
+	handler, ok := z.outputHandlers[port]
+	if ok {
+		handler(n)
+	}
 }
 
 func (z *Zog) in(port uint16) byte {
@@ -218,12 +235,13 @@ func (z *Zog) execute(addr uint16) error {
 
 EXECUTING:
 	for {
+		lastPC := z.reg.PC
 		inst, err = DecodeOne(z)
 		if err != nil {
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
 		}
-		fmt.Printf("I: %s\n", inst)
+		fmt.Printf("I: %04X %s\n", lastPC, inst)
 		err = inst.Execute(z)
 		if err != nil {
 			// Error handling after the loop

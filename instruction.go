@@ -13,6 +13,13 @@ type Instruction interface {
 	Execute(z *Zog) error
 }
 
+type LabelHolder struct{}
+
+func (lh *LabelHolder) String() string            { return "" }
+func (lh *LabelHolder) Encode() []byte            { return make([]byte, 0) }
+func (lh *LabelHolder) Resolve(a *Assembly) error { return nil }
+func (lh *LabelHolder) Execute(z *Zog) error      { panic("Attempt to execute labelholder") }
+
 type Data struct {
 	data []byte
 }

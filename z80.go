@@ -380,13 +380,19 @@ func (c *Current) R16(s string) {
 }
 
 func (c *Current) Emit() {
+	var linst *LabelledInstruction
 	if c.inst != nil {
-		linst := LabelledInstruction{Inst: c.inst}
-		if c.label != "" {
-			c.assembly.Labels[c.label] = len(c.assembly.Linsts)
-			linst.Label = c.label
+		linst = &LabelledInstruction{Inst: c.inst}
+	}
+	if c.label != "" {
+		if linst == nil {
+			linst = &LabelledInstruction{Inst: &LabelHolder{}}
 		}
-		c.assembly.Linsts = append(c.assembly.Linsts, linst)
+		c.assembly.Labels[c.label] = len(c.assembly.Linsts)
+		linst.Label = c.label
+	}
+	if linst != nil {
+		c.assembly.Linsts = append(c.assembly.Linsts, *linst)
 	}
 	c.clean()
 }

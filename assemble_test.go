@@ -26,6 +26,13 @@ func TestAssembleRich(t *testing.T) {
 		{"LD HL, 0x1000 : LD A, B : PUSH HL", "21 00 10 78 e5"},
 		{"LD HL, 0x1000 ; LD A, B : PUSH HL", "21 00 10"},
 		{"  LD HL, 0x1000 ; LD A, B : PUSH HL", "21 00 10"},
+		{`
+foo: JP foo
+`, "C3 00 00"},
+		{`
+foo:
+	JP foo
+`, "C3 00 00"},
 	}
 	for _, tc := range testCases {
 		fmt.Printf("Assemble: %s\n", tc.prog)

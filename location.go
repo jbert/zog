@@ -200,12 +200,12 @@ func (r R8) String() string {
 
 func (r R8) Read8(z *Zog) (byte, error) {
 	n := z.reg.Read8(r)
-	fmt.Printf("Z: %02X <- %s\n", n, r)
+	//	fmt.Printf("Z: %02X <- %s\n", n, r)
 	return n, nil
 }
 func (r R8) Write8(z *Zog, n byte) error {
 	z.reg.Write8(r, n)
-	fmt.Printf("Z: %s <- %02X\n", r, n)
+	//fmt.Printf("Z: %s <- %02X\n", r, n)
 	return nil
 }
 
@@ -326,12 +326,12 @@ func (r R16) String() string {
 
 func (r R16) Read16(z *Zog) (uint16, error) {
 	nn := z.reg.Read16(r)
-	fmt.Printf("Z: %04X <- %s\n", nn, r)
+	//fmt.Printf("Z: %04X <- %s\n", nn, r)
 	return nn, nil
 }
 func (r R16) Write16(z *Zog, nn uint16) error {
 	z.reg.Write16(r, nn)
-	fmt.Printf("Z: %s <- %04X\n", r, nn)
+	//fmt.Printf("Z: %s <- %04X\n", r, nn)
 	return nil
 }
 
@@ -351,7 +351,7 @@ func (c Contents) Read8(z *Zog) (byte, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Can't read contents of [%s]: %s", c, err)
 	}
-	fmt.Printf("Z: %02X <- %s\n", n, c)
+	//fmt.Printf("Z: %02X <- %s\n", n, c)
 	return n, nil
 }
 func (c Contents) Write8(z *Zog, n byte) error {
@@ -363,7 +363,7 @@ func (c Contents) Write8(z *Zog, n byte) error {
 	if err != nil {
 		return fmt.Errorf("Can't write contents of [%s]: %s", c, err)
 	}
-	fmt.Printf("Z: %s <- %02X\n", c, n)
+	//fmt.Printf("Z: %s <- %02X\n", c, n)
 	return nil
 }
 
@@ -376,7 +376,7 @@ func (c Contents) Read16(z *Zog) (uint16, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Can't read contents of [%s]: %s", c, err)
 	}
-	fmt.Printf("Z: %04X <- %s\n", nn, c)
+	//fmt.Printf("Z: %04X <- %s\n", nn, c)
 	return nn, nil
 }
 func (c Contents) Write16(z *Zog, nn uint16) error {
@@ -388,7 +388,7 @@ func (c Contents) Write16(z *Zog, nn uint16) error {
 	if err != nil {
 		return fmt.Errorf("Can't write contents of [%s]: %s", c, err)
 	}
-	fmt.Printf("Z: %s <- %04X\n", c, nn)
+	//fmt.Printf("Z: %s <- %04X\n", c, nn)
 	return nil
 }
 
@@ -410,7 +410,7 @@ func (ic IndexedContents) Read8(z *Zog) (byte, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Can't read contents of [%s]: %s", ic, err)
 	}
-	fmt.Printf("Z: %02X <- %s\n", n, ic)
+	//fmt.Printf("Z: %02X <- %s\n", n, ic)
 	return n, nil
 }
 func (ic IndexedContents) Write8(z *Zog, n byte) error {
@@ -423,19 +423,19 @@ func (ic IndexedContents) Write8(z *Zog, n byte) error {
 	if err != nil {
 		return fmt.Errorf("Can't write contents of [%s]: %s", ic, err)
 	}
-	fmt.Printf("Z: %s <- %02X\n", ic, n)
+	//fmt.Printf("Z: %s <- %02X\n", ic, n)
 	return nil
 }
 
 func (ic IndexedContents) Read16(z *Zog) (uint16, error) {
 	// TODO: debug
 	var nn uint16
-	fmt.Printf("Z: %04X <- %s\n", nn, ic.addr)
+	//fmt.Printf("Z: %04X <- %s\n", nn, ic.addr)
 	return nn, nil
 }
 func (ic IndexedContents) Write16(z *Zog, nn uint16) error {
 	// TODO: debug
-	fmt.Printf("Z: %s <- %04X\n", ic.addr, nn)
+	//fmt.Printf("Z: %s <- %04X\n", ic.addr, nn)
 	return nil
 }
 
