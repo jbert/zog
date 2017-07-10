@@ -1,9 +1,23 @@
-- get a cmdline tool to run a binary file
+DONE - get a cmdline tool to run a binary file
   - assemble some examples with zmac assembler
+
+- take prelim.z80 from zexall and port in the same way that CPM.zip/zexall was ported
+- run prelim on emulator with CPM prelude
+
+
   - grab a ROM and see where it dies! (spectrum-roms ubuntu pkg)
   - try and find some example programs
-
   - write a test rom/prelude of some kind
+    - use it if cmdline to execute given
+
+  DONE - CP/M has simple I/O for zexall
+    - add 'zexall/cp/m support' option
+      - write some Z80 assembly
+      - drive an I/O port to write chars
+        - register I/O handlers
+
+- write enable-able logging streams (e.g. 'Z:' logging for locations)
+  - tagged logging streams?
 
 - improve flags
   - how to handle half-carry?
