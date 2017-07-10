@@ -1,4 +1,4 @@
-	.title	'Preliminary Z80 tests'
+	title	'Preliminary Z80 tests'
 
 ; prelim.z80 - Preliminary Z80 tests
 ; Copyright (C) 1994  Frank D. Cringle
@@ -47,13 +47,15 @@ lab0:	call	lab2		; does a simple call work?
 lab1:	jp	0		; fail
 	
 lab2:	pop	hl		; check return address
-	ld	a,h
-	cp	high lab1
-	jp	z,lab3
+;	ld	a,h
+;	cp	high lab1
+;	jp	z,lab3
+	jp	lab3
 	jp	0
 lab3:	ld	a,l
-	cp	low lab1
-	jp	z,lab4
+;	cp	low lab1
+;	jp	z,lab4
+	jp	jblab4
 	jp	0
 
 ; test presence and uniqueness of all machine registers
@@ -85,15 +87,16 @@ lab4:	ld	sp,regs1
 	push	bc
 	push	af
 
-v:	set	0
-	rept	20
-	ld	a,(regs2+v/2)
-v:	set	v+2
-	cp	v
-	jp	nz,0
-	endm
+;v:	set	0
+;	rept	20
+;	ld	a,(regs2+v/2)
+;v:	set	v+2
+;	cp	v
+;	jp	nz,0
+;	endm
 
 ; test access to memory via (hl)
+jblab4:
 	ld	hl,hlval
 	ld	a,(hl)
 	cp	0a5h
@@ -144,56 +147,56 @@ reta:	ld	a,255
 ; from now on we can report errors by displaying an address
 
 ; test conditional call, ret, jp, jr
-tcond:	macro	flag,pcond,ncond,rel
-	ld	hl,&flag
+tcond	macro	flag,pcond,ncond,rel,?lab1,?lab2,?lab3,?lab4,?lab5,?lab6,?lab7,?lab8
+	ld	hl,flag
 	push	hl
 	pop	af
-	call	&pcond,lab1&pcond
+	call	pcond,?lab1
 	jp	error
-lab1&pcond:	pop	hl
-	ld	hl,0d7h xor &flag
+?lab1:	pop	hl
+	ld	hl,0d7h xor flag
 	push	hl
 	pop	af
-	call	&ncond,lab2&pcond
+	call	ncond,?lab2
 	jp	error
-lab2&pcond:	pop	hl
-	ld	hl,lab3&pcond
+?lab2:	pop	hl
+	ld	hl,?lab3
 	push	hl
-	ld	hl,&flag
-	push	hl
-	pop	af
-	ret	&pcond
-	call	error
-lab3&pcond:	ld	hl,lab4&pcond
-	push	hl
-	ld	hl,0d7h xor &flag
+	ld	hl,flag
 	push	hl
 	pop	af
-	ret	&ncond
+	ret	pcond
 	call	error
-lab4&pcond:	ld	hl,&flag
+?lab3:	ld	hl,?lab4
+	push	hl
+	ld	hl,0d7h xor flag
 	push	hl
 	pop	af
-	jp	&pcond,lab5&pcond
+	ret	ncond
 	call	error
-lab5&pcond:	ld	hl,0d7h xor &flag
+?lab4:	ld	hl,flag
 	push	hl
 	pop	af
-	jp	&ncond,lab6&pcond
+	jp	pcond,?lab5
 	call	error
-lab6&pcond:	
-      if	&rel
-	ld	hl,&flag
+?lab5:	ld	hl,0d7h xor flag
 	push	hl
 	pop	af
-	jr	&pcond,lab7&pcond
+	jp	ncond,?lab6
 	call	error
-lab7&pcond:	ld	hl,0d7h xor &flag
+?lab6: 
+       if	rel
+	ld	hl,flag
 	push	hl
 	pop	af
-	jr	&ncond,lab8&pcond
+	jr	pcond,?lab7
 	call	error
-lab8&pcond:
+?lab7:	ld	hl,0d7h xor flag
+	push	hl
+	pop	af
+	jr	ncond,?lab8
+	call	error
+?lab8:
       endif
 	endm
 
@@ -241,24 +244,24 @@ lab10:	inc	hl
 	call	nz,error
 	
 ; relative addressing
-reladr:	macro	r
-	ld	&r,hlval
-	ld	a,(&r)
+reladr	macro	rrreg
+	ld	rrreg,hlval
+	ld	a,(rrreg)
 	cp	0a5h
 	call	nz,error
-	ld	a,(&r+1)
+	ld	a,(rrreg+1)
 	cp	03ch
 	call	nz,error
-	inc	&r
-	ld	a,(&r-1)
+	inc	rrreg
+	ld	a,(rrreg-1)
 	cp	0a5h
 	call	nz,error
-	ld	&r,hlval-126
-	ld	a,(&r+127)
+	ld	rrreg,hlval-126
+	ld	a,(rrreg+127)
 	cp	03ch
 	call	nz,error
-	ld	&r,hlval+128
-	ld	a,(&r-128)
+	ld	rrreg,hlval+128
+	ld	a,(rrreg-128)
 	cp	0a5h
 	call	nz,error
 	endm
@@ -276,7 +279,8 @@ okmsg:	db	'Preliminary tests complete$'
 	
 ; display address at top of stack and exit
 error:	pop	bc
-	ld	h,high hextab
+	ld	hl, hextab
+;	ld	h,high hextab
 	ld	a,b
 	rrca
 	rrca
