@@ -200,7 +200,7 @@ func (r R8) String() string {
 
 func (r R8) Read8(z *Zog) (byte, error) {
 	n := z.reg.Read8(r)
-	//	fmt.Printf("Z: %02X <- %s\n", n, r)
+	//fmt.Printf("Z: %02X <- %s\n", n, r)
 	return n, nil
 }
 func (r R8) Write8(z *Zog, n byte) error {
@@ -518,13 +518,13 @@ func (ft FlagTest) IsTrue(z *Zog) bool {
 	case FT_C:
 		return z.GetFlag(F_C)
 	case FT_PO:
-		return z.GetFlag(F_PV)
-	case FT_PE:
 		return !z.GetFlag(F_PV)
+	case FT_PE:
+		return z.GetFlag(F_PV)
 	case FT_P:
-		return z.GetFlag(F_S)
-	case FT_M:
 		return !z.GetFlag(F_S)
+	case FT_M:
+		return z.GetFlag(F_S)
 	default:
 		panic(fmt.Sprintf("Unknown flag test [%d]", int(ft)))
 	}

@@ -1,8 +1,10 @@
 DONE - get a cmdline tool to run a binary file
   - assemble some examples with zmac assembler
 
+DONE - prelim.com running
+
 - take prelim.z80 from zexall and port in the same way that CPM.zip/zexall was ported
-- run prelim on emulator with CPM prelude
+DONE - run prelim on emulator with CPM prelude
 
 
   - grab a ROM and see where it dies! (spectrum-roms ubuntu pkg)
