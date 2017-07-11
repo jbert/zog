@@ -3,6 +3,9 @@ DONE - get a cmdline tool to run a binary file
 
 DONE - prelim.com running
 
+- improve flags
+  - how to handle half-carry?
+
 - take prelim.z80 from zexall and port in the same way that CPM.zip/zexall was ported
 DONE - run prelim on emulator with CPM prelude
 
@@ -21,8 +24,9 @@ DONE - run prelim on emulator with CPM prelude
 - write enable-able logging streams (e.g. 'Z:' logging for locations)
   - tagged logging streams?
 
-- improve flags
-  - how to handle half-carry?
+- spin up http server (gop?)
+  - serve machine state (num cycles, registers, ...?) over http
+  - ? serve zx spectrum display image over ws?
 
 
 - emulator

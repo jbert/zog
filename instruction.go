@@ -931,20 +931,39 @@ func getCY(z *Zog) byte {
 	return cy
 }
 
+func popcount(v byte) int {
+	numBits := 0
+	mask := byte(1 << 7)
+	for mask > 0 {
+		if v&mask != 0 {
+			numBits++
+		}
+		mask = mask >> 1
+	}
+	return numBits
+}
+
+func setParity(z *Zog, v byte) {
+	numBits := popcount(v)
+	z.SetFlag(F_PV, numBits%2 == 0)
+}
+
 func rotRlc(z *Zog, v byte) byte {
 	h := (v & 0x80) >> 7
 	v = v << 1
 
-	z.SetFlag(F_C, h == 1)
 	v = v | h
+
+	z.SetFlag(F_C, h == 1)
 	return v
 }
 func rotRrc(z *Zog, v byte) byte {
 	l := v & 0x01
 	v = v >> 1
 
-	z.SetFlag(F_C, l == 1)
 	v = v | l<<7
+
+	z.SetFlag(F_C, l == 1)
 	return v
 }
 func rotRl(z *Zog, v byte) byte {
@@ -1028,6 +1047,12 @@ func (r *rot) Execute(z *Zog) error {
 	}
 
 	v = r.f(z, v)
+
+	z.SetFlag(F_S, v >= 0x80)
+	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_H, false)
+	setParity(z, v)
+	z.SetFlag(F_N, false)
 
 	err = r.l.Write8(z, v)
 	if err != nil {
@@ -1221,20 +1246,36 @@ func (s Simple) Execute(z *Zog) error {
 	case HALT:
 		return ErrHalted
 	case RLCA:
-		// TODO - flags different?
+		fReg := z.reg.F
 		z.reg.A = rotRlc(z, z.reg.A)
+		z.reg.F = fReg
+		z.SetFlag(F_H, false)
+		z.SetFlag(F_N, false)
+		z.SetFlag(F_C, z.reg.A&0x01 != 0)
 		return nil
 	case RRCA:
-		// TODO - flags different?
+		fReg := z.reg.F
 		z.reg.A = rotRrc(z, z.reg.A)
+		z.reg.F = fReg
+		z.SetFlag(F_H, false)
+		z.SetFlag(F_N, false)
+		z.SetFlag(F_C, z.reg.A&0x07 != 0)
 		return nil
 	case RLA:
-		// TODO - flags different?
+		fReg := z.reg.F
 		z.reg.A = rotRl(z, z.reg.A)
+		z.reg.F = fReg
+		z.SetFlag(F_H, false)
+		z.SetFlag(F_N, false)
+		z.SetFlag(F_C, z.reg.A&0x01 != 0)
 		return nil
 	case RRA:
-		// TODO - flags different?
+		fReg := z.reg.F
 		z.reg.A = rotRr(z, z.reg.A)
+		z.reg.F = fReg
+		z.SetFlag(F_H, false)
+		z.SetFlag(F_N, false)
+		z.SetFlag(F_C, z.reg.A&0x07 != 0)
 		return nil
 	case DAA:
 		return fmt.Errorf("TODO - DAA - impl14: %02X", byte(s))
