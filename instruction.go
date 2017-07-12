@@ -1259,7 +1259,7 @@ func (s Simple) Execute(z *Zog) error {
 		z.reg.F = fReg
 		z.SetFlag(F_H, false)
 		z.SetFlag(F_N, false)
-		z.SetFlag(F_C, z.reg.A&0x07 != 0)
+		z.SetFlag(F_C, z.reg.A&0xf0 != 0)
 		return nil
 	case RLA:
 		fReg := z.reg.F
@@ -1275,7 +1275,7 @@ func (s Simple) Execute(z *Zog) error {
 		z.reg.F = fReg
 		z.SetFlag(F_H, false)
 		z.SetFlag(F_N, false)
-		z.SetFlag(F_C, z.reg.A&0x07 != 0)
+		z.SetFlag(F_C, z.reg.A&0xf0 != 0)
 		return nil
 	case DAA:
 		return fmt.Errorf("TODO - DAA - impl14: %02X", byte(s))
