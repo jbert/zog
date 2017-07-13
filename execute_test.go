@@ -129,7 +129,7 @@ func TestExecuteBasic(t *testing.T) {
 			loc16A{HL, 0x1112},
 		}},
 
-		{"LD A, FFh : INC A : LD HL,4444h : LD DE, 3333h : SBC HL, DE", []assert{
+		{"SCF : LD HL,4444h : LD DE, 3333h : SBC HL, DE", []assert{
 			loc16A{HL, 0x1110},
 		}},
 		{"LD HL,4444h : LD DE, 3333h : SBC HL, DE", []assert{
@@ -139,7 +139,7 @@ func TestExecuteBasic(t *testing.T) {
 		{"LD HL,1111h : LD DE, 2222h : ADD HL, DE", []assert{
 			loc16A{HL, 0x3333},
 		}},
-		{"LD A, FFh : INC A : LD HL,1111h : LD DE, 2222h : ADC HL, DE", []assert{
+		{"SCF : LD HL,1111h : LD DE, 2222h : ADC HL, DE", []assert{
 			loc16A{HL, 0x3334},
 		}},
 		{"LD A,10h : LD B,05h : ADD A,B", []assert{
@@ -154,7 +154,7 @@ func TestExecuteBasic(t *testing.T) {
 			locA{A, 0x00},
 			flagA{F_S, false},
 			flagA{F_Z, false},
-			flagA{F_H, false},
+			flagA{F_H, true},
 			flagA{F_PV, false},
 			flagA{F_C, false},
 		}},
@@ -170,9 +170,17 @@ func TestExecuteBasic(t *testing.T) {
 			locA{A, 0x00},
 			flagA{F_S, true},
 			flagA{F_Z, false},
-			flagA{F_H, false},
+			flagA{F_H, true},
+			flagA{F_PV, false},
+			flagA{F_C, false},
+		}},
+		{"LD A,80h : DEC A", []assert{
+			locA{A, 0x7f},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, true},
 			flagA{F_PV, true},
-			flagA{F_C, true},
+			flagA{F_C, false},
 		}},
 
 		{"LD A,10h : DEC A", []assert{locA{A, 0x0f}, flagA{F_Z, false}}},

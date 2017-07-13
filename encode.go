@@ -192,7 +192,6 @@ func (u *InstU16) exec(z *Zog, f func(uint16) uint16) error {
 		return fmt.Errorf("%T: failed to read: %s", u, err)
 	}
 	v = f(v)
-	z.SetFlag(F_Z, v == 0)
 
 	err = u.l.Write16(z, v)
 	if err != nil {

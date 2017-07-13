@@ -150,8 +150,9 @@ func (i *INC8) Encode() []byte {
 }
 func (i *INC8) Execute(z *Zog) error {
 	err := i.exec(z, func(v byte) byte {
-		z.SetFlag(F_PV, v == 0xFF)
-		z.SetFlag(F_C, v == 0xFF)
+		z.SetFlag(F_H, v&0xf == 0x0f)
+		z.SetFlag(F_PV, v == 0x7f)
+		z.SetFlag(F_N, false)
 		return v + 1
 	})
 	return err
@@ -177,8 +178,9 @@ func (d *DEC8) Encode() []byte {
 }
 func (d *DEC8) Execute(z *Zog) error {
 	err := d.exec(z, func(v byte) byte {
-		z.SetFlag(F_PV, v == 0x00)
-		z.SetFlag(F_C, v == 0x00)
+		z.SetFlag(F_H, v&0x0f == 0x00)
+		z.SetFlag(F_PV, v == 0x80)
+		z.SetFlag(F_N, true)
 		return v - 1
 	})
 	return err
@@ -295,6 +297,9 @@ func (a *ADD16) Encode() []byte {
 func (a *ADD16) Execute(z *Zog) error {
 	return a.exec(z, func(a, b uint16) uint16 {
 		v := a + b
+		z.SetFlag(F_H, ((a&0x0fff)+(b&0x0fff))&0x1000 != 0)
+		z.SetFlag(F_N, false)
+		z.SetFlag(F_C, int(a)+int(b) > 0xffff)
 		return v
 	})
 }
@@ -319,11 +324,18 @@ func (a *ADC16) Encode() []byte {
 }
 func (a *ADC16) Execute(z *Zog) error {
 	return a.exec(z, func(a, b uint16) uint16 {
-		v := a + b
+		c := uint16(0)
 		if z.GetFlag(F_C) {
-			v++
+			c = 1
 		}
-		return v
+		v := uint32(a) + uint32(b) + uint32(c)
+		z.SetFlag(F_S, v >= 0x8000)
+		z.SetFlag(F_Z, v == 0)
+		z.SetFlag(F_H, ((a&0x0fff)+(b&0x0fff)+c)&0x1000 != 0)
+		z.SetFlag(F_PV, v > 0x7fff)
+		z.SetFlag(F_N, false)
+		z.SetFlag(F_C, v > 0xffff)
+		return uint16(v)
 	})
 }
 
@@ -345,12 +357,26 @@ func (s *SBC16) Encode() []byte {
 	buf := []byte{0xed, encodeXPQZ(1, s.srcInfo.idxTable, 0, 2)}
 	return idxEncodeHelper(buf, s.idx)
 }
+
+func isPos16(v uint16) bool {
+	return v&0x8000 == 0
+}
 func (s *SBC16) Execute(z *Zog) error {
 	return s.exec(z, func(dst, src uint16) uint16 {
-		v := dst - src
+		a := uint32(dst)
+		b := uint32(src)
+		c := uint32(0)
 		if z.GetFlag(F_C) {
-			v--
+			c = 1
 		}
+		v32 := a - b - c
+		v := uint16(v32)
+		z.SetFlag(F_S, !isPos16(v))
+		z.SetFlag(F_Z, v == 0)
+		z.SetFlag(F_H, ((a&0x0fff)-(b&0x0fff)-c)&0x1000 != 0)
+		z.SetFlag(F_PV, v32 > 0xf000000)
+		z.SetFlag(F_N, true)
+		z.SetFlag(F_C, isPos16(dst) && !isPos16(v))
 		return v
 	})
 }

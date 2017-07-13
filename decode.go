@@ -251,7 +251,7 @@ func edDecode(t *DecodeTable, r io.Reader, indexPrefix, n byte) (Instruction, er
 	switch x {
 	case 0, 3:
 		// Invalid instruction, equivalent to NONI followed by NOP
-		log.Printf("Invalid instruction: [%02X]\n", n)
+		log.Printf("Invalid instruction: [ED%02X]\n", n)
 		inst = NOP
 	case 1:
 		switch z {
@@ -323,7 +323,7 @@ func edDecode(t *DecodeTable, r io.Reader, indexPrefix, n byte) (Instruction, er
 		if z <= 3 && y >= 4 {
 			inst = t.LookupBLI(y-4, z)
 		} else {
-			log.Printf("Invalid instruction: [%02X]\n", n)
+			log.Printf("Invalid instruction: [ED%02X]\n", n)
 			inst = NOP
 		}
 	}
