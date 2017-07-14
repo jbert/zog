@@ -506,7 +506,6 @@ func (d *DJNZ) Execute(z *Zog) error {
 		return fmt.Errorf("Can't write B: %s", err)
 	}
 	zero := bReg == 0
-	z.SetFlag(F_Z, zero)
 	if !zero {
 		z.jr(int8(d.d))
 	}
@@ -841,10 +840,17 @@ func NewAccum(name string, l Loc8) *accum {
 	return a
 }
 
+func isPos8(v byte) bool {
+	return v&0x80 == 0
+}
 func aluAdd(z *Zog, a, b byte) byte {
 	v := a + b
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_C, v < a)
+	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f))&0x10 != 0)
+	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_N, false)
+	z.SetFlag(F_C, int(a)+int(b) > 0xff)
 	return v
 }
 func aluAdc(z *Zog, a, b byte) byte {
@@ -852,40 +858,65 @@ func aluAdc(z *Zog, a, b byte) byte {
 	if z.GetFlag(F_C) {
 		v++
 	}
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_C, v < a)
+	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f))&0x10 != 0)
+	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_N, false)
+	z.SetFlag(F_C, int(a)+int(b) > 0xff)
 	return v
 }
 func aluSub(z *Zog, a, b byte) byte {
 	v := a - b
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_C, v > a)
+	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x10 != 0)
+	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_N, true)
+	z.SetFlag(F_C, int(a)-int(b) < 0)
 	return v
 }
 func aluSbc(z *Zog, a, b byte) byte {
-	v := a - b
+	c := byte(0)
 	if z.GetFlag(F_C) {
-		v--
+		c = 1
 	}
+	v := a - b - c
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_C, v > a)
+	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f)-c)&0x10 != 0)
+	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_N, true)
+	z.SetFlag(F_C, int(a)-int(b) < 0)
 	return v
 }
 func aluAnd(z *Zog, a, b byte) byte {
 	v := a & b
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_H, true)
+	setParity(z, v)
+	z.SetFlag(F_N, false)
 	z.SetFlag(F_C, false)
 	return v
 }
 func aluXor(z *Zog, a, b byte) byte {
 	v := a ^ b
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_H, false)
+	setParity(z, v)
+	z.SetFlag(F_N, false)
 	z.SetFlag(F_C, false)
 	return v
 }
 func aluOr(z *Zog, a, b byte) byte {
 	v := a | b
+	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_H, false)
+	setParity(z, v)
+	z.SetFlag(F_N, false)
 	z.SetFlag(F_C, false)
 	return v
 }
@@ -1431,6 +1462,50 @@ func (s EDSimple) Resolve(a *Assembly) error {
 
 func (s EDSimple) Execute(z *Zog) error {
 
+	outHelper := func(z *Zog, inc bool) error {
+		bc := z.reg.Read16(BC)
+		hl := z.reg.Read16(HL)
+
+		n, err := z.mem.Peek(hl)
+		if err != nil {
+			return err
+		}
+		z.out(bc, n)
+
+		if inc {
+			hl++
+			z.SetFlag(F_N, false)
+		} else {
+			hl--
+			z.SetFlag(F_N, true)
+		}
+		z.reg.Write16(HL, hl)
+		z.reg.B--
+		z.SetFlag(F_Z, z.reg.B == 0)
+		return nil
+	}
+
+	inHelper := func(z *Zog, inc bool) error {
+		bc := z.reg.Read16(BC)
+		hl := z.reg.Read16(HL)
+		n := z.in(bc)
+		err := z.mem.Poke(hl, n)
+		if err != nil {
+			return err
+		}
+		if inc {
+			hl++
+			z.SetFlag(F_N, false)
+		} else {
+			hl--
+			z.SetFlag(F_N, true)
+		}
+		z.reg.Write16(HL, hl)
+		z.reg.B--
+		z.SetFlag(F_Z, z.reg.B == 0)
+		return nil
+	}
+
 	ldHelper := func(z *Zog, inc bool) error {
 		bc := z.reg.Read16(BC)
 		de := z.reg.Read16(DE)
@@ -1574,21 +1649,57 @@ func (s EDSimple) Execute(z *Zog) error {
 		return fmt.Errorf("TODO - impl CPDR")
 
 	case INI:
-		return fmt.Errorf("TODO - impl INI")
+		return inHelper(z, true)
 	case OUTI:
-		return fmt.Errorf("TODO - impl OUTI")
+		return outHelper(z, true)
 	case IND:
-		return fmt.Errorf("TODO - impl IND")
+		return inHelper(z, false)
 	case OUTD:
-		return fmt.Errorf("TODO - impl OUTD")
+		return outHelper(z, false)
 	case INIR:
-		return fmt.Errorf("TODO - impl INIR")
+		for {
+			err := inHelper(z, true)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_Z) {
+				break
+			}
+		}
+		return nil
 	case OTIR:
-		return fmt.Errorf("TODO - impl OTIR")
+		for {
+			err := outHelper(z, true)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_Z) {
+				break
+			}
+		}
+		return nil
 	case INDR:
-		return fmt.Errorf("TODO - impl INDR")
+		for {
+			err := inHelper(z, false)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_Z) {
+				break
+			}
+		}
+		return nil
 	case OTDR:
-		return fmt.Errorf("TODO - impl OTDR")
+		for {
+			err := outHelper(z, false)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_Z) {
+				break
+			}
+		}
+		return nil
 	default:
 		return fmt.Errorf("Unknown EDSimple instruction: %02X", byte(s))
 	}

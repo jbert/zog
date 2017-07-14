@@ -19,12 +19,14 @@ type Zog struct {
 	interruptMode int
 
 	outputHandlers map[uint16]func(n byte)
+	inputHandlers  map[uint16]func() byte
 }
 
 func New(memSize uint16) *Zog {
 	z := &Zog{
 		mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
+		inputHandlers:  make(map[uint16]func() byte),
 	}
 	z.Clear()
 	return z
@@ -78,6 +80,15 @@ func (z *Zog) RegisterOutputHandler(addr uint16, handler func(n byte)) error {
 		return fmt.Errorf("Addr [%04X] already has an output handler", addr)
 	}
 	z.outputHandlers[addr] = handler
+	return nil
+}
+
+func (z *Zog) RegisterInputHandler(addr uint16, handler func() byte) error {
+	_, ok := z.outputHandlers[addr]
+	if ok {
+		return fmt.Errorf("Addr [%04X] already has an input handler", addr)
+	}
+	z.inputHandlers[addr] = handler
 	return nil
 }
 
@@ -222,6 +233,10 @@ func (z *Zog) out(port uint16, n byte) {
 
 func (z *Zog) in(port uint16) byte {
 	n := byte(0)
+	handler, ok := z.inputHandlers[port]
+	if ok {
+		n = handler()
+	}
 	fmt.Printf("IN: [%04X] %02X\n", port, n)
 	return n
 }
