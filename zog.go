@@ -158,6 +158,22 @@ func (z *Zog) GetFlag(f flag) bool {
 	return flag != 0
 }
 
+func (z *Zog) FlagString() string {
+	s := ""
+	for i := 7; i >= 0; i-- {
+		f := flag(i)
+		v := 0
+		if z.GetFlag(f) {
+			v = 1
+		}
+		s += fmt.Sprintf("%s%d", f, v)
+		if i != 0 {
+			s += " "
+		}
+	}
+	return s
+}
+
 var ErrHalted = errors.New("HALT called")
 
 // Implement io.Reader
