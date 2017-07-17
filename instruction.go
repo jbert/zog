@@ -1335,7 +1335,22 @@ func (s Simple) Execute(z *Zog) error {
 		z.SetFlag(F_C, z.reg.A&0xf0 != 0)
 		return nil
 	case DAA:
-		return fmt.Errorf("TODO - DAA - impl14: %02X", byte(s))
+
+		// See z80heaven
+		v := z.reg.A
+		lo := v & 0x0f
+		if z.GetFlag(F_H) || lo > 9 {
+			v += 0x06
+		}
+		hi := (v & 0xf0) >> 4
+		if z.GetFlag(F_C) || hi > 9 {
+			v += 0x60
+			z.SetFlag(F_C, true)
+		} else {
+			z.SetFlag(F_C, false)
+		}
+		setParity(z, v)
+		return nil
 	case CPL:
 		z.reg.A = z.reg.A ^ 0xff
 		z.SetFlag(F_H, true)
@@ -1461,6 +1476,36 @@ func (s EDSimple) Resolve(a *Assembly) error {
 }
 
 func (s EDSimple) Execute(z *Zog) error {
+
+	cpHelper := func(z *Zog, inc bool) error {
+		bc := z.reg.Read16(BC)
+		hl := z.reg.Read16(HL)
+
+		a := z.reg.A
+		b, err := z.mem.Peek(hl)
+		if err != nil {
+			return err
+		}
+
+		v := a - b
+
+		bc--
+		z.reg.Write16(BC, bc)
+		if inc {
+			hl++
+		} else {
+			hl--
+		}
+		z.reg.Write16(HL, hl)
+
+		z.SetFlag(F_S, !isPos8(v))
+		z.SetFlag(F_Z, v == 0)
+		z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x10 != 0)
+		z.SetFlag(F_PV, bc == 0)
+		z.SetFlag(F_N, true)
+
+		return nil
+	}
 
 	outHelper := func(z *Zog, inc bool) error {
 		bc := z.reg.Read16(BC)
@@ -1616,11 +1661,11 @@ func (s EDSimple) Execute(z *Zog) error {
 	case LDI:
 		return ldHelper(z, true)
 	case CPI:
-		return fmt.Errorf("TODO - impl CPI")
+		return cpHelper(z, true)
 	case LDD:
 		return ldHelper(z, false)
 	case CPD:
-		return fmt.Errorf("TODO - impl CPD")
+		return cpHelper(z, false)
 	case LDIR:
 		for {
 			err := ldHelper(z, true)
@@ -1633,7 +1678,16 @@ func (s EDSimple) Execute(z *Zog) error {
 		}
 		return nil
 	case CPIR:
-		return fmt.Errorf("TODO - impl CPIR")
+		for {
+			err := cpHelper(z, true)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_PV) {
+				break
+			}
+		}
+		return nil
 	case LDDR:
 		for {
 			err := ldHelper(z, true)
@@ -1646,7 +1700,16 @@ func (s EDSimple) Execute(z *Zog) error {
 		}
 		return nil
 	case CPDR:
-		return fmt.Errorf("TODO - impl CPDR")
+		for {
+			err := cpHelper(z, false)
+			if err != nil {
+				return err
+			}
+			if z.GetFlag(F_PV) {
+				break
+			}
+		}
+		return nil
 
 	case INI:
 		return inHelper(z, true)
