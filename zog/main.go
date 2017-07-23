@@ -37,16 +37,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Can't parse trace regions [%s]: %s", *trace, err)
 	}
-	err = z.AddTraces(regions)
+	err = z.TraceRegions(regions)
 	if err != nil {
 		log.Fatalf("Can't add traces [%s]: %s", err)
 	}
+
+	// z.Watch16(zog.SP)
 
 	regions, err = zog.ParseRegions(*watch)
 	if err != nil {
 		log.Fatalf("Can't parse watch regions [%s]: %s", *watch, err)
 	}
-	err = z.AddWatches(regions)
+	err = z.WatchRegions(regions)
 	if err != nil {
 		log.Fatalf("Can't add watches [%s]: %s", err)
 	}
@@ -63,14 +65,29 @@ func printByte(n byte) {
 
 func loadPseudoCPM(z *zog.Zog) error {
 	z.RegisterOutputHandler(0xffff, printByte)
-	assembly, err := zog.Assemble(`
+	zeroPageAssembly, err := zog.Assemble(`
 	ORG 0000h
 	HALT
+	NOP			; would be addr of warm start (with JP inst at 0000)
 	NOP
+	NOP			; The 'intel standard iobyte'? http://www.gaby.de/cpm/manuals/archive/cpm22htm/ch6.htm#Section_6.9
 	NOP
-	NOP
-	NOP
-	; One entry point at 0005h.
+	; One entry point at 0005h
+	; but this is also "the lowest address used by CP/M"
+	; and used to the set the SP (by zexall)
+	JP 0xf000
+`)
+	if err != nil {
+		return fmt.Errorf("Failed to assemble prelude: %s", err)
+	}
+	err = z.Load(zeroPageAssembly)
+	if err != nil {
+		return fmt.Errorf("Load zero page assembly: %s", err)
+	}
+
+	highAssembly, err := zog.Assemble(`
+	ORG 0xf000
+
 	; Function to call is in C
 	; Func 2 => Print ASCII code of reg E to console
 	; Func 9 => Print ASCII string starting at DE until $ to console
@@ -115,7 +132,7 @@ printstr_end:
 	if err != nil {
 		return fmt.Errorf("Failed to assemble prelude: %s", err)
 	}
-	return z.Load(assembly)
+	return z.Load(highAssembly)
 }
 
 func usage(reason string) {
