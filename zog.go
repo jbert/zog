@@ -23,7 +23,8 @@ type Zog struct {
 	outputHandlers map[uint16]func(n byte)
 	inputHandlers  map[uint16]func() byte
 
-	traces Regions
+	traces   Regions
+	watch16s map[Loc16]uint16
 }
 
 func New(memSize uint16) *Zog {
@@ -31,6 +32,7 @@ func New(memSize uint16) *Zog {
 		mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
 		inputHandlers:  make(map[uint16]func() byte),
+		watch16s:       make(map[Loc16]uint16),
 	}
 	z.Clear()
 	return z
@@ -82,14 +84,18 @@ func (r *Region) contains(addr uint16) bool {
 	return r.start <= addr && addr <= r.end
 }
 
-func (z *Zog) AddTraces(regions Regions) error {
+func (z *Zog) TraceRegions(regions Regions) error {
 	z.traces.add(regions)
 	return nil
 }
 
-func (z *Zog) AddWatches(regions Regions) error {
+func (z *Zog) WatchRegions(regions Regions) error {
 	z.mem.watches.add(regions)
 	return nil
+}
+
+func (z *Zog) Watch16(l16 Loc16) {
+	z.watch16s[l16] = 0
 }
 
 func (z *Zog) Run(a *Assembly) error {
@@ -340,6 +346,16 @@ EXECUTING:
 		}
 		if z.traces.contains(lastPC) {
 			fmt.Printf("T: %s\n", z.reg)
+		}
+		for l16, v := range z.watch16s {
+			newV, err := l16.Read16(z)
+			if err != nil {
+				break EXECUTING
+			}
+			if newV != v {
+				fmt.Printf("W: %s %04X -> %04X\n", l16, v, newV)
+			}
+			z.watch16s[l16] = newV
 		}
 	}
 	// The only return should be on HALT. nil is bad here.
