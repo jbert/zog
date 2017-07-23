@@ -106,7 +106,7 @@ Add <- "ADD" ws "A" sep Src8    { p.Accum("ADD") }
 Adc <- "ADC" ws "A" sep Src8    { p.Accum("ADC") }
 Sub <- "SUB" ws Src8            { p.Accum("SUB") }
 Sbc <- "SBC" ws "A" sep Src8    { p.Accum("SBC") }
-And <- "AND" ws Src8            { p.Accum("AND") }
+And <- "AND" ws ("A" sep)? Src8            { p.Accum("AND") }
 Xor <- "XOR" ws Src8            { p.Accum("XOR") }
 Or  <- "OR"  ws Src8            { p.Accum("OR") }
 Cp  <- "CP"  ws Src8            { p.Accum("CP") }
