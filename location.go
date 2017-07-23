@@ -249,9 +249,20 @@ func (r *Registers) Read16(l R16) uint16 {
 		lo = r.IYL
 	case SP:
 		return r.SP
+	case PC:
+		return r.PC
 	case AF_PRIME:
 		hi = r.A_PRIME
 		lo = r.F_PRIME
+	case BC_PRIME:
+		hi = r.B_PRIME
+		lo = r.C_PRIME
+	case DE_PRIME:
+		hi = r.D_PRIME
+		lo = r.E_PRIME
+	case HL_PRIME:
+		hi = r.H_PRIME
+		lo = r.L_PRIME
 	default:
 		panic(fmt.Sprintf("Unknown R16: %d", l))
 	}
