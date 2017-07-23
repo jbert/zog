@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,10 +11,14 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	trace := flag.String("trace", "", "Trace addresses: start-end,s2-e2")
+	watch := flag.String("watch", "", "Watch addresses: start-end,s2-e2")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
 		usage("Missing filename")
 	}
-	fname := os.Args[1]
+	fname := flag.Arg(0)
 
 	buf, err := ioutil.ReadFile(fname)
 	if err != nil {
@@ -27,6 +32,25 @@ func main() {
 	}
 	loadAddr := uint16(0x0100)
 	runAddr := uint16(0x0100)
+
+	regions, err := zog.ParseRegions(*trace)
+	if err != nil {
+		log.Fatalf("Can't parse trace regions [%s]: %s", *trace, err)
+	}
+	err = z.AddTraces(regions)
+	if err != nil {
+		log.Fatalf("Can't add traces [%s]: %s", err)
+	}
+
+	regions, err = zog.ParseRegions(*watch)
+	if err != nil {
+		log.Fatalf("Can't parse watch regions [%s]: %s", *watch, err)
+	}
+	err = z.AddWatches(regions)
+	if err != nil {
+		log.Fatalf("Can't add watches [%s]: %s", err)
+	}
+
 	err = z.RunBytes(loadAddr, buf, runAddr)
 	if err != nil {
 		log.Fatalf("RunBytes returned error: %s", err)

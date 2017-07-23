@@ -3,8 +3,9 @@ package zog
 import "fmt"
 
 type Memory struct {
-	buf   []byte
-	debug bool
+	buf     []byte
+	debug   bool
+	watches Regions
 }
 
 func NewMemory(size uint16) *Memory {
@@ -31,8 +32,8 @@ func (m *Memory) Peek(addr uint16) (byte, error) {
 		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
 	}
 	n := m.buf[addr]
-	if m.debug {
-		fmt.Printf("MEM: RD %04X -> %02X\n", addr, n)
+	if m.debug || m.watches.contains(addr) {
+		fmt.Printf("MEM: %04X -> %02X\n", addr, n)
 	}
 	return n, nil
 }
@@ -42,8 +43,8 @@ func (m *Memory) Poke(addr uint16, n byte) error {
 		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
 	}
 	m.buf[addr] = n
-	if m.debug {
-		fmt.Printf("MEM: WR %04X <- %02X\n", addr, n)
+	if m.debug || m.watches.contains(addr) {
+		fmt.Printf("MEM: %04X <- %02X\n", addr, n)
 	}
 	return nil
 }

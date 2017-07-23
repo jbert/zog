@@ -3,6 +3,8 @@ package zog
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 type Zog struct {
@@ -20,6 +22,8 @@ type Zog struct {
 
 	outputHandlers map[uint16]func(n byte)
 	inputHandlers  map[uint16]func() byte
+
+	traces Regions
 }
 
 func New(memSize uint16) *Zog {
@@ -30,6 +34,62 @@ func New(memSize uint16) *Zog {
 	}
 	z.Clear()
 	return z
+}
+
+type Region struct {
+	start uint16
+	end   uint16
+}
+type Regions []Region
+
+func NewRegion(start, end uint16) Region {
+	return Region{start: start, end: end}
+}
+
+func ParseRegions(s string) (Regions, error) {
+	var regions Regions
+	startEnds := strings.Split(s, ",")
+	for _, startEnd := range startEnds {
+		bits := strings.Split(startEnd, "-")
+		start, err := strconv.ParseInt(bits[0], 16, 16)
+		if err != nil {
+			return regions, err
+		}
+		end, err := strconv.ParseInt(bits[1], 16, 16)
+		if err != nil {
+			return regions, err
+		}
+		region := NewRegion(uint16(start), uint16(end))
+		regions.add(Regions{region})
+	}
+	return regions, nil
+}
+
+func (rs *Regions) contains(addr uint16) bool {
+	for _, r := range *rs {
+		if r.contains(addr) {
+			return true
+		}
+	}
+	return false
+}
+
+func (rs *Regions) add(regions Regions) {
+	*rs = append(*rs, regions...)
+}
+
+func (r *Region) contains(addr uint16) bool {
+	return r.start <= addr && addr <= r.end
+}
+
+func (z *Zog) AddTraces(regions Regions) error {
+	z.traces.add(regions)
+	return nil
+}
+
+func (z *Zog) AddWatches(regions Regions) error {
+	z.mem.watches.add(regions)
+	return nil
 }
 
 func (z *Zog) Run(a *Assembly) error {
@@ -277,6 +337,9 @@ EXECUTING:
 		if err != nil {
 			// Error handling after the loop
 			break EXECUTING
+		}
+		if z.traces.contains(lastPC) {
+			fmt.Printf("T: %s\n", z.reg)
 		}
 	}
 	// The only return should be on HALT. nil is bad here.
