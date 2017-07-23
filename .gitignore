@@ -2,3 +2,7 @@ info
 .*.sw?
 *~
 tt
+*.bin
+*.lst
+err
+out
