@@ -1316,23 +1316,25 @@ func (s Simple) Execute(z *Zog) error {
 		z.reg.F = fReg
 		z.SetFlag(F_H, false)
 		z.SetFlag(F_N, false)
-		z.SetFlag(F_C, z.reg.A&0xf0 != 0)
+		z.SetFlag(F_C, z.reg.A&0x80 != 0)
 		return nil
 	case RLA:
 		fReg := z.reg.F
-		z.reg.A = rotRl(z, z.reg.A)
+		initialA := z.reg.A
+		z.reg.A = rotRl(z, initialA)
 		z.reg.F = fReg
 		z.SetFlag(F_H, false)
 		z.SetFlag(F_N, false)
-		z.SetFlag(F_C, z.reg.A&0x01 != 0)
+		z.SetFlag(F_C, initialA&0x80 != 0)
 		return nil
 	case RRA:
 		fReg := z.reg.F
-		z.reg.A = rotRr(z, z.reg.A)
+		initialA := z.reg.A
+		z.reg.A = rotRr(z, initialA)
 		z.reg.F = fReg
 		z.SetFlag(F_H, false)
 		z.SetFlag(F_N, false)
-		z.SetFlag(F_C, z.reg.A&0xf0 != 0)
+		z.SetFlag(F_C, initialA&0x01 != 0)
 		return nil
 	case DAA:
 
