@@ -15,6 +15,10 @@ func TestExecuteBasic(t *testing.T) {
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
 
+		{"LD A, 0x00 : OR A", []assert{locA{A, 0x00}, flagA{F_Z, true}}},
+		{"LD A, 0xff : OR A", []assert{locA{A, 0xff}, flagA{F_Z, false}}},
+		{"LD A, 0xff : XOR A", []assert{locA{A, 0x00}, flagA{F_Z, true}}},
+
 		{"LD B, 0x80 : RL B", []assert{locA{B, 0x00}, flagA{F_C, true}}},
 		{"LD B, 0x01 : RL B", []assert{locA{B, 0x02}, flagA{F_C, false}}},
 
