@@ -50,6 +50,10 @@ func NewRegion(start, end uint16) Region {
 
 func ParseRegions(s string) (Regions, error) {
 	var regions Regions
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return regions, nil
+	}
 	startEnds := strings.Split(s, ",")
 	for _, startEnd := range startEnds {
 		bits := strings.Split(startEnd, "-")
@@ -80,8 +84,20 @@ func (rs *Regions) add(regions Regions) {
 	*rs = append(*rs, regions...)
 }
 
+func (rs Regions) String() string {
+	var strs []string
+	for _, r := range rs {
+		strs = append(strs, r.String())
+	}
+	return strings.Join(strs, ",")
+}
+
 func (r *Region) contains(addr uint16) bool {
 	return r.start <= addr && addr <= r.end
+}
+
+func (r *Region) String() string {
+	return fmt.Sprintf("%04X-%04X", r.start, r.end)
 }
 
 func (z *Zog) TraceRegions(regions Regions) error {
