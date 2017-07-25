@@ -73,7 +73,11 @@ func (a *Assembly) ResolveAddresses() error {
 		if err != nil {
 			return fmt.Errorf("Failed to resolve label for [%s]: %s", a.Linsts[i].Inst, err)
 		}
-		fmt.Printf("%04X: %s\n", a.Linsts[i].Addr, a.Linsts[i].Inst)
+		label := a.Linsts[i].Label
+		if label != "" {
+			label += ":"
+		}
+		fmt.Printf("%-16s %04X: %s\n", label, a.Linsts[i].Addr, a.Linsts[i].Inst)
 	}
 	a.resolved = true
 	return nil
