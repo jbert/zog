@@ -1035,8 +1035,8 @@ func rotRr(z *Zog, v byte) byte {
 	l := v & 0x01
 	v = v >> 1
 
-	z.SetFlag(F_C, l == 1)
 	v = v | (getCY(z) << 7)
+	z.SetFlag(F_C, l == 1)
 	return v
 }
 func rotSla(z *Zog, v byte) byte {

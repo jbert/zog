@@ -15,6 +15,12 @@ func TestExecuteBasic(t *testing.T) {
 	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
 
+		{"SCF : RR B", []assert{locA{B, 0x80}, flagA{F_C, false}}},
+		{"LD B, 0x80 : RR B", []assert{locA{B, 0x40}, flagA{F_C, false}}},
+		{"LD B, 0x01 : RR B", []assert{locA{B, 0x00}, flagA{F_C, true}}},
+
+		{"LD A, 0xff : XOR A : LD HL, 0x1000 : INC HL", []assert{locA{A, 0x00}, flagA{F_Z, true}}},
+
 		{"LD A, 0x00 : OR A", []assert{locA{A, 0x00}, flagA{F_Z, true}}},
 		{"LD A, 0xff : OR A", []assert{locA{A, 0xff}, flagA{F_Z, false}}},
 		{"LD A, 0xff : XOR A", []assert{locA{A, 0x00}, flagA{F_Z, true}}},
@@ -27,6 +33,7 @@ func TestExecuteBasic(t *testing.T) {
 
 		{"LD A, 0x80 : RLA", []assert{locA{A, 0x00}, flagA{F_C, true}}},
 		{"LD A, 0x01 : RLA", []assert{locA{A, 0x02}, flagA{F_C, false}}},
+		{"SCF : RLA", []assert{locA{A, 0x01}, flagA{F_C, false}}},
 
 		{"LD A, 0x80 : RLCA", []assert{locA{A, 0x01}, flagA{F_C, true}}},
 		{"LD A, 0x01 : RLCA", []assert{locA{A, 0x02}, flagA{F_C, false}}},
