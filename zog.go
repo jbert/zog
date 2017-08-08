@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Zog struct {
@@ -112,6 +113,27 @@ func (z *Zog) WatchRegions(regions Regions) error {
 
 func (z *Zog) Watch16(l16 Loc16) {
 	z.watch16s[l16] = 0
+}
+
+func (z *Zog) State() string {
+	fz := 0
+	if z.GetFlag(F_Z) {
+		fz = 1
+	}
+	fc := 0
+	if z.GetFlag(F_C) {
+		fc = 1
+	}
+	return fmt.Sprintf("Z%dC%d AF %04X BC %04X DE %04X HL %04X SP %04X IX %04X IY %04X",
+		fz,
+		fc,
+		z.reg.Read16(AF),
+		z.reg.Read16(BC),
+		z.reg.Read16(DE),
+		z.reg.Read16(HL),
+		z.reg.Read16(SP),
+		z.reg.Read16(IX),
+		z.reg.Read16(IY))
 }
 
 func (z *Zog) Run(a *Assembly) error {
@@ -322,7 +344,7 @@ func (z *Zog) pop() uint16 {
 }
 
 func (z *Zog) out(port uint16, n byte) {
-	fmt.Printf("OUT: [%04X] %02X\n", port, n)
+	//	fmt.Printf("OUT: [%04X] %02X\n", port, n)
 	handler, ok := z.outputHandlers[port]
 	if ok {
 		handler(n)
@@ -341,6 +363,12 @@ func (z *Zog) in(port uint16) byte {
 
 func (z *Zog) execute(addr uint16) error {
 
+	ops := int64(0)
+	lastOps := int64(0)
+	emitEvery := int64(10000000)
+	startTime := time.Now()
+	lastEmit := startTime
+
 	var err error
 	var inst Instruction
 
@@ -354,14 +382,14 @@ EXECUTING:
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
 		}
-		fmt.Printf("I: %04X %s\n", lastPC, inst)
+		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
 		err = inst.Execute(z)
 		if err != nil {
 			// Error handling after the loop
 			break EXECUTING
 		}
 		if z.traces.contains(lastPC) {
-			fmt.Printf("T: %s\n", z.reg)
+			fmt.Printf("T: %s\n", z.State())
 		}
 		for l16, v := range z.watch16s {
 			newV, err := l16.Read16(z)
@@ -372,6 +400,15 @@ EXECUTING:
 				fmt.Printf("W: %s %04X -> %04X\n", l16, v, newV)
 			}
 			z.watch16s[l16] = newV
+		}
+		ops++
+		if ops%emitEvery == 0 {
+			now := time.Now()
+			dur := now.Sub(lastEmit)
+			opsPerSec := float64(ops-lastOps) / dur.Seconds()
+			fmt.Printf("%s: Total ops %d recent ops/sec %f\n", now.Sub(startTime), ops, opsPerSec)
+			lastEmit = now
+			lastOps = ops
 		}
 	}
 	// The only return should be on HALT. nil is bad here.
