@@ -58,11 +58,11 @@ func ParseRegions(s string) (Regions, error) {
 	startEnds := strings.Split(s, ",")
 	for _, startEnd := range startEnds {
 		bits := strings.Split(startEnd, "-")
-		start, err := strconv.ParseInt(bits[0], 16, 16)
+		start, err := strconv.ParseUint(bits[0], 16, 16)
 		if err != nil {
 			return regions, err
 		}
-		end, err := strconv.ParseInt(bits[1], 16, 16)
+		end, err := strconv.ParseUint(bits[1], 16, 16)
 		if err != nil {
 			return regions, err
 		}
@@ -116,17 +116,8 @@ func (z *Zog) Watch16(l16 Loc16) {
 }
 
 func (z *Zog) State() string {
-	fz := 0
-	if z.GetFlag(F_Z) {
-		fz = 1
-	}
-	fc := 0
-	if z.GetFlag(F_C) {
-		fc = 1
-	}
-	return fmt.Sprintf("Z%dC%d AF %04X BC %04X DE %04X HL %04X SP %04X IX %04X IY %04X",
-		fz,
-		fc,
+	return fmt.Sprintf("%s AF %04X BC %04X DE %04X HL %04X SP %04X IX %04X IY %04X",
+		z.FlagString(),
 		z.reg.Read16(AF),
 		z.reg.Read16(BC),
 		z.reg.Read16(DE),
@@ -232,7 +223,6 @@ func (f flag) String() string {
 	default:
 		panic(fmt.Sprintf("Unknown flag: %d", f))
 	}
-
 }
 
 func (z *Zog) SetFlag(f flag, new bool) {
@@ -266,14 +256,14 @@ func (z *Zog) FlagString() string {
 	s := ""
 	for i := 7; i >= 0; i-- {
 		f := flag(i)
+		if f == F_X1 || f == F_X2 {
+			continue
+		}
 		v := 0
 		if z.GetFlag(f) {
 			v = 1
 		}
 		s += fmt.Sprintf("%s%d", f, v)
-		if i != 0 {
-			s += " "
-		}
 	}
 	return s
 }
@@ -389,6 +379,7 @@ EXECUTING:
 			break EXECUTING
 		}
 		if z.traces.contains(lastPC) {
+			fmt.Printf("I: %04X %s\n", lastPC, inst)
 			fmt.Printf("T: %s\n", z.State())
 		}
 		for l16, v := range z.watch16s {
