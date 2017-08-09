@@ -221,7 +221,6 @@ func (i *InstBin16) exec(z *Zog, f func(uint16, uint16) uint16) error {
 	}
 
 	v := f(dst, src)
-	z.SetFlag(F_Z, v == 0)
 
 	err = i.dst.Write16(z, v)
 	if err != nil {
