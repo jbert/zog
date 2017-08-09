@@ -6,14 +6,28 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime/pprof"
 
 	"github.com/jbert/zog"
 )
 
 func main() {
+	cpuprofile := flag.String("cpuprofile", "", "write cpu profile `file`")
 	trace := flag.String("trace", "", "Trace addresses: start-end,s2-e2")
 	watch := flag.String("watch", "", "Watch addresses: start-end,s2-e2")
+	haltstate := flag.Bool("haltstate", false, "Print state on halt")
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	if flag.NArg() < 1 {
 		usage("Missing filename")
@@ -56,6 +70,10 @@ func main() {
 	err = z.RunBytes(loadAddr, buf, runAddr)
 	if err != nil {
 		log.Fatalf("RunBytes returned error: %s", err)
+	}
+
+	if *haltstate {
+		fmt.Printf("STATE: %s\n", z.State())
 	}
 }
 
