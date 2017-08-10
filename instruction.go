@@ -852,7 +852,7 @@ func aluAdd(z *Zog, a, b byte) byte {
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
 	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f))&0x10 != 0)
-	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, false)
 	z.SetFlag(F_C, int(a)+int(b) > 0xff)
 	return v
@@ -865,7 +865,7 @@ func aluAdc(z *Zog, a, b byte) byte {
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
 	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f))&0x10 != 0)
-	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, false)
 	z.SetFlag(F_C, int(a)+int(b) > 0xff)
 	return v
@@ -875,7 +875,7 @@ func aluSub(z *Zog, a, b byte) byte {
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
 	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x10 != 0)
-	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, true)
 	z.SetFlag(F_C, int(a)-int(b) < 0)
 	return v
@@ -889,7 +889,7 @@ func aluSbc(z *Zog, a, b byte) byte {
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
 	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f)-c)&0x10 != 0)
-	z.SetFlag(F_PV, isPos8(a) && !isPos8(v))
+	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, true)
 	z.SetFlag(F_C, int(a)-int(b) < 0)
 	return v
