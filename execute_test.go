@@ -24,6 +24,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_H, true},
 			flagA{F_PV, false},
 			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 		{"LD A, 0x80 : LD B, 0x80 : ADD A, B", []assert{
 			locA{A, 0x00},
@@ -32,6 +33,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_H, false},
 			flagA{F_PV, true},
 			flagA{F_N, false},
+			flagA{F_C, true},
 		}},
 		{"LD A, 0x7e : LD B, 1 : ADD A, B", []assert{
 			locA{A, 0x7f},
@@ -40,6 +42,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_H, false},
 			flagA{F_PV, false},
 			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 		{"LD A, 0x7f : LD B, 1 : ADD A, B", []assert{
 			locA{A, 0x80},
@@ -48,6 +51,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_H, true},
 			flagA{F_PV, true},
 			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 
 		//"ADC"
@@ -126,8 +130,127 @@ func TestExecuteAlu(t *testing.T) {
 		}},
 
 		//"SUB"
+		{"LD A, 0x0f : LD B, 0x01 : SUB B", []assert{
+			locA{A, 0x0e},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0x0f : LD B, 0x0f : SUB B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0x0f : LD B, 0x10 : SUB B", []assert{
+			locA{A, 0xff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+
+		{"LD A, 0x00 : LD B, 0x01 : SUB B", []assert{
+			locA{A, 0xff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
 
 		//"SBC"
+		{"LD A, 0x0f : LD B, 0x01 : SBC A, B", []assert{
+			locA{A, 0x0e},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0x0f : LD B, 0x0f : SBC A, B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0x0f : LD B, 0x10 : SBC A, B", []assert{
+			locA{A, 0xff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+
+		{"LD A, 0x00 : LD B, 0x01 : SBC A, B", []assert{
+			locA{A, 0xff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+
+		{"SCF : LD A, 0x0f : LD B, 0x00 : SBC A, B", []assert{
+			locA{A, 0x0e},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+
+		{"SCF : LD A, 0x0f : LD B, 0x0e : SBC A, B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+
+		{"SCF : LD A, 0x0f : LD B, 0x0f : SBC A, B", []assert{
+			locA{A, 0xff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+
+		{"SCF : LD A, 0x00 : LD B, 0x00 : SBC A, B", []assert{
+			locA{A, 0xff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+
 		//"AND"
 		//"XOR"
 		//"OR"

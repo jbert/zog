@@ -875,7 +875,7 @@ func aluSub(z *Zog, a, b byte) byte {
 	v := a - b
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x10 != 0)
+	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x80 != 0)
 	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, true)
 	z.SetFlag(F_C, int(a)-int(b) < 0)
@@ -889,10 +889,10 @@ func aluSbc(z *Zog, a, b byte) byte {
 	v := a - b - c
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f)-c)&0x10 != 0)
+	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f)-c)&0x80 != 0)
 	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, true)
-	z.SetFlag(F_C, int(a)-int(b) < 0)
+	z.SetFlag(F_C, int(a)-int(b)-int(c) < 0)
 	return v
 }
 func aluAnd(z *Zog, a, b byte) byte {
