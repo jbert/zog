@@ -10,9 +10,54 @@ type executeTestCase struct {
 	assertions []assert
 }
 
+var addr = uint16(0x100)
+var memSize = uint16(0x1000)
+
+func TestExecuteAlu(t *testing.T) {
+	testCases := []executeTestCase{
+
+		//"ADD"
+		{"LD A, 0x0f : LD B, 0x01 : ADD A, B", []assert{
+			locA{A, 0x10},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, false},
+		}},
+		{"LD A, 0x80 : LD B, 0x80 : ADD A, B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, true},
+		}},
+		{"LD A, 0x7e : LD B, 1 : ADD A, B", []assert{
+			locA{A, 0x7f},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+		}},
+		{"LD A, 0x7f : LD B, 1 : ADD A, B", []assert{
+			locA{A, 0x80},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+		}},
+	}
+	//"ADC"
+	//"SUB"
+	//"SBC"
+	//"AND"
+	//"XOR"
+	//"OR"
+	//"CP"
+
+	executeTestCases(t, testCases)
+}
+
 func TestExecuteBasic(t *testing.T) {
-	addr := uint16(0x100)
-	memSize := uint16(0x1000)
 	testCases := []executeTestCase{
 
 		{"SCF : LD HL, 0x4b18 : LD SP, 0x465e : ADC HL, SP : LD (0080h), SP : LD SP, 0x0100 : PUSH AF : POP DE", []assert{
@@ -321,6 +366,11 @@ func TestExecuteBasic(t *testing.T) {
 		{"LD H,10h : LD A, H", []assert{locA{A, 0x10}}},
 		{"LD L,10h : LD A, L", []assert{locA{A, 0x10}}},
 	}
+
+	executeTestCases(t, testCases)
+}
+
+func executeTestCases(t *testing.T, testCases []executeTestCase) {
 	for _, tc := range testCases {
 		fmt.Printf("=== Assemble: %s\n", tc.prog)
 		prog := tc.prog + " : HALT"
@@ -340,8 +390,24 @@ func TestExecuteBasic(t *testing.T) {
 		for _, assertion := range tc.assertions {
 			err := assertion.check(z)
 			if err != nil {
+				buf, _ := assembly.Encode()
+				fmt.Printf("encoded buf {%s] [%s]\n", bufToHex(buf), bufToDecimal(buf))
 				t.Fatal(err)
 			}
 		}
 	}
+}
+
+func bufToDecimal(buf []byte) string {
+	s := ""
+	first := true
+	for _, b := range buf {
+		if first {
+			first = false
+		} else {
+			s += ","
+		}
+		s += fmt.Sprintf("%d", b)
+	}
+	return s
 }
