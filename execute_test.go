@@ -252,8 +252,68 @@ func TestExecuteAlu(t *testing.T) {
 		}},
 
 		//"AND"
+		{"LD A, 0x00 : LD B, 0x00 : AND B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0xff : LD B, 0x80 : AND B", []assert{
+			locA{A, 0x80},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
+		}},
+
 		//"XOR"
+		{"LD A, 0x00 : LD B, 0x00 : XOR B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0xff : LD B, 0x01 : XOR B", []assert{
+			locA{A, 0xfe},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
+		}},
+
 		//"OR"
+		{"LD A, 0x00 : LD B, 0x00 : OR B", []assert{
+			locA{A, 0x00},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, false},
+		}},
+
+		{"LD A, 0x00 : LD B, 0x80 : OR B", []assert{
+			locA{A, 0x80},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
+		}},
+
 		//"CP"
 	}
 
