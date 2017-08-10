@@ -23,6 +23,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, true},
 			flagA{F_PV, false},
+			flagA{F_N, false},
 		}},
 		{"LD A, 0x80 : LD B, 0x80 : ADD A, B", []assert{
 			locA{A, 0x00},
@@ -30,6 +31,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, true},
 			flagA{F_H, false},
 			flagA{F_PV, true},
+			flagA{F_N, false},
 		}},
 		{"LD A, 0x7e : LD B, 1 : ADD A, B", []assert{
 			locA{A, 0x7f},
@@ -37,6 +39,7 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, false},
 			flagA{F_PV, false},
+			flagA{F_N, false},
 		}},
 		{"LD A, 0x7f : LD B, 1 : ADD A, B", []assert{
 			locA{A, 0x80},
@@ -44,7 +47,9 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, true},
 			flagA{F_PV, true},
+			flagA{F_N, false},
 		}},
+
 		//"ADC"
 		{"LD A, 0x0f : LD B, 0x01 : ADC A, B", []assert{
 			locA{A, 0x10},
@@ -52,6 +57,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, true},
 			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 		{"LD A, 0x80 : LD B, 0x80 : ADC A, B", []assert{
 			locA{A, 0x00},
@@ -59,6 +66,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, true},
 			flagA{F_H, false},
 			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, true},
 		}},
 		{"LD A, 0x7e : LD B, 1 : ADC A, B", []assert{
 			locA{A, 0x7f},
@@ -66,6 +75,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, false},
 			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 		{"LD A, 0x7f : LD B, 1 : ADC A, B", []assert{
 			locA{A, 0x80},
@@ -73,6 +84,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, true},
 			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 
 		{"SCF : LD A, 0x0f : LD B, 0x00 : ADC A, B", []assert{
@@ -81,6 +94,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, true},
 			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 		{"SCF : LD A, 0x80 : LD B, 0x7f : ADC A, B", []assert{
 			locA{A, 0x00},
@@ -88,6 +103,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, true},
 			flagA{F_H, true},
 			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, true},
 		}},
 		{"SCF : LD A, 0x7e : LD B, 0 : ADC A, B", []assert{
 			locA{A, 0x7f},
@@ -95,6 +112,8 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, false},
 			flagA{F_PV, false},
+			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
 		{"SCF : LD A, 0x7f : LD B, 0 : ADC A, B", []assert{
 			locA{A, 0x80},
@@ -102,8 +121,12 @@ func TestExecuteAlu(t *testing.T) {
 			flagA{F_Z, false},
 			flagA{F_H, true},
 			flagA{F_PV, true},
+			flagA{F_N, false},
+			flagA{F_C, false},
 		}},
+
 		//"SUB"
+
 		//"SBC"
 		//"AND"
 		//"XOR"
