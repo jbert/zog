@@ -6,6 +6,7 @@ type Memory struct {
 	buf     []byte
 	debug   bool
 	watches Regions
+	watchFunc func(addr uint16, old byte, new byte)
 }
 
 func NewMemory(size uint16) *Memory {
@@ -23,6 +24,10 @@ func (m *Memory) SetDebug(debug bool) {
 	m.debug = debug
 }
 
+func (m *Memory) SetWatchFunc(wf func(uint16, byte, byte)) {
+	m.watchFunc = wf
+}
+
 func (m *Memory) Len() int {
 	return len(m.buf)
 }
@@ -32,9 +37,9 @@ func (m *Memory) Peek(addr uint16) (byte, error) {
 		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
 	}
 	n := m.buf[addr]
-	if m.debug || m.watches.contains(addr) {
-		fmt.Printf("MEM: %04X -> %02X\n", addr, n)
-	}
+//	if m.debug || m.watches.contains(addr) {
+//		fmt.Printf("MEM: %04X -> %02X\n", addr, n)
+//	}
 	return n, nil
 }
 
@@ -42,10 +47,11 @@ func (m *Memory) Poke(addr uint16, n byte) error {
 	if int(addr) >= m.Len() {
 		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
 	}
-	m.buf[addr] = n
 	if m.debug || m.watches.contains(addr) {
-		fmt.Printf("MEM: %04X <- %02X\n", addr, n)
+//		fmt.Printf("MEM: %04X <- %02X\n", addr, n)
+		m.watchFunc(addr, m.buf[addr], n)
 	}
+	m.buf[addr] = n
 	return nil
 }
 

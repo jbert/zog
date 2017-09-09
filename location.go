@@ -47,6 +47,17 @@ type Registers struct {
 	PC uint16
 }
 
+func (r Registers) Summary() string {
+	return fmt.Sprintf("AF %04X BC %04X DE %04X HL %04X SP %04X IX %04X IY %04X",
+		r.Read16(AF),
+		r.Read16(BC),
+		r.Read16(DE),
+		r.Read16(HL),
+		r.Read16(SP),
+		r.Read16(IX),
+		r.Read16(IY))
+}
+
 func (r Registers) String() string {
 	return fmt.Sprintf("AF %04X BC %04X DE %04X HL %04X AF' %04X BC' %04X DE' %04X HL' %04X SP %04X PC %04X IX %04X IY %04X",
 		r.Read16(AF),

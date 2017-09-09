@@ -24,8 +24,33 @@ type Zog struct {
 	outputHandlers map[uint16]func(n byte)
 	inputHandlers  map[uint16]func() byte
 
-	traces   Regions
-	watch16s map[Loc16]uint16
+	traces Regions
+
+	eTrace executeTrace
+
+	numRecentTraces   int
+	indexRecentTraces int
+	recentTraces      []executeTrace
+}
+
+type locWatch struct {
+	new byte
+	old byte
+}
+
+type executeTrace struct {
+	pc      uint16
+	inst    Instruction
+	reg     Registers
+	watches map[uint16]locWatch
+}
+
+func (et *executeTrace) String() string {
+	s := fmt.Sprintf("%04X %s %s", et.pc, et.reg.Summary(), et.inst)
+	for addr, lw := range et.watches {
+		s += fmt.Sprintf(" W:%04X [%02X->%02X]", addr, lw.old, lw.new)
+	}
+	return s
 }
 
 func New(memSize uint16) *Zog {
@@ -33,7 +58,6 @@ func New(memSize uint16) *Zog {
 		mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
 		inputHandlers:  make(map[uint16]func() byte),
-		watch16s:       make(map[Loc16]uint16),
 	}
 	z.Clear()
 	return z
@@ -107,12 +131,13 @@ func (z *Zog) TraceRegions(regions Regions) error {
 }
 
 func (z *Zog) WatchRegions(regions Regions) error {
+	z.mem.SetWatchFunc(z.memWatchSeen)
 	z.mem.watches.add(regions)
 	return nil
 }
 
-func (z *Zog) Watch16(l16 Loc16) {
-	z.watch16s[l16] = 0
+func (z *Zog) TraceOnHalt(numHaltTraces int) {
+	z.numRecentTraces = numHaltTraces
 }
 
 func (z *Zog) State() string {
@@ -351,6 +376,20 @@ func (z *Zog) in(port uint16) byte {
 	return n
 }
 
+func (z *Zog) addRecentTrace(et executeTrace) {
+	if z.numRecentTraces <= 0 {
+		panic("wtf")
+	}
+	if len(z.recentTraces) < z.numRecentTraces {
+		z.recentTraces = append(z.recentTraces, et)
+		return
+	}
+	z.recentTraces[z.indexRecentTraces] = et
+	z.indexRecentTraces++
+	z.indexRecentTraces = z.indexRecentTraces % z.numRecentTraces
+	return
+}
+
 func (z *Zog) execute(addr uint16) error {
 
 	ops := int64(0)
@@ -372,25 +411,19 @@ EXECUTING:
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
 		}
+		z.eTrace = executeTrace{pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
 		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
-		err = inst.Execute(z)
-		if err != nil {
-			// Error handling after the loop
-			break EXECUTING
-		}
+		instErr := inst.Execute(z)
 		if z.traces.contains(lastPC) {
-			fmt.Printf("I: %04X %s\n", lastPC, inst)
-			fmt.Printf("T: %s\n", z.State())
+			println(z.eTrace.String())
 		}
-		for l16, v := range z.watch16s {
-			newV, err := l16.Read16(z)
-			if err != nil {
-				break EXECUTING
-			}
-			if newV != v {
-				fmt.Printf("W: %s %04X -> %04X\n", l16, v, newV)
-			}
-			z.watch16s[l16] = newV
+		if z.numRecentTraces > 0 {
+			z.addRecentTrace(z.eTrace)
+		}
+		if instErr != nil {
+			// Error handling after the loop
+			err = instErr
+			break EXECUTING
 		}
 		ops++
 		if ops%emitEvery == 0 {
@@ -402,6 +435,12 @@ EXECUTING:
 			lastOps = ops
 		}
 	}
+
+	if z.numRecentTraces > 0 {
+		for i := range z.recentTraces {
+			fmt.Printf("%s\n", z.recentTraces[(i+z.indexRecentTraces)%z.numRecentTraces].String())
+		}
+	}
 	// The only return should be on HALT. nil is bad here.
 	if err == ErrHalted {
 		return nil
@@ -410,4 +449,8 @@ EXECUTING:
 		return errors.New("Execute returned nil error")
 	}
 	return fmt.Errorf("Failed to execute: %s", err)
+}
+
+func (z *Zog) memWatchSeen(addr uint16, old byte, new byte) {
+	z.eTrace.watches[addr] = locWatch{old: old, new: new}
 }

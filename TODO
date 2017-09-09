@@ -18,7 +18,7 @@
   (different re-init may have different perf characteristics. e.g. map is normally entry
   or small, may be worth scan+delete rather than re-alloc empty)
 
-- redo mem watches as callback
+DONE - redo mem watches as callback
   - so can hook into ET without checking every instruction
 
 - consider working labels in assembler

@@ -16,6 +16,7 @@ func main() {
 	trace := flag.String("trace", "", "Trace addresses: start-end,s2-e2")
 	watch := flag.String("watch", "", "Watch addresses: start-end,s2-e2")
 	haltstate := flag.Bool("haltstate", false, "Print state on halt")
+	numhalttrace := flag.Int("halttrace", 0, "Number of traces to print on halt")
 	flag.Parse()
 
 	if *cpuprofile != "" {
@@ -40,6 +41,7 @@ func main() {
 	}
 
 	z := zog.New(0)
+	z.TraceOnHalt(*numhalttrace)
 	err = loadPseudoCPM(z)
 	if err != nil {
 		log.Fatalf("Failed to load pCPM: %s", err)
