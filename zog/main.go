@@ -119,7 +119,7 @@ func (sps speccyPrintState) wantB() bool {
 }
 
 func (sps *speccyPrintState) speccyPrintByte(n byte) {
-//fmt.Printf("JB [%02X] [%c]\n", n, n)
+fmt.Printf("JB [%02X] [%c] col [%d]\n", n, n, sps.column)
 	if sps.wantA() {
 		sps.a = n 
 		sps.haveA = true
@@ -130,11 +130,14 @@ func (sps *speccyPrintState) speccyPrintByte(n byte) {
 			col := (int(sps.a) + (256 + int(n))) % 32
 			if col < sps.column {
 				printRune('\n')
+				sps.column = 0
 				sps.row++
 			}
 			nSpaces := col -sps.column
+			fmt.Printf("JB col [%d] nspaces [%d]\n", col, nSpaces)
 			for i := 0; i < nSpaces; i++ {
 				printRune(' ')
+				sps.column++
 			}
 			sps.column = col
 			sps.clear()
@@ -154,7 +157,7 @@ func (sps *speccyPrintState) speccyPrintByte(n byte) {
 		r = 0x0a
 		sps.column = 0
 	case BRIGHT, AT, TAB:
-		*sps = speccyPrintState{n: n}
+		sps.n = n
 		return
 	case 0x5e:
 		r = '↑'
@@ -172,6 +175,11 @@ func (sps *speccyPrintState) speccyPrintByte(n byte) {
 		}
 	}
 //	fmt.Printf("JB Printing [%02X]\n", r)
+	if sps.column > 32 {
+		printRune('\n')
+		sps.column = 0
+		sps.row++
+	}
 	printRune(r)
 	sps.column++
 	sps.clear()
