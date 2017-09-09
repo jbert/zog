@@ -336,7 +336,7 @@ func (a *ADC16) Execute(z *Zog) error {
 		overflow := (isPos16(a) && isPos16(b) && !isPos16(v)) || (!isPos16(a) && !isPos16(b) && isPos16(v))
 		z.SetFlag(F_PV, overflow)
 		z.SetFlag(F_N, false)
-		z.SetFlag(F_C, v32 > 0xffff)
+		z.SetFlag(F_C, v32 >= 0x10000)
 		//		fmt.Fprintf(os.Stderr, "JB ADC16 a %04x b %04x v %04x (carry %d)\n", a, b, v, c)
 		return v
 	})
@@ -365,22 +365,20 @@ func isPos16(v uint16) bool {
 	return v&0x8000 == 0
 }
 func (s *SBC16) Execute(z *Zog) error {
-	return s.exec(z, func(dst, src uint16) uint16 {
-		a := uint32(dst)
-		b := uint32(src)
-		c := uint32(0)
+	return s.exec(z, func(a, b uint16) uint16 {
+		c := uint16(0)
 		if z.GetFlag(F_C) {
 			c = 1
 		}
-		v32 := a - b - c
+		v32 := uint32(a) - uint32(b) - uint32(c)
 		v := uint16(v32)
 		z.SetFlag(F_S, !isPos16(v))
 		z.SetFlag(F_Z, v == 0)
 		z.SetFlag(F_H, ((a&0x0fff)-(b&0x0fff)-c)&0x1000 != 0)
-		overflow := (isPos16(dst) && isPos16(src) && !isPos16(v)) || (!isPos16(dst) && !isPos16(src) && isPos16(v))
+		overflow := (isPos16(a) && !isPos16(v)) || (!isPos16(a) && isPos16(v))
 		z.SetFlag(F_PV, overflow)
 		z.SetFlag(F_N, true)
-		z.SetFlag(F_C, isPos16(dst) && !isPos16(v))
+		z.SetFlag(F_C, isPos16(a) && !isPos16(v))
 		return v
 	})
 }
