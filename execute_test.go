@@ -13,6 +13,68 @@ type executeTestCase struct {
 var addr = uint16(0x100)
 var memSize = uint16(0x1000)
 
+func TestExecuteAdcSbc16(t *testing.T) {
+	testCases := []executeTestCase{
+
+		//"SBC"
+		{"LD HL, 0x1234 : LD DE, 0x0000 : SBC HL, DE", []assert{
+			loc16A{HL, 0x1234},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+		{"LD HL, 0x8000 : LD DE, 0x0000 : SBC HL, DE", []assert{
+			loc16A{HL, 0x8000},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+		{"LD HL, 0x1234 : LD DE, 0x1234 : SBC HL, DE", []assert{
+			loc16A{HL, 0x0000},
+			flagA{F_S, false},
+			flagA{F_Z, true},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+		{"LD HL, 0x1000 : LD DE, 0x0fff : SBC HL, DE", []assert{
+			loc16A{HL, 0x0001},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
+		{"LD HL, 0x0000 : LD DE, 0x0001 : SBC HL, DE", []assert{
+			loc16A{HL, 0xffff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, true},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+		{"LD HL, 0x8000 : LD DE, 0x8001 : SBC HL, DE", []assert{
+			loc16A{HL, 0xffff},
+			flagA{F_S, true},
+			flagA{F_Z, false},
+			flagA{F_H, true},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, true},
+		}},
+	}
+	executeTestCases(t, testCases)
+}
+
 func TestExecuteAlu(t *testing.T) {
 	testCases := []executeTestCase{
 
@@ -315,6 +377,15 @@ func TestExecuteAlu(t *testing.T) {
 		}},
 
 		//"CP"
+		{"LD A, 0x10 : CP 0x00", []assert{
+			locA{A, 0x10},
+			flagA{F_S, false},
+			flagA{F_Z, false},
+			flagA{F_H, false},
+			flagA{F_PV, false},
+			flagA{F_N, true},
+			flagA{F_C, false},
+		}},
 	}
 
 	executeTestCases(t, testCases)
