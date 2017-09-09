@@ -1,13 +1,29 @@
-DONE - get a cmdline tool to run a binary file
-  - assemble some examples with zmac assembler
+- write spectrum-like print routines for z80test
 
-DONE - prelim.com running
+- zexall
+  - huh. of course CRC is only compared at the end of the run, so don't know
+  which instruction in the batch error'd the CRC...
 
-- improve flags
-  - how to handle half-carry?
+  - bug:
+    RES/SET use InstU8 hence set S+Z flags
+    (CP uses explicit save/restore to avoid)
 
-- take prelim.z80 from zexall and port in the same way that CPM.zip/zexall was ported
-DONE - run prelim on emulator with CPM prelude
+  - impl add/adc16 with same exec helper
+    - see if it passes zexall adc
+
+
+- performance
+  - don't allocate an executeTrace in each instruction execution
+  instead, re-initialise the slot in the haltTrace ring buffer
+  (different re-init may have different perf characteristics. e.g. map is normally entry
+  or small, may be worth scan+delete rather than re-alloc empty)
+
+- redo mem watches as callback
+  - so can hook into ET without checking every instruction
+
+- consider working labels in assembler
+  - JP foo, JR foo, LD A, (foo)
+
 
 
   - grab a ROM and see where it dies! (spectrum-roms ubuntu pkg)
