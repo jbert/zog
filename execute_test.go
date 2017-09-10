@@ -13,6 +13,22 @@ type executeTestCase struct {
 var addr = uint16(0x100)
 var memSize = uint16(0x1000)
 
+func TestExecuteDAA(t *testing.T) {
+	// https://stackoverflow.com/questions/8119577/z80-daa-instruction
+	testCases := []executeTestCase{
+		{"LD A, 0x4F : OR 0xf0 : DAA : ADD A, 0xA0 : ADC A, 0x40", []assert{ locA{A, 0x46}, }},
+
+		{"LD A, 0x00 : LD B, 0x00 : ADD A, B : DAA", []assert{ locA{A, 0x00}, }},
+		{"LD A, 0x05 : LD B, 0x05 : ADD A, B : DAA", []assert{ locA{A, 0x10}, }},
+		{"LD A, 0x15 : LD B, 0x05 : ADD A, B : DAA", []assert{ locA{A, 0x20}, }},
+
+		{"LD A, 0x00 : LD B, 0x00 : SUB B : DAA", []assert{ locA{A, 0x00}, }},
+		{"LD A, 0x88 : LD B, 0x88 : SUB B : DAA", []assert{ locA{A, 0x00}, }},
+		{"LD A, 0x10 : LD B, 0x05 : SUB B : DAA", []assert{ locA{A, 0x05}, }},
+	}
+	executeTestCases(t, testCases)
+}
+
 func TestExecuteAdcSbc16(t *testing.T) {
 	testCases := []executeTestCase{
 

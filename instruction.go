@@ -1341,7 +1341,8 @@ func (s Simple) Execute(z *Zog) error {
 		return nil
 	case DAA:
 
-		// See z80heaven
+		// z80heaven - but that doesn't even look at the N flag :-/
+/* ---
 		v := z.reg.A
 		lo := v & 0x0f
 		if z.GetFlag(F_H) || lo > 9 {
@@ -1354,7 +1355,42 @@ func (s Simple) Execute(z *Zog) error {
 		} else {
 			z.SetFlag(F_C, false)
 		}
+		z.reg.A = v
 		setParity(z, v)
+	--- */
+
+		// http://www.worldofspectrum.org/faq/reference/z80reference.htm#DAA
+		v := z.reg.A
+		c := z.GetFlag(F_C)
+		h := z.GetFlag(F_H)
+		n := z.GetFlag(F_N)
+		newCarry := c
+		correctionFactor  := byte(0x00)
+		if v > 0x99 || c {
+			correctionFactor |= 0x60
+			newCarry = true
+		} else {
+			newCarry = false
+		}
+		if v & 0x0f > 9 || h {
+			correctionFactor |= 0x06
+		}
+		if n {
+			v -= correctionFactor
+		} else {
+			v += correctionFactor
+		}
+
+		// Bit 4 of: A(before) XOR A(after).
+		newH := z.reg.A ^ v
+		newH &= 0x80
+		z.SetFlag(F_H, newH != 0)
+		z.SetFlag(F_C, newCarry)
+		setParity(z, v)
+		z.SetFlag(F_S, !isPos8(v))
+		z.SetFlag(F_Z, v == 0)
+
+		z.reg.A = v
 		return nil
 	case CPL:
 		z.reg.A = z.reg.A ^ 0xff
