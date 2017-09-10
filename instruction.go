@@ -1062,7 +1062,7 @@ func rotSla(z *Zog, v byte) byte {
 }
 func rotSra(z *Zog, v byte) byte {
 	l := v & 0x01
-	h := (v & 0x80) >> 7
+	h := (v & 0x80)
 	v = v >> 1
 
 	z.SetFlag(F_C, l == 1)
