@@ -1394,7 +1394,7 @@ func (s Simple) Execute(z *Zog) error {
 
 		// Bit 4 of: A(before) XOR A(after).
 		newH := z.reg.A ^ v
-		newH &= 0x80
+		newH &= 0x10
 		z.SetFlag(F_H, newH != 0)
 		z.SetFlag(F_C, newCarry)
 		setParity(z, v)
