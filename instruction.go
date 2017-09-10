@@ -1168,6 +1168,11 @@ func (b *BIT) Execute(z *Zog) error {
 	z.SetFlag(F_Z, bit == 0)
 	z.SetFlag(F_N, false)
 	z.SetFlag(F_H, true)
+
+	// PV as Z, S set only if n=7 and b7 of r set
+	z.SetFlag(F_PV, bit == 0)
+	z.SetFlag(F_S, b.num == 7 && bit == 1)
+
 	return nil
 }
 
