@@ -1673,6 +1673,13 @@ func (s EDSimple) Execute(z *Zog) error {
 		a = a & 0xf0
 		a = a | n1
 		z.reg.Write8(A, a)
+
+		z.SetFlag(F_S, !isPos8(a))
+		z.SetFlag(F_Z, a == 0)
+		z.SetFlag(F_H, false)
+		setParity(z, a)
+		z.SetFlag(F_N, false)
+
 		// Set (HL) to n3 n2
 		n = n3<<4 | n2
 		err = z.mem.Poke(hl, n)
@@ -1700,11 +1707,17 @@ func (s EDSimple) Execute(z *Zog) error {
 		// Set low nibble of A to n2
 		a = a & 0xf0
 		a = a | n2
+
+		z.SetFlag(F_S, !isPos8(a))
+		z.SetFlag(F_Z, a == 0)
+		z.SetFlag(F_H, false)
+		setParity(z, a)
+		z.SetFlag(F_N, false)
+
 		z.reg.Write8(A, a)
 		// Set (HL) to n1 n3
 		n = n1<<4 | n3
 		err = z.mem.Poke(hl, n)
-
 		return nil
 	case IM0:
 		z.im(0)
