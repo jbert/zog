@@ -171,7 +171,7 @@ fmt.Printf("JB [%02X] [%c] col [%d]\n", n, n, sps.column)
 		} else if r >=  0x20 && r <= 0x7f {
 			// Rest of ASCII
 		} else {
-			panic(fmt.Sprintf("Unmapped code [%02X]", n))
+//			panic(fmt.Sprintf("Unmapped code [%02X]", n))
 		}
 	}
 //	fmt.Printf("JB Printing [%02X]\n", r)
