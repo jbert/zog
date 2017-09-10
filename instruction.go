@@ -845,14 +845,32 @@ func NewAccum(name string, l Loc8) *accum {
 func isPos8(v byte) bool {
 	return v&0x80 == 0
 }
+/*
 func aluAdd(z *Zog, a, b byte) byte {
-	v := a + b
-	z.SetFlag(F_S, !isPos8(v))
+	v := a+b
+	z.SetFlag(F_S, v & 0x80 != 0)
 	z.SetFlag(F_Z, v == 0)
 	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f))&0x10 != 0)
-	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
+	vSigned := int(int8(a)) + int(int8(b))
+	z.SetFlag(F_PV, vSigned >= 0x80 || vSigned < -0x80)
 	z.SetFlag(F_N, false)
-	z.SetFlag(F_C, int(a)+int(b) > 0xff)
+	z.SetFlag(F_C, int(a) + int(b) > 0xff)
+	return v
+}
+*/
+func aluAdd(z *Zog, a, b byte) byte {
+	return adcHelper(z, a, b, 0)
+}
+
+func adcHelper(z *Zog, a, b, c byte) byte {
+	v := a+b+c
+	z.SetFlag(F_S, !isPos8(v))
+	z.SetFlag(F_Z, v == 0)
+	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f)+c)&0x10 != 0)
+	vSigned := int(int8(a)) + int(int8(b)) + int(c)
+	z.SetFlag(F_PV, vSigned >= 0x80 || vSigned < -0x80)
+	z.SetFlag(F_N, false)
+	z.SetFlag(F_C, int(a) + int(b) + int(c) > 0xff)
 	return v
 }
 func aluAdc(z *Zog, a, b byte) byte {
@@ -860,23 +878,16 @@ func aluAdc(z *Zog, a, b byte) byte {
 	if z.GetFlag(F_C) {
 		c = 1
 	}
-	v := a + b + c
-	z.SetFlag(F_S, !isPos8(v))
-	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f)+c)&0x10 != 0)
-	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
-	z.SetFlag(F_N, false)
-	z.SetFlag(F_C, int(a)+int(b)+int(c) > 0xff)
-	return v
+	return adcHelper(z, a, b, c)
 }
 func aluSub(z *Zog, a, b byte) byte {
 	v := a - b
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x80 != 0)
+	z.SetFlag(F_H, ((a&0x0f) < (b&0x0f)))
 	z.SetFlag(F_PV, isPos8(a) != isPos8(v))
 	z.SetFlag(F_N, true)
-	z.SetFlag(F_C, int(a)-int(b) < 0)
+	z.SetFlag(F_C, int(a) < int(b))
 	return v
 }
 func aluSbc(z *Zog, a, b byte) byte {
