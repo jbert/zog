@@ -134,7 +134,7 @@ fmt.Printf("JB [%02X] [%c] col [%d]\n", n, n, sps.column)
 				sps.row++
 			}
 			nSpaces := col -sps.column
-			fmt.Printf("JB col [%d] nspaces [%d]\n", col, nSpaces)
+//			fmt.Printf("JB col [%d] nspaces [%d]\n", col, nSpaces)
 			for i := 0; i < nSpaces; i++ {
 				printRune(' ')
 				sps.column++
