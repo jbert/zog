@@ -1398,10 +1398,16 @@ func (s Simple) Execute(z *Zog) error {
 		z.SetFlag(F_N, true)
 		return nil
 	case SCF:
+		z.SetFlag(F_H, false)
+		z.SetFlag(F_N, false)
 		z.SetFlag(F_C, true)
 		return nil
 	case CCF:
-		z.SetFlag(F_C, false)
+		c := z.GetFlag(F_C)
+		h := z.GetFlag(F_H)
+		z.SetFlag(F_C, !c)
+		z.SetFlag(F_H, !h)
+		z.SetFlag(F_N, false)
 		return nil
 
 	case EXX:
