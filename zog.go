@@ -390,7 +390,7 @@ func (z *Zog) addRecentTrace(et executeTrace) {
 	return
 }
 
-func (z *Zog) execute(addr uint16) error {
+func (z *Zog) execute(addr uint16) (errRet error) {
 
 	ops := int64(0)
 	lastOps := int64(0)
@@ -402,6 +402,22 @@ func (z *Zog) execute(addr uint16) error {
 	var inst Instruction
 
 	z.reg.PC = addr
+
+	defer func() {
+		if r := recover(); r != nil {
+			switch v := r.(type) {
+			case error:
+				errRet = v
+			default:
+				errRet = fmt.Errorf("PANIC: %v", v)
+			}
+		}	
+		if z.numRecentTraces > 0 {
+			for i := range z.recentTraces {
+				fmt.Printf("%s\n", z.recentTraces[(i+z.indexRecentTraces)%z.numRecentTraces].String())
+			}
+		}
+	}()
 
 EXECUTING:
 	for {
@@ -436,11 +452,6 @@ EXECUTING:
 		}
 	}
 
-	if z.numRecentTraces > 0 {
-		for i := range z.recentTraces {
-			fmt.Printf("%s\n", z.recentTraces[(i+z.indexRecentTraces)%z.numRecentTraces].String())
-		}
-	}
 	// The only return should be on HALT. nil is bad here.
 	if err == ErrHalted {
 		return nil
