@@ -1553,18 +1553,19 @@ func (s EDSimple) Execute(z *Zog) error {
 		v := a - b
 
 		bc--
-		z.reg.Write16(BC, bc)
 		if inc {
 			hl++
 		} else {
 			hl--
 		}
+
 		z.reg.Write16(HL, hl)
+		z.reg.Write16(BC, bc)
 
 		z.SetFlag(F_S, !isPos8(v))
 		z.SetFlag(F_Z, v == 0)
 		z.SetFlag(F_H, ((a&0x0f)-(b&0x0f))&0x10 != 0)
-		z.SetFlag(F_PV, bc == 0)
+		z.SetFlag(F_PV, bc != 0)
 		z.SetFlag(F_N, true)
 
 		return nil
@@ -1611,6 +1612,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		z.reg.Write16(HL, hl)
 		z.reg.B--
 		z.SetFlag(F_Z, z.reg.B == 0)
+
 		return nil
 	}
 
@@ -1630,7 +1632,6 @@ func (s EDSimple) Execute(z *Zog) error {
 		}
 
 		bc--
-		z.reg.Write16(BC, bc)
 		if inc {
 			de++
 			hl++
@@ -1638,10 +1639,22 @@ func (s EDSimple) Execute(z *Zog) error {
 			de--
 			hl--
 		}
+		z.reg.Write16(BC, bc)
 		z.reg.Write16(DE, de)
 		z.reg.Write16(HL, hl)
 
-		z.SetFlag(F_PV, bc == 0)
+		a := z.reg.A
+		a += n
+		b1 := a & 0x02
+		b3 := a & 0x08
+		z.SetFlag(F_5, b1 != 0)
+		z.SetFlag(F_3, b3 != 0)
+
+		z.SetFlag(F_H, false)
+		z.SetFlag(F_N, false)
+
+		z.SetFlag(F_PV, bc != 0)
+
 		return nil
 	}
 
@@ -1748,7 +1761,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
-			if z.GetFlag(F_PV) {
+			if !z.GetFlag(F_PV) {
 				break
 			}
 		}
@@ -1759,18 +1772,18 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
-			if z.GetFlag(F_PV) {
+			if !z.GetFlag(F_PV) || z.GetFlag(F_Z) {
 				break
 			}
 		}
 		return nil
 	case LDDR:
 		for {
-			err := ldHelper(z, true)
+			err := ldHelper(z, false)
 			if err != nil {
 				return err
 			}
-			if z.GetFlag(F_PV) {
+			if !z.GetFlag(F_PV) {
 				break
 			}
 		}
@@ -1781,7 +1794,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
-			if z.GetFlag(F_PV) {
+			if !z.GetFlag(F_PV) || z.GetFlag(F_Z) {
 				break
 			}
 		}
