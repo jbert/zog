@@ -1,4 +1,30 @@
-- write spectrum-like print routines for z80test
+- create a 'machine' interface
+  - CP/M and Speccy
+  - loaded by zog
+
+- start on spectrum hardware
+  - work out how to interrupt main loop to do screen refresh
+  (happens progressively)
+  (maybe just have a 'tick' function to update screen)
+  (and call that in a time loop to start with)
+  - add hardware interrupt at correct-ish rate
+    - ei/di
+  - add keyboard
+  - try loading a ROM
+  - will need read-only memory at some pt
+
+
+
+- Fix remaining z80test problems
+  DONE - ldi/ldir/etc
+  - LD A, I : LD A, R
+
+- add some kind of ALU interrupt to read memory and display image
+  - use SDL to draw image
+
+DONE - write spectrum-like print routines for z80test
+
+- find (and remove boilerplate) of the F_Z/F_S etc setting
 
 - zexall
   - huh. of course CRC is only compared at the end of the run, so don't know
