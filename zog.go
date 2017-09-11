@@ -220,9 +220,9 @@ const (
 	F_C flag = iota
 	F_N
 	F_PV
-	F_X1
+	F_3
 	F_H
-	F_X2
+	F_5
 	F_Z
 	F_S
 )
@@ -235,11 +235,11 @@ func (f flag) String() string {
 		return "N"
 	case F_PV:
 		return "PV"
-	case F_X1:
+	case F_3:
 		return "X1"
 	case F_H:
 		return "H"
-	case F_X2:
+	case F_5:
 		return "X2"
 	case F_Z:
 		return "Z"
@@ -281,7 +281,7 @@ func (z *Zog) FlagString() string {
 	s := ""
 	for i := 7; i >= 0; i-- {
 		f := flag(i)
-		if f == F_X1 || f == F_X2 {
+		if f == F_3 || f == F_5 {
 			continue
 		}
 		v := 0

@@ -729,6 +729,10 @@ func (i *IN) Execute(z *Zog) error {
 		addr = uint16(z.reg.A) | (uint16(z.reg.A) << 8)
 	}
 	n := z.in(addr)
+	z.SetFlag(F_S, !isPos8(n))
+	z.SetFlag(F_Z, n == 0)
+	z.SetFlag(F_N, false)
+	setParity(z, n)
 	return i.dst.Write8(z, n)
 }
 
