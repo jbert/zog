@@ -93,12 +93,13 @@ func (s *Screen) drawScanline(y int) {
 		for bit := 0; bit < 8; bit++ {
 			x := i*8 + bit
 			if b&0x80 != 0 {
-				s.renderer.SetDrawColor(255, 0, 0, 255)
+				s.renderer.SetDrawColor(0, 0, 0, 255)
 			} else {
-				s.renderer.SetDrawColor(0, 0, 255, 255)
+				s.renderer.SetDrawColor(255, 255, 255, 255)
 			}
+			fmt.Printf("x %d y %d i %d bit %d\n", x, y, i, b)
 			s.renderer.DrawPoint(x, y)
-			bit <<= 1
+			b <<= 1
 		}
 	}
 }

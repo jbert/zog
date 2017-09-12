@@ -3,6 +3,7 @@ package zog
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
 	"time"
@@ -166,6 +167,18 @@ func (z *Zog) RunBytes(loadAddr uint16, buf []byte, runAddr uint16) error {
 		return nil
 	}
 	return z.execute(runAddr)
+}
+
+func (z *Zog) LoadROMFile(addr uint16, fname string) error {
+	return z.loadFile(addr, fname, true)
+}
+
+func (z *Zog) loadFile(addr uint16, fname string, readonly bool) error {
+	buf, err := ioutil.ReadFile(fname)
+	if err != nil {
+		return fmt.Errorf("Can't load file [%s]: %s", fname, err)
+	}
+	return z.LoadBytes(addr, buf)
 }
 
 func (z *Zog) LoadBytes(addr uint16, buf []byte) error {

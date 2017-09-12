@@ -30,7 +30,7 @@ func (m Machine) LoadAddr() uint16 {
 }
 
 func (m Machine) RunAddr() uint16 {
-	return 0x8000
+	return 0x0000
 }
 
 func (m Machine) Name() string {
@@ -50,7 +50,18 @@ func (m *Machine) Stop() {
 	m.screen.Stop()
 }
 
+const romFileName = "/usr/share/spectrum-roms/48.rom"
+
 func (m *Machine) loadROMs() error {
+	loadRealROM := true
+	if loadRealROM {
+		return m.z.LoadROMFile(0x0000, romFileName)
+	} else {
+		return m.loadConsolePrintROMs()
+	}
+}
+
+func (m *Machine) loadConsolePrintROMs() error {
 	m.z.RegisterOutputHandler(0xffff, m.printState.speccyPrintByte)
 
 	// We only use RST 16
