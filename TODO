@@ -1,15 +1,19 @@
-- create a 'machine' interface
+DONE - create a 'machine' interface
   - CP/M and Speccy
   - loaded by zog
 
 - start on spectrum hardware
+  - add hardware interrupt hook
+    - ei/di
+    - im 0/1/2
+  - how does machine run interrupt?
+    // load ROMs, start hardware (including interrupt goro, screen refresh)
+    - machine.Start(z)
+  - add keyboard IO ports
   - work out how to interrupt main loop to do screen refresh
   (happens progressively)
-  (maybe just have a 'tick' function to update screen)
+  YES (maybe just have a 'tick' function to update screen)
   (and call that in a time loop to start with)
-  - add hardware interrupt at correct-ish rate
-    - ei/di
-  - add keyboard
   - try loading a ROM
   - will need read-only memory at some pt
 
@@ -18,8 +22,9 @@
 - Fix remaining z80test problems
   DONE - ldi/ldir/etc
   - LD A, I : LD A, R
+  - super ops
 
-- add some kind of ALU interrupt to read memory and display image
+- add some kind of ULA interrupt to read memory and display image
   - use SDL to draw image
 
 DONE - write spectrum-like print routines for z80test

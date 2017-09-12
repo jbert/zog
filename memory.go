@@ -3,9 +3,9 @@ package zog
 import "fmt"
 
 type Memory struct {
-	buf     []byte
-	debug   bool
-	watches Regions
+	buf       []byte
+	debug     bool
+	watches   Regions
 	watchFunc func(addr uint16, old byte, new byte)
 }
 
@@ -37,9 +37,9 @@ func (m *Memory) Peek(addr uint16) (byte, error) {
 		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
 	}
 	n := m.buf[addr]
-//	if m.debug || m.watches.contains(addr) {
-//		fmt.Printf("MEM: %04X -> %02X\n", addr, n)
-//	}
+	//	if m.debug || m.watches.contains(addr) {
+	//		fmt.Printf("MEM: %04X -> %02X\n", addr, n)
+	//	}
 	return n, nil
 }
 
@@ -48,7 +48,7 @@ func (m *Memory) Poke(addr uint16, n byte) error {
 		return fmt.Errorf("Out of bounds memory write: %d (%d)", addr, n)
 	}
 	if m.debug || m.watches.contains(addr) {
-//		fmt.Printf("MEM: %04X <- %02X\n", addr, n)
+		//		fmt.Printf("MEM: %04X <- %02X\n", addr, n)
 		m.watchFunc(addr, m.buf[addr], n)
 	}
 	m.buf[addr] = n
@@ -93,4 +93,16 @@ func (m *Memory) Copy(addr uint16, buf []byte) error {
 		m.buf[addr+uint16(i)] = buf[i]
 	}
 	return nil
+}
+
+// Fetch a chunk of memory. Error if overflows end.
+// Don't write to this please.
+func (m *Memory) PeekBuf(addr uint16, size int) ([]byte, error) {
+	if size <= 0 || size > 64*1024*1024 {
+		return nil, fmt.Errorf("PeekBuf invalid size: %d", size)
+	}
+	if size+int(addr) > len(m.buf) {
+		return nil, fmt.Errorf("PeekBuf invalid size+addr: %04x - %04x", addr, size)
+	}
+	return m.buf[addr : int(addr)+size], nil
 }

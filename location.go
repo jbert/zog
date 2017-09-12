@@ -369,7 +369,7 @@ func (c Contents) Read8(z *Zog) (byte, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Can't get contents of [%s]: %s", c.addr, err)
 	}
-	n, err := z.mem.Peek(addr)
+	n, err := z.Mem.Peek(addr)
 	if err != nil {
 		return 0, fmt.Errorf("Can't read contents of [%s]: %s", c, err)
 	}
@@ -381,7 +381,7 @@ func (c Contents) Write8(z *Zog, n byte) error {
 	if err != nil {
 		return fmt.Errorf("Can't get contents of [%s]: %s", c.addr, err)
 	}
-	err = z.mem.Poke(addr, n)
+	err = z.Mem.Poke(addr, n)
 	if err != nil {
 		return fmt.Errorf("Can't write contents of [%s]: %s", c, err)
 	}
@@ -394,7 +394,7 @@ func (c Contents) Read16(z *Zog) (uint16, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Can't get contents of [%s]: %s", c.addr, err)
 	}
-	nn, err := z.mem.Peek16(addr)
+	nn, err := z.Mem.Peek16(addr)
 	if err != nil {
 		return 0, fmt.Errorf("Can't read contents of [%s]: %s", c, err)
 	}
@@ -406,7 +406,7 @@ func (c Contents) Write16(z *Zog, nn uint16) error {
 	if err != nil {
 		return fmt.Errorf("Can't get contents of [%s]: %s", c.addr, err)
 	}
-	err = z.mem.Poke16(addr, nn)
+	err = z.Mem.Poke16(addr, nn)
 	if err != nil {
 		return fmt.Errorf("Can't write contents of [%s]: %s", c, err)
 	}
@@ -428,7 +428,7 @@ func (ic IndexedContents) Read8(z *Zog) (byte, error) {
 		return 0, fmt.Errorf("Can't get contents of [%s]: %s", ic.addr, err)
 	}
 	addr += uint16(ic.d)
-	n, err := z.mem.Peek(addr)
+	n, err := z.Mem.Peek(addr)
 	if err != nil {
 		return 0, fmt.Errorf("Can't read contents of [%s]: %s", ic, err)
 	}
@@ -441,7 +441,7 @@ func (ic IndexedContents) Write8(z *Zog, n byte) error {
 		return fmt.Errorf("Can't get contents of [%s]: %s", ic.addr, err)
 	}
 	addr += uint16(ic.d)
-	err = z.mem.Poke(addr, n)
+	err = z.Mem.Poke(addr, n)
 	if err != nil {
 		return fmt.Errorf("Can't write contents of [%s]: %s", ic, err)
 	}

@@ -9,8 +9,8 @@ import (
 	"runtime/pprof"
 
 	"github.com/jbert/zog"
-	"github.com/jbert/zog/speccy"
 	"github.com/jbert/zog/cpm"
+	"github.com/jbert/zog/speccy"
 )
 
 func main() {
@@ -51,13 +51,15 @@ func main() {
 
 	switch *machineName {
 	case "cpm":
-		machine = cpm.NewMachine()
-	case "spectrum","speccy":
-		machine = speccy.NewMachine()
+		machine = cpm.NewMachine(z)
+	case "spectrum", "speccy":
+		machine = speccy.NewMachine(z)
+	default:
+		panic("Specify a machine type")
 	}
 
 	fmt.Printf("Loading %s\n", machine.Name())
-	err = machine.Load(z)
+	err = machine.Start()
 	if err != nil {
 		log.Fatalf("Failed to load machine %s: %s", machine.Name(), err)
 	}

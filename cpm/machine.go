@@ -8,10 +8,11 @@ import (
 )
 
 type Machine struct {
+	z *zog.Zog
 }
 
-func NewMachine() *Machine {
-	return &Machine{}
+func NewMachine(z *zog.Zog) *Machine {
+	return &Machine{z: z}
 }
 
 func (m Machine) LoadAddr() uint16 {
@@ -68,9 +69,11 @@ printstr_end:
 	RET
 `
 
+func (m *Machine) Stop() {
+}
 
-func (m *Machine) Load(z *zog.Zog) error {
-	z.RegisterOutputHandler(0xffff, printByte)
+func (m *Machine) Start() error {
+	m.z.RegisterOutputHandler(0xffff, printByte)
 	zeroPageAssembly, err := zog.Assemble(`
 	ORG 0000h
 	HALT
@@ -86,7 +89,7 @@ func (m *Machine) Load(z *zog.Zog) error {
 	if err != nil {
 		return fmt.Errorf("Failed to assemble prelude: %s", err)
 	}
-	err = z.Load(zeroPageAssembly)
+	err = m.z.Load(zeroPageAssembly)
 	if err != nil {
 		return fmt.Errorf("Load zero page assembly: %s", err)
 	}
@@ -96,10 +99,9 @@ func (m *Machine) Load(z *zog.Zog) error {
 	if err != nil {
 		return fmt.Errorf("Failed to assemble prelude: %s", err)
 	}
-	return z.Load(highAssembly)
+	return m.z.Load(highAssembly)
 }
 
 func printByte(n byte) {
 	fmt.Fprintf(os.Stderr, "%c", n)
 }
-

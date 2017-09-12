@@ -9,7 +9,7 @@ import (
 )
 
 type Zog struct {
-	mem *Memory
+	Mem *Memory
 	reg Registers
 
 	/* In the Z80 CPU, there is
@@ -55,7 +55,7 @@ func (et *executeTrace) String() string {
 
 func New(memSize uint16) *Zog {
 	z := &Zog{
-		mem:            NewMemory(memSize),
+		Mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
 		inputHandlers:  make(map[uint16]func() byte),
 	}
@@ -131,8 +131,8 @@ func (z *Zog) TraceRegions(regions Regions) error {
 }
 
 func (z *Zog) WatchRegions(regions Regions) error {
-	z.mem.SetWatchFunc(z.memWatchSeen)
-	z.mem.watches.add(regions)
+	z.Mem.SetWatchFunc(z.memWatchSeen)
+	z.Mem.watches.add(regions)
 	return nil
 }
 
@@ -169,7 +169,7 @@ func (z *Zog) RunBytes(loadAddr uint16, buf []byte, runAddr uint16) error {
 }
 
 func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
-	err := z.mem.Copy(addr, buf)
+	err := z.Mem.Copy(addr, buf)
 	if err != nil {
 		return err
 	}
@@ -186,10 +186,10 @@ func (z *Zog) Load(a *Assembly) error {
 }
 
 func (z *Zog) Clear() {
-	z.mem.Clear()
+	z.Mem.Clear()
 	z.reg = Registers{}
 	// 64KB will give zero here, correctly
-	z.reg.SP = uint16(z.mem.Len())
+	z.reg.SP = uint16(z.Mem.Len())
 	z.iff1 = false
 	z.iff2 = false
 }
@@ -300,7 +300,7 @@ func (z *Zog) Read(buf []byte) (int, error) {
 	if len(buf) != 1 {
 		panic("Non-byte read")
 	}
-	n, err := z.mem.Peek(z.reg.PC)
+	n, err := z.Mem.Peek(z.reg.PC)
 	if err != nil {
 		return 0, fmt.Errorf("Error reading: %s", err)
 	}
@@ -342,14 +342,14 @@ func (z *Zog) im(mode int) error {
 func (z *Zog) push(nn uint16) {
 	z.reg.SP--
 	z.reg.SP--
-	err := z.mem.Poke16(z.reg.SP, nn)
+	err := z.Mem.Poke16(z.reg.SP, nn)
 	if err != nil {
 		panic(fmt.Sprintf("Can't write to SP [%04X]: %s", z.reg.SP, err))
 	}
 }
 
 func (z *Zog) pop() uint16 {
-	nn, err := z.mem.Peek16(z.reg.SP)
+	nn, err := z.Mem.Peek16(z.reg.SP)
 	if err != nil {
 		panic(fmt.Sprintf("Can't write to SP [%04X]: %s", z.reg.SP, err))
 	}
@@ -411,7 +411,7 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 			default:
 				errRet = fmt.Errorf("PANIC: %v", v)
 			}
-		}	
+		}
 		if z.numRecentTraces > 0 {
 			for i := range z.recentTraces {
 				fmt.Printf("%s\n", z.recentTraces[(i+z.indexRecentTraces)%z.numRecentTraces].String())

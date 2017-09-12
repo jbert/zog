@@ -494,7 +494,7 @@ type memA struct {
 }
 
 func (ma memA) check(z *Zog) error {
-	actual, err := z.mem.Peek(ma.addr)
+	actual, err := z.Mem.Peek(ma.addr)
 	if err != nil {
 		return fmt.Errorf("assert failed: failed to peek addr [%04X]: %s", ma.addr, err)
 	}

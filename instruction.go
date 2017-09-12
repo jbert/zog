@@ -373,12 +373,12 @@ func (s *SBC16) Execute(z *Zog) error {
 		v := a - b - c
 		z.SetFlag(F_S, !isPos16(v))
 		z.SetFlag(F_Z, v == 0)
-		z.SetFlag(F_H, ((a&0x0fff) - (b&0x0fff) - c) & 0x1000 != 0)
+		z.SetFlag(F_H, ((a&0x0fff)-(b&0x0fff)-c)&0x1000 != 0)
 
 		vSigned := int32(int16(a)) - int32(int16(b)) - int32(c)
 		z.SetFlag(F_PV, vSigned >= 0x8000 || vSigned < -0x8000)
 		z.SetFlag(F_N, true)
-		z.SetFlag(F_C, int(a) - int(b) - int(c) < 0)
+		z.SetFlag(F_C, int(a)-int(b)-int(c) < 0)
 		return v
 	})
 }
@@ -849,6 +849,7 @@ func NewAccum(name string, l Loc8) *accum {
 func isPos8(v byte) bool {
 	return v&0x80 == 0
 }
+
 /*
 func aluAdd(z *Zog, a, b byte) byte {
 	v := a+b
@@ -867,14 +868,14 @@ func aluAdd(z *Zog, a, b byte) byte {
 }
 
 func adcHelper(z *Zog, a, b, c byte) byte {
-	v := a+b+c
+	v := a + b + c
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
 	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f)+c)&0x10 != 0)
 	vSigned := int(int8(a)) + int(int8(b)) + int(c)
 	z.SetFlag(F_PV, vSigned >= 0x80 || vSigned < -0x80)
 	z.SetFlag(F_N, false)
-	z.SetFlag(F_C, int(a) + int(b) + int(c) > 0xff)
+	z.SetFlag(F_C, int(a)+int(b)+int(c) > 0xff)
 	return v
 }
 func aluAdc(z *Zog, a, b byte) byte {
@@ -892,12 +893,12 @@ func sbcHelper(z *Zog, a, b, c byte) byte {
 	v := a - b - c
 	z.SetFlag(F_S, !isPos8(v))
 	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_H, ((a&0x0f) - (b&0x0f) - c) & 0x10 != 0)
+	z.SetFlag(F_H, ((a&0x0f)-(b&0x0f)-c)&0x10 != 0)
 
 	vSigned := int(int8(a)) - int(int8(b)) - int(c)
 	z.SetFlag(F_PV, vSigned >= 0x80 || vSigned < -0x80)
 	z.SetFlag(F_N, true)
-	z.SetFlag(F_C, int(a) - int(b) - int(c) < 0)
+	z.SetFlag(F_C, int(a)-int(b)-int(c) < 0)
 	return v
 }
 func aluSbc(z *Zog, a, b byte) byte {
@@ -1362,22 +1363,22 @@ func (s Simple) Execute(z *Zog) error {
 	case DAA:
 
 		// z80heaven - but that doesn't even look at the N flag :-/
-/* ---
-		v := z.reg.A
-		lo := v & 0x0f
-		if z.GetFlag(F_H) || lo > 9 {
-			v += 0x06
-		}
-		hi := (v & 0xf0) >> 4
-		if z.GetFlag(F_C) || hi > 9 {
-			v += 0x60
-			z.SetFlag(F_C, true)
-		} else {
-			z.SetFlag(F_C, false)
-		}
-		z.reg.A = v
-		setParity(z, v)
-	--- */
+		/* ---
+			v := z.reg.A
+			lo := v & 0x0f
+			if z.GetFlag(F_H) || lo > 9 {
+				v += 0x06
+			}
+			hi := (v & 0xf0) >> 4
+			if z.GetFlag(F_C) || hi > 9 {
+				v += 0x60
+				z.SetFlag(F_C, true)
+			} else {
+				z.SetFlag(F_C, false)
+			}
+			z.reg.A = v
+			setParity(z, v)
+		--- */
 
 		// http://www.worldofspectrum.org/faq/reference/z80reference.htm#DAA
 		v := z.reg.A
@@ -1385,14 +1386,14 @@ func (s Simple) Execute(z *Zog) error {
 		h := z.GetFlag(F_H)
 		n := z.GetFlag(F_N)
 		newCarry := c
-		correctionFactor  := byte(0x00)
+		correctionFactor := byte(0x00)
 		if v > 0x99 || c {
 			correctionFactor |= 0x60
 			newCarry = true
 		} else {
 			newCarry = false
 		}
-		if v & 0x0f > 9 || h {
+		if v&0x0f > 9 || h {
 			correctionFactor |= 0x06
 		}
 		if n {
@@ -1549,7 +1550,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		hl := z.reg.Read16(HL)
 
 		a := z.reg.A
-		b, err := z.mem.Peek(hl)
+		b, err := z.Mem.Peek(hl)
 		if err != nil {
 			return err
 		}
@@ -1579,7 +1580,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		bc := z.reg.Read16(BC)
 		hl := z.reg.Read16(HL)
 
-		n, err := z.mem.Peek(hl)
+		n, err := z.Mem.Peek(hl)
 		if err != nil {
 			return err
 		}
@@ -1602,7 +1603,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		bc := z.reg.Read16(BC)
 		hl := z.reg.Read16(HL)
 		n := z.in(bc)
-		err := z.mem.Poke(hl, n)
+		err := z.Mem.Poke(hl, n)
 		if err != nil {
 			return err
 		}
@@ -1625,12 +1626,12 @@ func (s EDSimple) Execute(z *Zog) error {
 		de := z.reg.Read16(DE)
 		hl := z.reg.Read16(HL)
 
-		n, err := z.mem.Peek(hl)
+		n, err := z.Mem.Peek(hl)
 		if err != nil {
 			return err
 		}
 
-		err = z.mem.Poke(de, n)
+		err = z.Mem.Poke(de, n)
 		if err != nil {
 			return err
 		}
@@ -1681,7 +1682,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		hl := z.reg.Read16(HL)
 		a := z.reg.Read8(A)
 
-		n, err := z.mem.Peek(hl)
+		n, err := z.Mem.Peek(hl)
 		if err != nil {
 			return err
 		}
@@ -1704,7 +1705,7 @@ func (s EDSimple) Execute(z *Zog) error {
 
 		// Set (HL) to n3 n2
 		n = n3<<4 | n2
-		err = z.mem.Poke(hl, n)
+		err = z.Mem.Poke(hl, n)
 
 		return nil
 	case RLD:
@@ -1716,7 +1717,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		hl := z.reg.Read16(HL)
 		a := z.reg.Read8(A)
 
-		n, err := z.mem.Peek(hl)
+		n, err := z.Mem.Peek(hl)
 		if err != nil {
 			return err
 		}
@@ -1739,7 +1740,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		z.reg.Write8(A, a)
 		// Set (HL) to n1 n3
 		n = n1<<4 | n3
-		err = z.mem.Poke(hl, n)
+		err = z.Mem.Poke(hl, n)
 		return nil
 	case IM0:
 		z.im(0)
