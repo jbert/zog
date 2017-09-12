@@ -119,7 +119,7 @@ func (rs Regions) String() string {
 }
 
 func (r *Region) contains(addr uint16) bool {
-	return r.start <= addr && addr <= r.end
+	return r.start <= addr && addr < r.end
 }
 
 func (r *Region) String() string {
@@ -177,6 +177,11 @@ func (z *Zog) loadFile(addr uint16, fname string, readonly bool) error {
 	buf, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return fmt.Errorf("Can't load file [%s]: %s", fname, err)
+	}
+	if readonly {
+		roRegion := NewRegion(addr, uint16(len(buf)))
+		fmt.Printf("Add RO region %s\n", roRegion)
+		z.Mem.readonly = append(z.Mem.readonly, roRegion)
 	}
 	return z.LoadBytes(addr, buf)
 }
