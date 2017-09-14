@@ -21,6 +21,7 @@ type Zog struct {
 	iff1          bool
 	iff2          bool
 	interruptMode int
+	interruptCh   chan int
 
 	outputHandlers map[uint16]func(n byte)
 	inputHandlers  map[uint16]func() byte
@@ -59,6 +60,8 @@ func New(memSize uint16) *Zog {
 		Mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
 		inputHandlers:  make(map[uint16]func() byte),
+		interruptCh:    make(chan int),
+		interruptMode:  1,
 	}
 	z.Clear()
 	return z
@@ -408,6 +411,34 @@ func (z *Zog) addRecentTrace(et executeTrace) {
 	return
 }
 
+func (z *Zog) DoInterrupt() {
+	if z.iff1 {
+		return
+	}
+	z.interruptCh <- z.interruptMode
+}
+
+func (z *Zog) getInstruction() (Instruction, error) {
+	// Check for interrupt
+	select {
+	case imMode := <-z.interruptCh:
+		z.di()
+		switch imMode {
+		case 0:
+			return nil, fmt.Errorf("TODO: interrupt in mode 0")
+		case 1:
+			// We need to do RST 38h
+			return &RST{0x38}, nil
+		case 2:
+			return nil, fmt.Errorf("TODO: interrupt in mode 2")
+		default:
+			return nil, fmt.Errorf("Unknown interrupt mode: %d", imMode)
+		}
+	default:
+		return DecodeOne(z)
+	}
+}
+
 func (z *Zog) execute(addr uint16) (errRet error) {
 
 	ops := int64(0)
@@ -440,7 +471,8 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 EXECUTING:
 	for {
 		lastPC := z.reg.PC
-		inst, err = DecodeOne(z)
+		// May be from PC, or may be interrupt
+		inst, err = z.getInstruction()
 		if err != nil {
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING

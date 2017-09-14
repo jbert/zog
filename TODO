@@ -3,18 +3,18 @@ DONE - create a 'machine' interface
   - loaded by zog
 
 - start on spectrum hardware
-  - add hardware interrupt hook
+  DONE - add hardware interrupt hook
     - ei/di
     - im 0/1/2
   - how does machine run interrupt?
     // load ROMs, start hardware (including interrupt goro, screen refresh)
-    - machine.Start(z)
+    DONE - machine.Start(z)
   - add keyboard IO ports
   - work out how to interrupt main loop to do screen refresh
   (happens progressively)
-  YES (maybe just have a 'tick' function to update screen)
-  (and call that in a time loop to start with)
-  - try loading a ROM
+  DONE YES (maybe just have a 'tick' function to update screen)
+  DONE (and call that in a time loop to start with)
+  DONE - try loading a ROM
   - will need read-only memory at some pt
 
 

@@ -2,7 +2,6 @@ package speccy
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jbert/zog"
 	"github.com/veandco/go-sdl2/sdl"
@@ -19,8 +18,6 @@ type Screen struct {
 	window   *sdl.Window
 	renderer *sdl.Renderer
 	mem      *zog.Memory
-
-	done chan struct{}
 }
 
 func NewScreen(mem *zog.Memory) (*Screen, error) {
@@ -41,26 +38,7 @@ func NewScreen(mem *zog.Memory) (*Screen, error) {
 		window:   window,
 		renderer: renderer,
 		mem:      mem,
-		done:     make(chan struct{}),
 	}, nil
-}
-
-func (s *Screen) Start(every time.Duration) {
-	tick := time.Tick(every)
-	go func() {
-		for {
-			select {
-			case <-s.done:
-				break
-			case <-tick:
-				s.Draw()
-			}
-		}
-	}()
-}
-
-func (s *Screen) Stop() {
-	close(s.done)
 }
 
 func (s *Screen) Draw() {
@@ -97,7 +75,7 @@ func (s *Screen) drawScanline(y int) {
 			} else {
 				s.renderer.SetDrawColor(255, 255, 255, 255)
 			}
-			fmt.Printf("x %d y %d i %d bit %d\n", x, y, i, b)
+			//			fmt.Printf("x %d y %d i %d bit %d\n", x, y, i, b)
 			s.renderer.DrawPoint(x, y)
 			b <<= 1
 		}

@@ -11,6 +11,8 @@ type Machine struct {
 	printState speccyPrintState
 	screen     *Screen
 	z          *zog.Zog
+
+	done chan struct{}
 }
 
 func NewMachine(z *zog.Zog) *Machine {
@@ -22,6 +24,7 @@ func NewMachine(z *zog.Zog) *Machine {
 	return &Machine{
 		z:      z,
 		screen: screen,
+		done:   make(chan struct{}),
 	}
 }
 
@@ -42,12 +45,25 @@ func (m *Machine) Start() error {
 	if err != nil {
 		return err
 	}
-	m.screen.Start(time.Second / 50)
+	every := time.Second / 50
+	go func() {
+		tick := time.Tick(every)
+		for {
+			select {
+			case <-m.done:
+				break
+			case <-tick:
+				m.screen.Draw()
+				m.z.DoInterrupt()
+			}
+		}
+	}()
+
 	return nil
 }
 
 func (m *Machine) Stop() {
-	m.screen.Stop()
+	close(m.done)
 }
 
 const romFileName = "/usr/share/spectrum-roms/48.rom"
