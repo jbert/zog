@@ -45,6 +45,7 @@ func (m *Machine) Start() error {
 	if err != nil {
 		return err
 	}
+	InstallKeyboardInputPorts(m.z)
 	every := time.Second / 50
 	go func() {
 		tick := time.Tick(every)

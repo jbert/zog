@@ -225,7 +225,7 @@ func (z *Zog) RegisterOutputHandler(addr uint16, handler func(n byte)) error {
 }
 
 func (z *Zog) RegisterInputHandler(addr uint16, handler func() byte) error {
-	_, ok := z.outputHandlers[addr]
+	_, ok := z.inputHandlers[addr]
 	if ok {
 		return fmt.Errorf("Addr [%04X] already has an input handler", addr)
 	}
@@ -388,12 +388,12 @@ func (z *Zog) out(port uint16, n byte) {
 }
 
 func (z *Zog) in(port uint16) byte {
-	n := byte(0)
+	n := byte(0xff)
 	handler, ok := z.inputHandlers[port]
 	if ok {
 		n = handler()
 	}
-	fmt.Printf("IN: [%04X] %02X\n", port, n)
+	//	fmt.Printf("IN: [%04X] %02X\n", port, n)
 	return n
 }
 
@@ -412,7 +412,7 @@ func (z *Zog) addRecentTrace(et executeTrace) {
 }
 
 func (z *Zog) DoInterrupt() {
-	if z.iff1 {
+	if !z.iff1 {
 		return
 	}
 	z.interruptCh <- z.interruptMode
