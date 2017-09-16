@@ -69,13 +69,35 @@ func (ks *keyboardState) Update() {
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch ev := event.(type) {
 		case *sdl.KeyDownEvent:
-			sc := ev.Keysym.Sym
+			kc := ev.Keysym.Sym
 			//					s := sdl.GetScancodeName(sc)
-			(*ks)[sc] = struct{}{}
+			ks.keymove(kc, false)
+			//(*ks)[sc] = struct{}{}
 		case *sdl.KeyUpEvent:
-			sc := ev.Keysym.Sym
+			kc := ev.Keysym.Sym
+			ks.keymove(kc, true)
 			//					s := sdl.GetScancodeName(sc)
-			delete(*ks, sc)
+			//delete(*ks, kc)
+		}
+	}
+}
+
+func (ks *keyboardState) keymove(kc sdl.Keycode, up bool) {
+	mappedKeys := []sdl.Keycode{}
+	switch kc {
+	case sdl.K_BACKSPACE:
+		// Delete is shift-0
+		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
+		mappedKeys = append(mappedKeys, sdl.K_0)
+	default:
+		mappedKeys = append(mappedKeys, kc)
+	}
+
+	for _, mappedKey := range mappedKeys {
+		if up {
+			delete(*ks, mappedKey)
+		} else {
+			(*ks)[mappedKey] = struct{}{}
 		}
 	}
 }
