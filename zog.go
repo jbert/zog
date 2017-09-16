@@ -352,6 +352,10 @@ func (z *Zog) ei() error {
 	return nil
 }
 
+func (z *Zog) InterruptEnabled() bool {
+	return z.iff1
+}
+
 func (z *Zog) im(mode int) error {
 	if mode != 0 && mode != 1 && mode != 2 {
 		panic(fmt.Sprintf("Invalid interrupt mode: %d", mode))
@@ -416,7 +420,7 @@ func (z *Zog) addRecentTrace(et executeTrace) {
 }
 
 func (z *Zog) DoInterrupt() {
-	if !z.iff1 {
+	if !z.InterruptEnabled() {
 		return
 	}
 	z.interruptCh <- z.interruptMode

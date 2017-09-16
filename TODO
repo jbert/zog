@@ -1,8 +1,8 @@
 DONE - scale (3x) screen
 
-- saying 'n' to scroll causes exit
+DONE - saying 'n' to scroll causes exit
 
-- need to map 'backspace' key to something useful
+DONE - need to map 'backspace' key to something useful
   - perhaps map more convenience keys (e.g. ")
     - just do SDL key "backspace" depresses multiple spectrum keys
 

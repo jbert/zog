@@ -1325,7 +1325,10 @@ func (s Simple) Execute(z *Zog) error {
 	case NOP:
 		return nil
 	case HALT:
-		return ErrHalted
+		if !z.InterruptEnabled() {
+			return ErrHalted
+		}
+		return nil
 	case RLCA:
 		fReg := z.reg.F
 		z.reg.A = rotRlc(z, z.reg.A)
