@@ -8,9 +8,9 @@ import (
 )
 
 type Machine struct {
-	printState speccyPrintState
-	screen     *Screen
-	z          *zog.Zog
+	keys   *keyboardState
+	screen *Screen
+	z      *zog.Zog
 
 	done chan struct{}
 }
@@ -22,9 +22,11 @@ func NewMachine(z *zog.Zog) *Machine {
 	}
 
 	return &Machine{
-		z:      z,
+		keys:   NewKeyboardState(),
 		screen: screen,
-		done:   make(chan struct{}),
+		z:      z,
+
+		done: make(chan struct{}),
 	}
 }
 
@@ -45,7 +47,7 @@ func (m *Machine) Start() error {
 	if err != nil {
 		return err
 	}
-	InstallKeyboardInputPorts(m.z)
+	m.keys.InstallKeyboardInputPorts(m.z)
 	every := time.Second / 50
 	go func() {
 		tick := time.Tick(every)
@@ -55,6 +57,8 @@ func (m *Machine) Start() error {
 				break
 			case <-tick:
 				m.screen.Draw()
+				// Update our view of keys before the interrupt handler runs
+				m.keys.Update()
 				m.z.DoInterrupt()
 			}
 		}
@@ -70,62 +74,5 @@ func (m *Machine) Stop() {
 const romFileName = "/usr/share/spectrum-roms/48.rom"
 
 func (m *Machine) loadROMs() error {
-	loadRealROM := true
-	if loadRealROM {
-		return m.z.LoadROMFile(0x0000, romFileName)
-	} else {
-		return m.loadConsolePrintROMs()
-	}
-}
-
-func (m *Machine) loadConsolePrintROMs() error {
-	m.z.RegisterOutputHandler(0xffff, m.printState.speccyPrintByte)
-
-	// We only use RST 16
-	zeroPageAssembly, err := zog.Assemble(`
-	ORG 0000h
-	HALT
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
-	; One entry point at 10h (RST 16), to print char in A
-	PUSH DE
-	LD E, A
-	call printchar
-	POP DE
-	RET
-` + printAssembly)
-	if err != nil {
-		return fmt.Errorf("Failed to assemble prelude: %s", err)
-	}
-	err = m.z.Load(zeroPageAssembly)
-	if err != nil {
-		return fmt.Errorf("Load zero page assembly: %s", err)
-	}
-
-	chanOpenAssembly, err := zog.Assemble(`
-	ORG 1601h
-	RET
-`)
-	if err != nil {
-		return fmt.Errorf("Failed to assemble chan-open: %s", err)
-	}
-	err = m.z.Load(chanOpenAssembly)
-	if err != nil {
-		return fmt.Errorf("Load chan open assembly: %s", err)
-	}
-
-	return nil
+	return m.z.LoadROMFile(0x0000, romFileName)
 }

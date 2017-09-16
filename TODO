@@ -18,6 +18,10 @@ DONE - create a 'machine' interface
   - will need read-only memory at some pt
 
 
+- could trigger "which key is being pressed" from input handlers
+  - will work better for games
+
+
 
 - Fix remaining z80test problems
   DONE - ldi/ldir/etc

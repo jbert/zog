@@ -391,7 +391,11 @@ func (z *Zog) in(port uint16) byte {
 	n := byte(0xff)
 	handler, ok := z.inputHandlers[port]
 	if ok {
+		//		fmt.Printf("IN: handler [%04X] %02X\n", port, n)
 		n = handler()
+	}
+	if n != 0xff {
+		fmt.Printf("IN: [%04X] %02X\n", port, n)
 	}
 	//	fmt.Printf("IN: [%04X] %02X\n", port, n)
 	return n
