@@ -10,6 +10,7 @@ import (
 const (
 	screenWidth  = 256
 	screenHeight = 192
+	screenScale  = 4
 
 	screenMemStart = 0x4000
 )
@@ -23,7 +24,7 @@ type Screen struct {
 func NewScreen(mem *zog.Memory) (*Screen, error) {
 	winTitle := "Speccy"
 	window, err := sdl.CreateWindow(winTitle, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		screenWidth, screenHeight, sdl.WINDOW_SHOWN)
+		screenWidth*screenScale, screenHeight*screenScale, sdl.WINDOW_SHOWN)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create window: %s\n", err)
 	}
@@ -44,7 +45,7 @@ func NewScreen(mem *zog.Memory) (*Screen, error) {
 func (s *Screen) Draw() {
 
 	// Clear screen
-	rect := sdl.Rect{0, 0, int32(screenWidth), int32(screenHeight)}
+	rect := sdl.Rect{0, 0, int32(screenWidth * screenScale), int32(screenHeight * screenScale)}
 	s.renderer.SetDrawColor(255, 255, 255, 255)
 	s.renderer.FillRect(&rect)
 
@@ -76,7 +77,9 @@ func (s *Screen) drawScanline(y int) {
 				s.renderer.SetDrawColor(255, 255, 255, 255)
 			}
 			//			fmt.Printf("x %d y %d i %d bit %d\n", x, y, i, b)
-			s.renderer.DrawPoint(x, y)
+			rect := sdl.Rect{int32(x * screenScale), int32(y * screenScale), screenScale, screenScale}
+			s.renderer.FillRect(&rect)
+			//			s.renderer.DrawPoint(x, y)
 			b <<= 1
 		}
 	}

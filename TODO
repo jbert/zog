@@ -1,3 +1,11 @@
+DONE - scale (3x) screen
+
+- saying 'n' to scroll causes exit
+
+- need to map 'backspace' key to something useful
+  - perhaps map more convenience keys (e.g. ")
+    - just do SDL key "backspace" depresses multiple spectrum keys
+
 DONE - create a 'machine' interface
   - CP/M and Speccy
   - loaded by zog
