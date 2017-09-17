@@ -36,7 +36,7 @@ func (m *Memory) Len() int {
 
 func (m *Memory) Peek(addr uint16) (byte, error) {
 	if int(addr) >= m.Len() {
-		return 0, fmt.Errorf("Out of bounds memory read: %d", addr)
+		return 0, fmt.Errorf("Out of bounds memory read: 0x%04X > 0x%04X", addr, m.Len())
 	}
 	n := m.buf[addr]
 	//	if m.debug || m.watches.contains(addr) {
