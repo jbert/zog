@@ -16,15 +16,15 @@ var memSize = uint16(0x1000)
 func TestExecuteDAA(t *testing.T) {
 	// https://stackoverflow.com/questions/8119577/z80-daa-instruction
 	testCases := []executeTestCase{
-		{"LD A, 0x4F : OR 0xf0 : DAA : ADD A, 0xA0 : ADC A, 0x40", []assert{ locA{A, 0x46}, }},
+		{"LD A, 0x4F : OR 0xf0 : DAA : ADD A, 0xA0 : ADC A, 0x40", []assert{locA{A, 0x46}}},
 
-		{"LD A, 0x00 : LD B, 0x00 : ADD A, B : DAA", []assert{ locA{A, 0x00}, }},
-		{"LD A, 0x05 : LD B, 0x05 : ADD A, B : DAA", []assert{ locA{A, 0x10}, }},
-		{"LD A, 0x15 : LD B, 0x05 : ADD A, B : DAA", []assert{ locA{A, 0x20}, }},
+		{"LD A, 0x00 : LD B, 0x00 : ADD A, B : DAA", []assert{locA{A, 0x00}}},
+		{"LD A, 0x05 : LD B, 0x05 : ADD A, B : DAA", []assert{locA{A, 0x10}}},
+		{"LD A, 0x15 : LD B, 0x05 : ADD A, B : DAA", []assert{locA{A, 0x20}}},
 
-		{"LD A, 0x00 : LD B, 0x00 : SUB B : DAA", []assert{ locA{A, 0x00}, }},
-		{"LD A, 0x88 : LD B, 0x88 : SUB B : DAA", []assert{ locA{A, 0x00}, }},
-		{"LD A, 0x10 : LD B, 0x05 : SUB B : DAA", []assert{ locA{A, 0x05}, }},
+		{"LD A, 0x00 : LD B, 0x00 : SUB B : DAA", []assert{locA{A, 0x00}}},
+		{"LD A, 0x88 : LD B, 0x88 : SUB B : DAA", []assert{locA{A, 0x00}}},
+		{"LD A, 0x10 : LD B, 0x05 : SUB B : DAA", []assert{locA{A, 0x05}}},
 	}
 	executeTestCases(t, testCases)
 }
@@ -74,20 +74,20 @@ func TestExecuteAdcSbc16(t *testing.T) {
 			flagA{F_S, true},
 			flagA{F_Z, false},
 			flagA{F_H, true},
-			flagA{F_PV, true},
-			flagA{F_N, true},
-			flagA{F_C, true},
-		}},
-		/*
-		{"LD HL, 0x8000 : LD DE, 0x8001 : SBC HL, DE", []assert{
-			loc16A{HL, 0xffff},
-			flagA{F_S, true},
-			flagA{F_Z, false},
-			flagA{F_H, true},
 			flagA{F_PV, false},
 			flagA{F_N, true},
 			flagA{F_C, true},
 		}},
+		/*
+			{"LD HL, 0x8000 : LD DE, 0x8001 : SBC HL, DE", []assert{
+				loc16A{HL, 0xffff},
+				flagA{F_S, true},
+				flagA{F_Z, false},
+				flagA{F_H, true},
+				flagA{F_PV, false},
+				flagA{F_N, true},
+				flagA{F_C, true},
+			}},
 		*/
 	}
 	executeTestCases(t, testCases)
@@ -734,7 +734,7 @@ func executeTestCases(t *testing.T, testCases []executeTestCase) {
 		//		buf, _ := assembly.Encode()
 		//		fmt.Printf("JB - encoded buf {%s]\n", bufToHex(buf))
 		z := New(memSize)
-		err = z.Run(assembly)
+		err = z.RunAssembly(assembly)
 		if err != nil {
 			t.Fatalf("Failed to execute [%s]: %s", prog, err)
 		}
