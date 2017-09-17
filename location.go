@@ -303,9 +303,20 @@ func (r *Registers) Write16(l R16, nn uint16) {
 		r.IYL = lo
 	case SP:
 		r.SP = nn
+	case PC:
+		r.PC = nn
 	case AF_PRIME:
 		r.A_PRIME = hi
 		r.F_PRIME = lo
+	case BC_PRIME:
+		r.B_PRIME = hi
+		r.C_PRIME = lo
+	case DE_PRIME:
+		r.D_PRIME = hi
+		r.E_PRIME = lo
+	case HL_PRIME:
+		r.H_PRIME = hi
+		r.L_PRIME = lo
 	default:
 		panic(fmt.Sprintf("Unknown R16: %d", l))
 	}
