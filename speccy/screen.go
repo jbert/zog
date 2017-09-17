@@ -13,6 +13,7 @@ const (
 	screenScale  = 4
 
 	screenMemStart = 0x4000
+	colourMemStart = 0x5800
 )
 
 type Screen struct {
@@ -64,17 +65,33 @@ func (s *Screen) drawScanline(y int) {
 	charRow := (y & 0x07)
 	addr := screenMemStart + (sector*64+charRow*8+sectorRow)*lineMemLen
 
+	colourRow := (sector << 3) + sectorRow
+	colourAddr := colourMemStart + (256/8)*colourRow
+
 	lineMem, err := s.mem.PeekBuf(uint16(addr), lineMemLen)
 	if err != nil {
 		panic(fmt.Errorf("Can't read screen memory at [%04X] len (%04X)", addr, lineMemLen))
 	}
+	colourMem, err := s.mem.PeekBuf(uint16(colourAddr), lineMemLen)
+	if err != nil {
+		panic(fmt.Errorf("Can't read screen memory at [%04X] len (%04X)", addr, lineMemLen))
+	}
+
 	for i, b := range lineMem {
+		colourByte := colourMem[i]
+		ink := colourByte & 0x07
+		paper := (colourByte & 0x38) >> 3
+		bright := (colourByte & 0x40) >> 6
+		flash := (colourByte & 0x80) >> 7
+
 		for bit := 0; bit < 8; bit++ {
 			x := i*8 + bit
 			if b&0x80 != 0 {
-				s.renderer.SetDrawColor(0, 0, 0, 255)
+				s.SetDrawColour(true, ink, paper, bright, flash)
+				//				s.renderer.SetDrawColor(0, 0, 0, 255)
 			} else {
-				s.renderer.SetDrawColor(255, 255, 255, 255)
+				s.SetDrawColour(false, ink, paper, bright, flash)
+				//				s.renderer.SetDrawColor(255, 255, 255, 255)
 			}
 			//			fmt.Printf("x %d y %d i %d bit %d\n", x, y, i, b)
 			rect := sdl.Rect{int32(x * screenScale), int32(y * screenScale), screenScale, screenScale}
@@ -83,6 +100,31 @@ func (s *Screen) drawScanline(y int) {
 			b <<= 1
 		}
 	}
+}
+
+// Bright versions, non-bright are reduced from ff to d7
+var Colours = []sdl.Color{
+	{0, 0, 0, 0},
+	{0, 0, 1, 0},
+	{1, 0, 0, 0},
+	{1, 0, 1, 0},
+	{0, 1, 0, 0},
+	{0, 1, 1, 0},
+	{1, 1, 0, 0},
+	{1, 1, 1, 0},
+}
+
+func (s *Screen) SetDrawColour(wantInk bool, ink, paper, bright, flash byte) {
+	index := paper
+	if wantInk {
+		index = ink
+	}
+	c := Colours[index]
+	factor := byte(0xd7)
+	if bright != 0 {
+		factor = 0xff
+	}
+	s.renderer.SetDrawColor(c.R*factor, c.G*factor, c.B*factor, 255)
 }
 
 func (s *Screen) Close() {
