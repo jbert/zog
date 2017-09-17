@@ -20,6 +20,8 @@ type Screen struct {
 	window   *sdl.Window
 	renderer *sdl.Renderer
 	mem      *zog.Memory
+
+	flashCount int
 }
 
 func NewScreen(mem *zog.Memory) (*Screen, error) {
@@ -55,6 +57,7 @@ func (s *Screen) Draw() {
 		s.drawScanline(y)
 	}
 	s.renderer.Present()
+	s.flashCount = (s.flashCount + 1) % 64
 }
 
 func (s *Screen) drawScanline(y int) {
@@ -115,8 +118,10 @@ var Colours = []sdl.Color{
 }
 
 func (s *Screen) SetDrawColour(wantInk bool, ink, paper, bright, flash byte) {
+	invert := flash != 0 && s.flashCount < 32 // 0-31 inverted, 32-63 not inverted
+
 	index := paper
-	if wantInk {
+	if (wantInk && !invert) || (invert && !wantInk) {
 		index = ink
 	}
 	c := Colours[index]
