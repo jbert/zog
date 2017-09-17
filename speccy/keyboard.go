@@ -85,6 +85,21 @@ func (ks *keyboardState) Update() {
 func (ks *keyboardState) keymove(kc sdl.Keycode, up bool) {
 	mappedKeys := []sdl.Keycode{}
 	switch kc {
+	case sdl.K_LEFT:
+		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
+		mappedKeys = append(mappedKeys, sdl.K_5)
+	case sdl.K_DOWN:
+		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
+		mappedKeys = append(mappedKeys, sdl.K_6)
+	case sdl.K_UP:
+		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
+		mappedKeys = append(mappedKeys, sdl.K_7)
+	case sdl.K_RIGHT:
+		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
+		mappedKeys = append(mappedKeys, sdl.K_8)
+	case sdl.K_ESCAPE:
+		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
+		mappedKeys = append(mappedKeys, sdl.K_1)
 	case sdl.K_BACKSPACE:
 		// Delete is shift-0
 		mappedKeys = append(mappedKeys, sdl.K_LSHIFT)
