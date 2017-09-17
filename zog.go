@@ -156,7 +156,7 @@ func (z *Zog) State() string {
 		z.reg.Read16(IY))
 }
 
-func (z *Zog) Run(a *Assembly) error {
+func (z *Zog) RunAssembly(a *Assembly) error {
 	err := z.Load(a)
 	if err != nil {
 		return err
@@ -173,10 +173,10 @@ func (z *Zog) RunBytes(loadAddr uint16, buf []byte, runAddr uint16) error {
 }
 
 func (z *Zog) LoadROMFile(addr uint16, fname string) error {
-	return z.loadFile(addr, fname, true)
+	return z.LoadFile(addr, fname, true)
 }
 
-func (z *Zog) loadFile(addr uint16, fname string, readonly bool) error {
+func (z *Zog) LoadFile(addr uint16, fname string, readonly bool) error {
 	buf, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return fmt.Errorf("Can't load file [%s]: %s", fname, err)
@@ -187,6 +187,10 @@ func (z *Zog) loadFile(addr uint16, fname string, readonly bool) error {
 		z.Mem.readonly = append(z.Mem.readonly, roRegion)
 	}
 	return z.LoadBytes(addr, buf)
+}
+
+func (z *Zog) LoadRegisters(reg Registers) {
+	z.reg = reg
 }
 
 func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
@@ -448,7 +452,11 @@ func (z *Zog) getInstruction() (Instruction, error) {
 }
 
 func (z *Zog) execute(addr uint16) (errRet error) {
+	z.reg.PC = addr
+	return z.Run()
+}
 
+func (z *Zog) Run() (errRet error) {
 	ops := int64(0)
 	lastOps := int64(0)
 	emitEvery := int64(10000000)
@@ -457,8 +465,6 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 
 	var err error
 	var inst Instruction
-
-	z.reg.PC = addr
 
 	defer func() {
 		if r := recover(); r != nil {
