@@ -98,7 +98,7 @@ func (m *Memory) Clear() {
 }
 
 func (m *Memory) Copy(addr uint16, buf []byte) error {
-	if int(addr)+len(buf) >= int(m.Len()) {
+	if int(addr)+len(buf) > int(m.Len()) {
 		panic(fmt.Sprintf("Can't load - base addr %04X length %04X memsize %04X", addr, len(buf), m.Len()))
 	}
 	for i := 0; i < len(buf); i++ {

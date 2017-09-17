@@ -126,7 +126,7 @@ func (l *LD8) Execute(z *Zog) error {
 		R (LD A, R) instruction is executed, the state of IFF2 is copied to the parity flag, where it
 		can be tested or stored.
 	*/
-	z.SetFlag(F_PV, z.iff2)
+	z.SetFlag(F_PV, z.is.IFF2)
 	return F.Write8(z, f)
 }
 
@@ -1672,7 +1672,7 @@ func (s EDSimple) Execute(z *Zog) error {
 		z.SetFlag(F_N, true)
 		return nil
 	case RETN:
-		z.iff1 = z.iff2
+		z.is.IFF1 = z.is.IFF2
 		addr := z.pop()
 		z.jp(addr)
 		return nil

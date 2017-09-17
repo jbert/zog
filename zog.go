@@ -18,10 +18,9 @@ type Zog struct {
 	   Interrupt (EI) and Disable Interrupt (DI) instructions. When the IFF is reset, an interrupt
 	   cannot be accepted by the CPU.
 	*/
-	iff1          bool
-	iff2          bool
-	interruptMode int
-	interruptCh   chan int
+	is InterruptState
+
+	interruptCh chan byte
 
 	outputHandlers map[uint16]func(n byte)
 	inputHandlers  map[uint16]func() byte
@@ -33,6 +32,12 @@ type Zog struct {
 	numRecentTraces   int
 	indexRecentTraces int
 	recentTraces      []executeTrace
+}
+
+type InterruptState struct {
+	IFF1 bool
+	IFF2 bool
+	Mode byte
 }
 
 type locWatch struct {
@@ -56,12 +61,15 @@ func (et *executeTrace) String() string {
 }
 
 func New(memSize uint16) *Zog {
+	is := InterruptState{
+		Mode: 1,
+	}
 	z := &Zog{
 		Mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
 		inputHandlers:  make(map[uint16]func() byte),
-		interruptCh:    make(chan int),
-		interruptMode:  1,
+		interruptCh:    make(chan byte),
+		is:             is,
 	}
 	z.Clear()
 	return z
@@ -125,7 +133,7 @@ func (r *Region) contains(addr uint16) bool {
 	return r.start <= addr && addr < r.end
 }
 
-func (r *Region) String() string {
+func (r Region) String() string {
 	return fmt.Sprintf("%04X-%04X", r.start, r.end)
 }
 
@@ -193,6 +201,10 @@ func (z *Zog) LoadRegisters(reg Registers) {
 	z.reg = reg
 }
 
+func (z *Zog) LoadInterruptState(is InterruptState) {
+	z.is = is
+}
+
 func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
 	err := z.Mem.Copy(addr, buf)
 	if err != nil {
@@ -215,8 +227,8 @@ func (z *Zog) Clear() {
 	z.reg = Registers{}
 	// 64KB will give zero here, correctly
 	z.reg.SP = uint16(z.Mem.Len())
-	z.iff1 = false
-	z.iff2 = false
+	z.is.IFF1 = false
+	z.is.IFF2 = false
 }
 
 func (z *Zog) RegisterOutputHandler(addr uint16, handler func(n byte)) error {
@@ -345,26 +357,26 @@ func (z *Zog) jr(d int8) {
 }
 
 func (z *Zog) di() error {
-	z.iff1 = false
-	z.iff2 = false
+	z.is.IFF1 = false
+	z.is.IFF2 = false
 	return nil
 }
 
 func (z *Zog) ei() error {
-	z.iff1 = true
-	z.iff2 = true
+	z.is.IFF1 = true
+	z.is.IFF2 = true
 	return nil
 }
 
 func (z *Zog) InterruptEnabled() bool {
-	return z.iff1
+	return z.is.IFF1
 }
 
-func (z *Zog) im(mode int) error {
+func (z *Zog) im(mode byte) error {
 	if mode != 0 && mode != 1 && mode != 2 {
 		panic(fmt.Sprintf("Invalid interrupt mode: %d", mode))
 	}
-	z.interruptMode = mode
+	z.is.Mode = mode
 	return nil
 }
 
@@ -427,7 +439,7 @@ func (z *Zog) DoInterrupt() {
 	if !z.InterruptEnabled() {
 		return
 	}
-	z.interruptCh <- z.interruptMode
+	z.interruptCh <- z.is.Mode
 }
 
 func (z *Zog) getInstruction() (Instruction, error) {

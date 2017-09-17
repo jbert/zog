@@ -1,10 +1,12 @@
+- add IM 0/IM 2
+
 - remove races
 
 DONE - implement colour attributes
 
 DONE - implement flash (every 32 refreshes)
 
-- sort out state setup/load (EI frigged in on Run)
+DONE - sort out state setup/load (EI frigged in on Run)
 
 - remove 'z80' from methods on file/z80 and make it an interface
   suitable for different load types

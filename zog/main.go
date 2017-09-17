@@ -10,6 +10,7 @@ import (
 
 	"github.com/jbert/zog"
 	"github.com/jbert/zog/cpm"
+	"github.com/jbert/zog/file"
 	"github.com/jbert/zog/speccy"
 )
 
@@ -84,9 +85,32 @@ func main() {
 		log.Fatalf("Can't add watches [%s]: %s", err)
 	}
 
-	err = z.RunBytes(machine.LoadAddr(), buf, machine.RunAddr())
-	if err != nil {
-		log.Fatalf("RunBytes returned error: %s", err)
+	//	loadFname := ""
+	loadFname := "tt.z80"
+
+	if loadFname != "" {
+		h := file.Z80header{}
+		f, err := os.Open(loadFname)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		err = file.Z80readHeader(f, &h)
+		if err != nil {
+			panic(err)
+		}
+		err = h.Load(f, z)
+		if err != nil {
+			panic(err)
+		}
+
+		err = z.Run()
+	} else {
+
+		err = z.RunBytes(machine.LoadAddr(), buf, machine.RunAddr())
+		if err != nil {
+			log.Fatalf("RunBytes returned error: %s", err)
+		}
 	}
 
 	if *haltstate {
