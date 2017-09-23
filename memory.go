@@ -1,8 +1,12 @@
 package zog
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 type Memory struct {
+	sync.Mutex
 	buf       []byte
 	debug     bool
 	watches   Regions
@@ -35,6 +39,8 @@ func (m *Memory) Len() int {
 }
 
 func (m *Memory) Peek(addr uint16) (byte, error) {
+	m.Lock()
+	defer m.Unlock()
 	if int(addr) >= m.Len() {
 		return 0, fmt.Errorf("Out of bounds memory read: 0x%04X > 0x%04X", addr, m.Len())
 	}
@@ -46,6 +52,8 @@ func (m *Memory) Peek(addr uint16) (byte, error) {
 }
 
 func (m *Memory) Poke(addr uint16, n byte) error {
+	m.Lock()
+	defer m.Unlock()
 	// Poke to ROM is a NOP
 	if m.readonly.contains(addr) {
 		fmt.Printf("Deny RO POKE [%04X] [%02X]\n", addr, n)
@@ -94,10 +102,14 @@ func (m *Memory) Poke16(addr uint16, nn uint16) error {
 }
 
 func (m *Memory) Clear() {
+	m.Lock()
+	defer m.Unlock()
 	m.buf = make([]byte, int(m.Len()))
 }
 
 func (m *Memory) Copy(addr uint16, buf []byte) error {
+	m.Lock()
+	defer m.Unlock()
 	if int(addr)+len(buf) > int(m.Len()) {
 		panic(fmt.Sprintf("Can't load - base addr %04X length %04X memsize %04X", addr, len(buf), m.Len()))
 	}
@@ -110,11 +122,15 @@ func (m *Memory) Copy(addr uint16, buf []byte) error {
 // Fetch a chunk of memory. Error if overflows end.
 // Don't write to this please.
 func (m *Memory) PeekBuf(addr uint16, size int) ([]byte, error) {
+	m.Lock()
+	defer m.Unlock()
 	if size <= 0 || size > 64*1024*1024 {
 		return nil, fmt.Errorf("PeekBuf invalid size: %d", size)
 	}
 	if size+int(addr) > len(m.buf) {
 		return nil, fmt.Errorf("PeekBuf invalid size+addr: %04x - %04x", addr, size)
 	}
-	return m.buf[addr : int(addr)+size], nil
+	buf := make([]byte, size)
+	copy(buf, m.buf[addr:int(addr)+size])
+	return buf, nil
 }

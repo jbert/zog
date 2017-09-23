@@ -85,8 +85,8 @@ func main() {
 		log.Fatalf("Can't add watches [%s]: %s", err)
 	}
 
-	//	loadFname := ""
-	loadFname := "tt.z80"
+	loadFname := ""
+	//loadFname := "tt.z80"
 
 	if loadFname != "" {
 		h := file.Z80header{}

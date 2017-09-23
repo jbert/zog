@@ -57,8 +57,6 @@ func (m *Machine) Start() error {
 				break
 			case <-tick:
 				m.screen.Draw()
-				// Update our view of keys before the interrupt handler runs
-				m.keys.Update()
 				m.z.DoInterrupt()
 			}
 		}

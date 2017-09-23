@@ -1,15 +1,20 @@
 package speccy
 
 import (
+	"sync"
+
 	"github.com/jbert/zog"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 // An entry in the map means the key is depressed. (poor key)
-type keyboardState map[sdl.Keycode]struct{}
+type keyboardState struct {
+	sync.Mutex
+	keysDown map[sdl.Keycode]struct{}
+}
 
 func NewKeyboardState() *keyboardState {
-	ks := keyboardState(make(map[sdl.Keycode]struct{}))
+	ks := keyboardState{keysDown: make(map[sdl.Keycode]struct{})}
 	return &ks
 }
 
@@ -41,6 +46,12 @@ func (ks *keyboardState) InstallKeyboardInputPorts(z *zog.Zog) {
 
 // 5 keys = bit0 1st, bit 4last
 func (ks *keyboardState) inputHandler(keys []sdl.Keycode) byte {
+	ks.Lock()
+	defer ks.Unlock()
+
+	// Update our view of keys before the interrupt handler runs
+	ks.update()
+
 	// We have 5 bits. Key pressed is 0, else 1
 	//	for k, _ := range *ks {
 	//		fmt.Printf("JB - [%d] down\n", int(k))
@@ -49,7 +60,7 @@ func (ks *keyboardState) inputHandler(keys []sdl.Keycode) byte {
 	mask := byte(0xfe)
 	for _, key := range keys {
 		//		fmt.Printf("JB - checking key [%d]\n", int(key))
-		_, ok := (*ks)[key]
+		_, ok := ks.keysDown[key]
 		if ok {
 			// Key pressed, clear bit
 			n &= mask
@@ -64,7 +75,8 @@ func (ks *keyboardState) inputHandler(keys []sdl.Keycode) byte {
 	return n
 }
 
-func (ks *keyboardState) Update() {
+func (ks *keyboardState) update() {
+
 	// Drain events to update map
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch ev := event.(type) {
@@ -110,9 +122,9 @@ func (ks *keyboardState) keymove(kc sdl.Keycode, up bool) {
 
 	for _, mappedKey := range mappedKeys {
 		if up {
-			delete(*ks, mappedKey)
+			delete(ks.keysDown, mappedKey)
 		} else {
-			(*ks)[mappedKey] = struct{}{}
+			ks.keysDown[mappedKey] = struct{}{}
 		}
 	}
 }

@@ -1,6 +1,32 @@
-- add IM 0/IM 2
+- races:
+  - if we want to remove them, we'd have to have screen refresh properly isolated
+    (as well as keyboard?)
+  - the correct way would be either a lock on peek/poke/peekbuf or an actor
+    (r/w, addr)
+
+- hang happens while running sound
+  - with interrupts disabled
+  - is there an NMI expected to break the loop?
+
+- add IM 0
+
+- add beep/border colour output port support
+
+DONE - IM 2
+
+- diagnose 'hang' when playing games
+  - CPU is still running
+  - look at before/after difference of hang
+    - start with PC
 
 - remove races
+
+- add PC/mem visualisation
+  - show memory
+  - use watchfunc (need to add read/write flag, add to read)
+  - reads and writes (decaying colour change? r == write g == read)
+    - stack will look nice
+    - different colour (b) for PC?
 
 DONE - implement colour attributes
 
@@ -27,16 +53,16 @@ DONE - create a 'machine' interface
   DONE - add hardware interrupt hook
     - ei/di
     - im 0/1/2
-  - how does machine run interrupt?
+  DONE - how does machine run interrupt?
     // load ROMs, start hardware (including interrupt goro, screen refresh)
     DONE - machine.Start(z)
-  - add keyboard IO ports
+  DONE - add keyboard IO ports
   - work out how to interrupt main loop to do screen refresh
   (happens progressively)
   DONE YES (maybe just have a 'tick' function to update screen)
   DONE (and call that in a time loop to start with)
   DONE - try loading a ROM
-  - will need read-only memory at some pt
+  DONE - will need read-only memory at some pt
 
 
 - could trigger "which key is being pressed" from input handlers
