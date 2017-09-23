@@ -414,9 +414,9 @@ func (z *Zog) in(port uint16) byte {
 		//		fmt.Printf("IN: handler [%04X] %02X\n", port, n)
 		n = handler()
 	}
-	if n != 0xff {
-		fmt.Printf("IN: [%04X] %02X\n", port, n)
-	}
+	//	if n != 0xff {
+	//		fmt.Printf("IN: [%04X] %02X\n", port, n)
+	//	}
 	//	fmt.Printf("IN: [%04X] %02X\n", port, n)
 	return n
 }
@@ -454,7 +454,9 @@ func (z *Zog) getInstruction() (Instruction, error) {
 			// We need to do RST 38h
 			return &RST{0x38}, nil
 		case 2:
-			return nil, fmt.Errorf("TODO: interrupt in mode 2")
+			// We get LSB from data bus (we choose 0) and MSG from I reg
+			addr := uint16(z.reg.I) << 8
+			return NewCALL(True, Imm16(addr)), nil
 		default:
 			return nil, fmt.Errorf("Unknown interrupt mode: %d", imMode)
 		}
