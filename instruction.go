@@ -726,7 +726,11 @@ func (i *IN) Execute(z *Zog) error {
 	if i.port == C {
 		addr = z.reg.Read16(BC)
 	} else {
-		addr = uint16(z.reg.A) | (uint16(z.reg.A) << 8)
+		lo, err := i.port.Read8(z)
+		if err != nil {
+			return fmt.Errorf("Failed to read io port location: %s", i.port)
+		}
+		addr = uint16(lo) | (uint16(z.reg.A) << 8)
 	}
 	n := z.in(addr)
 	z.SetFlag(F_S, !isPos8(n))
