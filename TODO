@@ -1,3 +1,26 @@
+- hanging loop is using HALT to wait for an interrupt
+  - should interrupt return after HALT
+  - and inspects system variable incremented during interrupt (FRAMES)
+
+- hanging loop is reading from system variable FRAMES (0x5c78)
+  which should be being updated every 20ms
+  - BEEP code is doing DI, should that stop IM1 interrupt?
+
+- add debugging hooks
+  - callbacks or channels for execution info
+  - and for control (set breakpt at addr X, single-step, set execution speed)
+
+  - expose those channels/controls over http/json (websocket)
+
+  - write debugging UI which drives http api
+    - language/ui toolkit?
+
+- post-process err output (equivalent to getting step-by-step debugging)
+  to visualise or feed into a visualisation tool
+  - or add call/ret tracing to emulator
+
+- use debugger to work out what is going on with arnhem hang
+
 - races:
   - if we want to remove them, we'd have to have screen refresh properly isolated
     (as well as keyboard?)

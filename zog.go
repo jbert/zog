@@ -46,6 +46,7 @@ type locWatch struct {
 }
 
 type executeTrace struct {
+	ops     uint64
 	pc      uint16
 	inst    Instruction
 	reg     Registers
@@ -53,7 +54,7 @@ type executeTrace struct {
 }
 
 func (et *executeTrace) String() string {
-	s := fmt.Sprintf("%04X %s %s", et.pc, et.reg.Summary(), et.inst)
+	s := fmt.Sprintf("%d: %04X %s %s", et.ops, et.pc, et.reg.Summary(), et.inst)
 	for addr, lw := range et.watches {
 		s += fmt.Sprintf(" W:%04X [%02X->%02X]", addr, lw.old, lw.new)
 	}
@@ -442,26 +443,36 @@ func (z *Zog) DoInterrupt() {
 	z.interruptCh <- z.is.Mode
 }
 
-func (z *Zog) getInstruction() (Instruction, error) {
+func (z *Zog) getInstruction(halted bool) (Instruction, error) {
 	// Check for interrupt
+	imMode := byte(0)
 	select {
-	case imMode := <-z.interruptCh:
-		z.di()
-		switch imMode {
-		case 0:
-			return nil, fmt.Errorf("TODO: interrupt in mode 0")
-		case 1:
-			// We need to do RST 38h
-			return &RST{0x38}, nil
-		case 2:
-			// We get LSB from data bus (we choose 0) and MSG from I reg
-			addr := uint16(z.reg.I) << 8
-			return NewCALL(True, Imm16(addr)), nil
-		default:
-			return nil, fmt.Errorf("Unknown interrupt mode: %d", imMode)
-		}
+	case imMode = <-z.interruptCh:
+		return z.processInterrupt(imMode)
 	default:
+	}
+
+	if !halted {
 		return DecodeOne(z)
+	}
+	imMode = <-z.interruptCh
+	return z.processInterrupt(imMode)
+}
+
+func (z *Zog) processInterrupt(imMode byte) (Instruction, error) {
+	z.di()
+	switch imMode {
+	case 0:
+		return nil, fmt.Errorf("TODO: interrupt in mode 0")
+	case 1:
+		// We need to do RST 38h
+		return &RST{0x38}, nil
+	case 2:
+		// We get LSB from data bus (we choose 0) and MSG from I reg
+		addr := uint16(z.reg.I) << 8
+		return NewCALL(True, Imm16(addr)), nil
+	default:
+		return nil, fmt.Errorf("Unknown interrupt mode: %d", imMode)
 	}
 }
 
@@ -471,9 +482,10 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 }
 
 func (z *Zog) Run() (errRet error) {
-	ops := int64(0)
-	lastOps := int64(0)
-	emitEvery := int64(10000000)
+	ops := uint64(0)
+	lastOps := uint64(0)
+	//	emitEvery := int64(10000000)
+	emitEvery := uint64(1000000)
 	startTime := time.Now()
 	lastEmit := startTime
 
@@ -496,16 +508,19 @@ func (z *Zog) Run() (errRet error) {
 		}
 	}()
 
+	halted := false
+
 EXECUTING:
 	for {
 		lastPC := z.reg.PC
 		// May be from PC, or may be interrupt
-		inst, err = z.getInstruction()
+		inst, err = z.getInstruction(halted)
+		halted = false
 		if err != nil {
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
 		}
-		z.eTrace = executeTrace{pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
+		z.eTrace = executeTrace{ops: ops, pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
 		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
 		instErr := inst.Execute(z)
 		if z.traces.contains(lastPC) {
@@ -515,6 +530,11 @@ EXECUTING:
 			z.addRecentTrace(z.eTrace)
 		}
 		if instErr != nil {
+			if instErr == ErrHalted && z.InterruptEnabled() {
+				halted = true
+				continue EXECUTING
+			}
+
 			// Error handling after the loop
 			err = instErr
 			break EXECUTING
@@ -524,7 +544,7 @@ EXECUTING:
 			now := time.Now()
 			dur := now.Sub(lastEmit)
 			opsPerSec := float64(ops-lastOps) / dur.Seconds()
-			fmt.Printf("%s: Total ops %d recent ops/sec %f\n", now.Sub(startTime), ops, opsPerSec)
+			fmt.Printf("%s: PC [%04X] Total ops %d recent ops/sec %f\n", now.Sub(startTime), lastPC, ops, opsPerSec)
 			lastEmit = now
 			lastOps = ops
 		}
