@@ -59,7 +59,7 @@ func (ks *keyboardState) keyboardInputHandler(addr uint16) byte {
 	lo := byte(addr)
 
 	if lo != 0xfe {
-		return 0xff
+		return 0x00
 	}
 
 	keysdown := ks.keysdown()
