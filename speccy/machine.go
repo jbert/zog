@@ -47,7 +47,7 @@ func (m *Machine) Start() error {
 	if err != nil {
 		return err
 	}
-	m.keys.InstallKeyboardInputPorts(m.z)
+	m.z.RegisterInputHandler(func(addr uint16) byte { return m.keys.keyboardInputHandler(addr) })
 	every := time.Second / 50
 	go func() {
 		tick := time.Tick(every)

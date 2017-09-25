@@ -3,7 +3,6 @@ package speccy
 import (
 	"sync"
 
-	"github.com/jbert/zog"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -18,61 +17,68 @@ func NewKeyboardState() *keyboardState {
 	return &ks
 }
 
-func (ks *keyboardState) InstallKeyboardInputPorts(z *zog.Zog) {
-	keymaps := []struct {
-		port uint16
-		keys []sdl.Keycode
-	}{
-		{0xfefe, []sdl.Keycode{sdl.K_LSHIFT, sdl.K_z, sdl.K_x, sdl.K_c, sdl.K_v}},
-		{0xfdfe, []sdl.Keycode{sdl.K_a, sdl.K_s, sdl.K_d, sdl.K_f, sdl.K_g}},
-		{0xfbfe, []sdl.Keycode{sdl.K_q, sdl.K_w, sdl.K_e, sdl.K_r, sdl.K_t}},
-		{0xf7fe, []sdl.Keycode{sdl.K_1, sdl.K_2, sdl.K_3, sdl.K_4, sdl.K_5}},
-		{0xeffe, []sdl.Keycode{sdl.K_0, sdl.K_9, sdl.K_8, sdl.K_7, sdl.K_6}},
-		{0xdffe, []sdl.Keycode{sdl.K_p, sdl.K_o, sdl.K_i, sdl.K_u, sdl.K_y}},
-		{0xbffe, []sdl.Keycode{sdl.K_RETURN, sdl.K_l, sdl.K_k, sdl.K_j, sdl.K_h}},
-		{0x7ffe, []sdl.Keycode{sdl.K_SPACE, sdl.K_RSHIFT, sdl.K_m, sdl.K_n, sdl.K_b}},
-	}
-
-	for _, keymapReused := range keymaps {
-		keymap := keymapReused // This bit of go really sucks
-		err := z.RegisterInputHandler(keymap.port, func() byte {
-			return ks.inputHandler(keymap.keys)
-		})
-		if err != nil {
-			panic(err)
-		}
-	}
+// 8 rows - index in array is bit position in addrHi 0->7
+// 5 keys = bit0 1st, bit 4last
+var keymapForBit = [][]sdl.Keycode{
+	[]sdl.Keycode{sdl.K_LSHIFT, sdl.K_z, sdl.K_x, sdl.K_c, sdl.K_v},
+	[]sdl.Keycode{sdl.K_a, sdl.K_s, sdl.K_d, sdl.K_f, sdl.K_g},
+	[]sdl.Keycode{sdl.K_q, sdl.K_w, sdl.K_e, sdl.K_r, sdl.K_t},
+	[]sdl.Keycode{sdl.K_1, sdl.K_2, sdl.K_3, sdl.K_4, sdl.K_5},
+	[]sdl.Keycode{sdl.K_0, sdl.K_9, sdl.K_8, sdl.K_7, sdl.K_6},
+	[]sdl.Keycode{sdl.K_p, sdl.K_o, sdl.K_i, sdl.K_u, sdl.K_y},
+	[]sdl.Keycode{sdl.K_RETURN, sdl.K_l, sdl.K_k, sdl.K_j, sdl.K_h},
+	[]sdl.Keycode{sdl.K_SPACE, sdl.K_RSHIFT, sdl.K_m, sdl.K_n, sdl.K_b},
 }
 
-// 5 keys = bit0 1st, bit 4last
-func (ks *keyboardState) inputHandler(keys []sdl.Keycode) byte {
+func calcInputByte(addrHi byte, keysdown []sdl.Keycode) byte {
+	n := byte(0xff)
+	addrMask := byte(0x01)
+	for _, keyRow := range keymapForBit {
+		if addrMask&addrHi == 0 {
+			// Bit is low in addrHi - process
+			byteMask := byte(0xfe)
+			for _, rowKey := range keyRow {
+			KEYDOWN:
+				for _, keydown := range keysdown {
+					if keydown == rowKey {
+						n &= byteMask
+						break KEYDOWN
+					}
+				}
+				byteMask <<= 1
+				byteMask |= 0x01
+			}
+		}
+		addrMask <<= 1
+	}
+	return n
+}
+
+func (ks *keyboardState) keyboardInputHandler(addr uint16) byte {
+	hi := byte(addr >> 8)
+	lo := byte(addr)
+
+	if lo != 0xfe {
+		return 0xff
+	}
+
+	keysdown := ks.keysdown()
+
+	return calcInputByte(hi, keysdown)
+}
+
+func (ks *keyboardState) keysdown() []sdl.Keycode {
 	ks.Lock()
 	defer ks.Unlock()
 
 	// Update our view of keys before the interrupt handler runs
 	ks.update()
 
-	// We have 5 bits. Key pressed is 0, else 1
-	//	for k, _ := range *ks {
-	//		fmt.Printf("JB - [%d] down\n", int(k))
-	//	}
-	n := byte(0xff)
-	mask := byte(0xfe)
-	for _, key := range keys {
-		//		fmt.Printf("JB - checking key [%d]\n", int(key))
-		_, ok := ks.keysDown[key]
-		if ok {
-			// Key pressed, clear bit
-			n &= mask
-		}
-		mask <<= 1
-		mask |= 0x01
-		//		} else {
-		//			fmt.Printf("JB - flagging key [%d] pressed\n", int(key))
-		//		}
+	var keys []sdl.Keycode
+	for k := range ks.keysDown {
+		keys = append(keys, k)
 	}
-	//	fmt.Printf("JB - ret [%02X]\n", n)
-	return n
+	return keys
 }
 
 func (ks *keyboardState) update() {

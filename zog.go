@@ -23,7 +23,7 @@ type Zog struct {
 	interruptCh chan byte
 
 	outputHandlers map[uint16]func(n byte)
-	inputHandlers  map[uint16]func() byte
+	inputHandler   func(uint16) byte
 
 	traces Regions
 
@@ -68,7 +68,6 @@ func New(memSize uint16) *Zog {
 	z := &Zog{
 		Mem:            NewMemory(memSize),
 		outputHandlers: make(map[uint16]func(n byte)),
-		inputHandlers:  make(map[uint16]func() byte),
 		interruptCh:    make(chan byte),
 		is:             is,
 	}
@@ -241,12 +240,11 @@ func (z *Zog) RegisterOutputHandler(addr uint16, handler func(n byte)) error {
 	return nil
 }
 
-func (z *Zog) RegisterInputHandler(addr uint16, handler func() byte) error {
-	_, ok := z.inputHandlers[addr]
-	if ok {
-		return fmt.Errorf("Addr [%04X] already has an input handler", addr)
+func (z *Zog) RegisterInputHandler(handler func(uint16) byte) error {
+	if z.inputHandler != nil {
+		return errors.New("Input handler already registered")
 	}
-	z.inputHandlers[addr] = handler
+	z.inputHandler = handler
 	return nil
 }
 
@@ -409,17 +407,11 @@ func (z *Zog) out(port uint16, n byte) {
 }
 
 func (z *Zog) in(port uint16) byte {
-	n := byte(0xff)
-	handler, ok := z.inputHandlers[port]
-	if ok {
-		//		fmt.Printf("IN: handler [%04X] %02X\n", port, n)
-		n = handler()
+	if z.inputHandler != nil {
+		fmt.Printf("JB - in [%04X]\n", port)
+		return z.inputHandler(port)
 	}
-	//	if n != 0xff {
-	//		fmt.Printf("IN: [%04X] %02X\n", port, n)
-	//	}
-	//	fmt.Printf("IN: [%04X] %02X\n", port, n)
-	return n
+	return 0xff
 }
 
 func (z *Zog) addRecentTrace(et executeTrace) {
