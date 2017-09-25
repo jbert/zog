@@ -408,7 +408,6 @@ func (z *Zog) out(port uint16, n byte) {
 
 func (z *Zog) in(port uint16) byte {
 	if z.inputHandler != nil {
-		fmt.Printf("JB - in [%04X]\n", port)
 		return z.inputHandler(port)
 	}
 	return 0xff
@@ -512,9 +511,9 @@ EXECUTING:
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
 		}
-		z.eTrace = executeTrace{ops: ops, pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
 		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
 		instErr := inst.Execute(z)
+		z.eTrace = executeTrace{ops: ops, pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
 		if z.traces.contains(lastPC) {
 			println(z.eTrace.String())
 		}
