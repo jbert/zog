@@ -21,6 +21,7 @@ func main() {
 	haltstate := flag.Bool("haltstate", false, "Print state on halt")
 	numhalttrace := flag.Int("halttrace", 0, "Number of traces to print on halt")
 	machineName := flag.String("machine", "none", "Machine for console printer (none, cpm, spectrum)")
+	imageFname := flag.String("image", "", "Name of image file (.z80 supported)")
 
 	flag.Parse()
 
@@ -85,12 +86,9 @@ func main() {
 		log.Fatalf("Can't add watches [%s]: %s", err)
 	}
 
-	loadFname := ""
-	//loadFname := "tt.z80"
-
-	if loadFname != "" {
+	if *imageFname != "" {
 		h := file.Z80header{}
-		f, err := os.Open(loadFname)
+		f, err := os.Open(*imageFname)
 		if err != nil {
 			panic(err)
 		}
