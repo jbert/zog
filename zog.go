@@ -475,8 +475,7 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 func (z *Zog) Run() (errRet error) {
 	ops := uint64(0)
 	lastOps := uint64(0)
-	//	emitEvery := int64(10000000)
-	emitEvery := uint64(1000000)
+	statsEvery := uint64(1000000)
 	startTime := time.Now()
 	lastEmit := startTime
 
@@ -501,8 +500,14 @@ func (z *Zog) Run() (errRet error) {
 
 	halted := false
 
+	clockHz := 4000000
+	tStateDuration := time.Second / time.Duration(clockHz)
+
 EXECUTING:
 	for {
+
+		before := time.Now()
+
 		lastPC := z.reg.PC
 		// May be from PC, or may be interrupt
 		inst, err = z.getInstruction(halted)
@@ -531,7 +536,7 @@ EXECUTING:
 			break EXECUTING
 		}
 		ops++
-		if ops%emitEvery == 0 {
+		if ops%statsEvery == 0 {
 			now := time.Now()
 			dur := now.Sub(lastEmit)
 			opsPerSec := float64(ops-lastOps) / dur.Seconds()
@@ -539,6 +544,10 @@ EXECUTING:
 			lastEmit = now
 			lastOps = ops
 		}
+
+		waitTStates := 8
+		waitDur := time.Until(before.Add(time.Duration(waitTStates) * tStateDuration))
+		time.Sleep(waitDur)
 	}
 
 	// The only return should be on HALT. nil is bad here.
