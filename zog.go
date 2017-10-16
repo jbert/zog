@@ -474,7 +474,9 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 
 func (z *Zog) Run() (errRet error) {
 	ops := uint64(0)
+	TStates := uint64(0)
 	lastOps := uint64(0)
+	lastTStates := uint64(0)
 	statsEvery := uint64(1000000)
 	startTime := time.Now()
 	lastEmit := startTime
@@ -516,6 +518,9 @@ EXECUTING:
 			fmt.Printf("Error decoding: %s\n", err)
 			break EXECUTING
 		}
+
+		waitTStates := inst.TStates(z)
+
 		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
 		instErr := inst.Execute(z)
 		z.eTrace = executeTrace{ops: ops, pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
@@ -536,18 +541,27 @@ EXECUTING:
 			break EXECUTING
 		}
 		ops++
+		TStates += uint64(waitTStates)
 		if ops%statsEvery == 0 {
 			now := time.Now()
 			dur := now.Sub(lastEmit)
-			opsPerSec := float64(ops-lastOps) / dur.Seconds()
-			fmt.Printf("%s: PC [%04X] Total ops %d recent ops/sec %f\n", now.Sub(startTime), lastPC, ops, opsPerSec)
+			secs := dur.Seconds()
+			opsPerSec := float64(ops-lastOps) / secs
+			TStatesPerSec := float64(TStates-lastTStates) / secs
+			fmt.Printf("%5.2f: PC [%04X] %d ops %d t : %f ops/sec %f t/sec\n", now.Sub(startTime).Seconds(), lastPC, ops, TStates, opsPerSec, TStatesPerSec)
 			lastEmit = now
 			lastOps = ops
+			lastTStates = TStates
 		}
 
-		waitTStates := 8
-		waitDur := time.Until(before.Add(time.Duration(waitTStates) * tStateDuration))
-		time.Sleep(waitDur)
+		if waitTStates > 30 {
+			println(waitTStates, " ", z.eTrace.String())
+		}
+		waitDuration := time.Duration(waitTStates) * tStateDuration
+		// Busy wait - can't get time.Sleep or syscall.Nanosleep to give me good enough granularity
+		waitUntil := before.Add(waitDuration)
+		for time.Now().Before(waitUntil) {
+		}
 	}
 
 	// The only return should be on HALT. nil is bad here.

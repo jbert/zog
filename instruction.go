@@ -11,6 +11,7 @@ type Instruction interface {
 	Encode() []byte
 	Resolve(a *Assembly) error
 	Execute(z *Zog) error
+	TStates(z *Zog) int
 }
 
 type LabelHolder struct{}
@@ -19,6 +20,7 @@ func (lh *LabelHolder) String() string            { return "" }
 func (lh *LabelHolder) Encode() []byte            { return make([]byte, 0) }
 func (lh *LabelHolder) Resolve(a *Assembly) error { return nil }
 func (lh *LabelHolder) Execute(z *Zog) error      { panic("Attempt to execute labelholder") }
+func (lh *LabelHolder) TStates(z *Zog) int        { panic("Attempt to get t-states of labelholder") }
 
 type Data struct {
 	data []byte
@@ -29,6 +31,9 @@ func NewData(data []byte) *Data {
 }
 func (d *Data) String() string {
 	return bufToHex(d.data)
+}
+func (d *Data) TStates(z *Zog) int {
+	panic("Error - trying to get t-states for dummy data instruction")
 }
 func (d *Data) Encode() []byte {
 	return d.data
@@ -46,6 +51,11 @@ type LD8 struct {
 
 func NewLD8(dst Loc8, src Loc8) *LD8 {
 	return &LD8{InstBin8{dst: dst, src: src}}
+}
+
+func (i *LD8) TStates(z *Zog) int {
+	// TODO: fixup t-states
+	return 8
 }
 
 func (l *LD8) String() string {
@@ -140,6 +150,19 @@ func NewINC8(l Loc8) *INC8 {
 func (i *INC8) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
+func (i *INC8) TStates(z *Zog) int {
+	switch i.l.(type) {
+	case R8:
+		return 4
+	case Contents:
+		return 11
+	case IndexedContents:
+		return 23
+	default:
+		panic(fmt.Sprintf("Unknown inc location type: %T", i.l))
+	}
+}
+
 func (i *INC8) Encode() []byte {
 	i.inspect()
 	if i.lInfo.ltype != tableR {
@@ -168,6 +191,19 @@ func NewDEC8(l Loc8) *DEC8 {
 func (d *DEC8) String() string {
 	return fmt.Sprintf("DEC %s", d.l)
 }
+func (d *DEC8) TStates(z *Zog) int {
+	switch d.l.(type) {
+	case R8:
+		return 4
+	case Contents:
+		return 11
+	case IndexedContents:
+		return 23
+	default:
+		panic(fmt.Sprintf("Unknown dec location type: %T", d.l))
+	}
+}
+
 func (d *DEC8) Encode() []byte {
 	d.inspect()
 	if d.lInfo.ltype != tableR {
@@ -192,6 +228,10 @@ type LD16 struct {
 
 func NewLD16(dst, src Loc16) *LD16 {
 	return &LD16{InstBin16: InstBin16{dst: dst, src: src}}
+}
+func (i *LD16) TStates(z *Zog) int {
+	// TODO: fixup more correct timings
+	return 20
 }
 func (l *LD16) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
@@ -271,6 +311,13 @@ type ADD16 struct {
 func NewADD16(dst, src Loc16) *ADD16 {
 	return &ADD16{InstBin16: InstBin16{dst: dst, src: src}}
 }
+func (a *ADD16) TStates(z *Zog) int {
+	if a.dst == HL {
+		return 11
+	} else {
+		return 15
+	}
+}
 func (a *ADD16) String() string {
 	return fmt.Sprintf("ADD %s, %s", a.dst, a.src)
 }
@@ -311,6 +358,9 @@ type ADC16 struct {
 func NewADC16(dst, src Loc16) *ADC16 {
 	return &ADC16{InstBin16: InstBin16{dst: dst, src: src}}
 }
+func (a *ADC16) TStates(z *Zog) int {
+	return 15
+}
 func (a *ADC16) String() string {
 	return fmt.Sprintf("ADC %s, %s", a.dst, a.src)
 }
@@ -348,6 +398,9 @@ type SBC16 struct {
 
 func NewSBC16(dst, src Loc16) *SBC16 {
 	return &SBC16{InstBin16: InstBin16{dst: dst, src: src}}
+}
+func (s *SBC16) TStates(z *Zog) int {
+	return 15
 }
 func (s *SBC16) String() string {
 	return fmt.Sprintf("SBC %s, %s", s.dst, s.src)
@@ -394,6 +447,13 @@ func NewINC16(l Loc16) *INC16 {
 func (i *INC16) String() string {
 	return fmt.Sprintf("INC %s", i.l)
 }
+func (i *INC16) TStates(z *Zog) int {
+	if _, ok := i.l.(IndexedContents); ok {
+		return 10
+	} else {
+		return 6
+	}
+}
 func (i *INC16) Encode() []byte {
 	i.inspect()
 	if i.lInfo.ltype != tableRP {
@@ -419,6 +479,13 @@ func NewDEC16(l Loc16) *DEC16 {
 func (d *DEC16) String() string {
 	return fmt.Sprintf("DEC %s", d.l)
 }
+func (d *DEC16) TStates(z *Zog) int {
+	if _, ok := d.l.(IndexedContents); ok {
+		return 10
+	} else {
+		return 6
+	}
+}
 func (d *DEC16) Encode() []byte {
 	d.inspect()
 	if d.lInfo.ltype != tableRP {
@@ -440,6 +507,21 @@ type EX struct {
 
 func NewEX(dst, src Loc16) *EX {
 	return &EX{InstBin16: InstBin16{dst: dst, src: src}}
+}
+
+func (ex *EX) TStates(z *Zog) int {
+	switch ex.src {
+	case AF:
+		return 4
+	case DE:
+		return 4
+	default:
+		if _, ok := ex.dst.(IndexedContents); ok {
+			return 23
+		} else {
+			return 19
+		}
+	}
 }
 
 func (ex *EX) String() string {
@@ -490,6 +572,13 @@ type DJNZ struct {
 func (d *DJNZ) String() string {
 	return fmt.Sprintf("DJNZ %s", d.d)
 }
+func (d *DJNZ) TStates(z *Zog) int {
+	if z.reg.B == 0 {
+		return 13
+	} else {
+		return 8
+	}
+}
 func (d *DJNZ) Encode() []byte {
 	b := encodeXYZ(0, 2, 0)
 	return []byte{b, byte(d.d)}
@@ -524,6 +613,14 @@ func (j *JR) String() string {
 		return fmt.Sprintf("JR %s", j.d)
 	} else {
 		return fmt.Sprintf("JR %s, %s", j.c, j.d)
+	}
+}
+func (j *JR) TStates(z *Zog) int {
+	takeJump := j.c.IsTrue(z)
+	if takeJump {
+		return 12
+	} else {
+		return 7
 	}
 }
 func (j *JR) Encode() []byte {
@@ -562,6 +659,18 @@ func (jp *JP) String() string {
 		return fmt.Sprintf("JP %s", jp.l)
 	} else {
 		return fmt.Sprintf("JP %s, %s", jp.c, jp.l)
+	}
+}
+func (jp *JP) TStates(z *Zog) int {
+	switch jp.l.(type) {
+	case Imm16:
+		return 10
+	case R16:
+		return 4
+	case IndexedContents:
+		return 8
+	default:
+		panic(fmt.Sprintf("Unknown jp location type: %T [%s]", jp.l, jp))
 	}
 }
 func (jp *JP) Encode() []byte {
@@ -613,6 +722,14 @@ func (c *CALL) String() string {
 		return fmt.Sprintf("CALL %s, %s", c.c, c.l)
 	}
 }
+func (c *CALL) TStates(z *Zog) int {
+	takeJump := c.c.IsTrue(z)
+	if takeJump {
+		return 17
+	} else {
+		return 10
+	}
+}
 func (c *CALL) Encode() []byte {
 	c.inspect()
 	var buf []byte
@@ -641,6 +758,14 @@ func (c *CALL) Execute(z *Zog) error {
 type OUT struct {
 	port  Loc8
 	value Loc8
+}
+
+func (o *OUT) TStates(z *Zog) int {
+	if o.value == A {
+		return 11
+	} else {
+		return 12
+	}
 }
 
 func (o *OUT) String() string {
@@ -691,6 +816,14 @@ func (o *OUT) Execute(z *Zog) error {
 type IN struct {
 	dst  Loc8
 	port Loc8
+}
+
+func (i *IN) TStates(z *Zog) int {
+	if i.dst == A {
+		return 11
+	} else {
+		return 12
+	}
 }
 
 func (i *IN) String() string {
@@ -747,6 +880,13 @@ type PUSH struct {
 func NewPUSH(l Loc16) *PUSH {
 	return &PUSH{InstU16{l: l}}
 }
+func (p *PUSH) TStates(z *Zog) int {
+	if _, ok := p.l.(IndexedContents); ok {
+		return 15
+	} else {
+		return 11
+	}
+}
 func (p *PUSH) String() string {
 	return fmt.Sprintf("PUSH %s", p.l)
 }
@@ -773,6 +913,13 @@ type POP struct {
 
 func NewPOP(l Loc16) *POP {
 	return &POP{InstU16{l: l}}
+}
+func (p *POP) TStates(z *Zog) int {
+	if _, ok := p.l.(IndexedContents); ok {
+		return 14
+	} else {
+		return 10
+	}
 }
 func (p *POP) String() string {
 	return fmt.Sprintf("POP %s", p.l)
@@ -801,6 +948,9 @@ type RST struct {
 func (r *RST) String() string {
 	return fmt.Sprintf("RST %d", r.addr)
 }
+func (r *RST) TStates(z *Zog) int {
+	return 11
+}
 func (r *RST) Encode() []byte {
 	y := r.addr / 8
 	return []byte{encodeXYZ(3, y, 7)}
@@ -823,6 +973,17 @@ func (r *RET) String() string {
 		return "RET"
 	} else {
 		return fmt.Sprintf("RET %s", r.c)
+	}
+}
+func (r *RET) TStates(z *Zog) int {
+	if r.c == True {
+		return 10
+	}
+	takeJump := r.c.IsTrue(z)
+	if takeJump {
+		return 11
+	} else {
+		return 5
 	}
 }
 func (r *RET) Encode() []byte {
@@ -963,6 +1124,21 @@ func (a accum) String() string {
 		return fmt.Sprintf("%s %s", a.name, a.l)
 	}
 }
+func (a accum) TStates(z *Zog) int {
+	switch a.l.(type) {
+	case R8:
+		return 4
+	case Imm8:
+		return 7
+	case Contents:
+		return 7
+	case IndexedContents:
+		return 19
+	default:
+		panic(fmt.Sprintf("Unknown accum location type: %T", a.l))
+	}
+}
+
 func (a accum) Encode() []byte {
 	a.inspect()
 	y := findInTableALU(a.name)
@@ -1100,6 +1276,19 @@ func NewRot(name string, l Loc8, cpy Loc8) *rot {
 	return r
 }
 
+func (r *rot) TStates(z *Zog) int {
+	switch r.l.(type) {
+	case R8:
+		return 8
+	case Contents:
+		return 15
+	case IndexedContents:
+		return 23
+	default:
+		panic(fmt.Sprintf("Unknown rot location type: %T", r.l))
+	}
+}
+
 func (r *rot) String() string {
 	s := fmt.Sprintf("%s %s", r.name, r.l)
 	if r.cpy != nil {
@@ -1155,6 +1344,18 @@ type BIT struct {
 func NewBIT(num byte, l Loc8) *BIT {
 	return &BIT{InstU8: InstU8{l: l}, num: num}
 }
+func (b *BIT) TStates(z *Zog) int {
+	switch b.l.(type) {
+	case R8:
+		return 8
+	case Contents:
+		return 12
+	case IndexedContents:
+		return 20
+	default:
+		panic(fmt.Sprintf("Unknown rot location type: %T", b.l))
+	}
+}
 func (b *BIT) String() string {
 	return fmt.Sprintf("BIT %d, %s", b.num, b.l)
 }
@@ -1194,6 +1395,18 @@ type RES struct {
 func NewRES(num byte, l Loc8, cpy Loc8) *RES {
 	return &RES{InstU8: InstU8{l: l}, cpy: cpy, num: num}
 }
+func (r *RES) TStates(z *Zog) int {
+	switch r.l.(type) {
+	case R8:
+		return 8
+	case Contents:
+		return 15
+	case IndexedContents:
+		return 23
+	default:
+		panic(fmt.Sprintf("Unknown res location type: %T", r.l))
+	}
+}
 func (r *RES) String() string {
 	s := fmt.Sprintf("RES %d, %s", r.num, r.l)
 	if r.cpy != nil {
@@ -1232,6 +1445,18 @@ type SET struct {
 
 func NewSET(num byte, l Loc8, cpy Loc8) *SET {
 	return &SET{InstU8: InstU8{l: l}, cpy: cpy, num: num}
+}
+func (s *SET) TStates(z *Zog) int {
+	switch s.l.(type) {
+	case R8:
+		return 8
+	case Contents:
+		return 15
+	case IndexedContents:
+		return 23
+	default:
+		panic(fmt.Sprintf("Unknown set location type: %T", s.l))
+	}
 }
 func (s *SET) String() string {
 	str := fmt.Sprintf("SET %d, %s", s.num, s.l)
@@ -1318,6 +1543,43 @@ func (s Simple) String() string {
 	}
 	panic(fmt.Sprintf("Unknown simple instruction: %02X", byte(s)))
 }
+func (s Simple) TStates(z *Zog) int {
+	switch s {
+	case NOP:
+		return 4
+
+	case HALT:
+		return 4
+
+	case RLCA:
+		return 4
+	case RRCA:
+		return 4
+	case RLA:
+		return 4
+	case RRA:
+		return 4
+	case DAA:
+		return 4
+	case CPL:
+		return 4
+	case SCF:
+		return 4
+	case CCF:
+		return 4
+
+	case EXX:
+		return 4
+
+	case DI:
+		return 4
+	case EI:
+		return 4
+	default:
+		panic("Unknown simple instruction")
+	}
+}
+
 func (s Simple) Encode() []byte {
 	return []byte{byte(s)}
 }
@@ -1528,6 +1790,66 @@ var EDSimpleNames []edSimpleName = []edSimpleName{
 	{OTIR, "OTIR"},
 	{INDR, "INDR"},
 	{OTDR, "OTDR"},
+}
+
+func (s EDSimple) TStates(z *Zog) int {
+	switch s {
+
+	case NEG:
+		return 8
+	case RETN:
+		return 14
+	case RETI:
+		return 14
+
+	case RRD:
+		return 18
+	case RLD:
+		return 18
+
+	case IM0:
+		return 8
+	case IM1:
+		return 8
+	case IM2:
+		return 8
+
+	case LDI:
+		return 16
+	case CPI:
+		return 16
+	case LDD:
+		return 16
+	case CPD:
+		return 16
+	case LDIR:
+		return int(z.reg.Read16(BC))*21 + 16
+	case CPIR:
+		return int(z.reg.Read16(BC))*21 + 16
+	case LDDR:
+		return int(z.reg.Read16(BC))*21 + 16
+	case CPDR:
+		return int(z.reg.Read16(BC))*21 + 16
+
+	case INI:
+		return 16
+	case OUTI:
+		return 16
+	case IND:
+		return 16
+	case OUTD:
+		return 16
+	case INIR:
+		return int(z.reg.Read16(BC))*21 + 16
+	case OTIR:
+		return int(z.reg.Read16(BC))*21 + 16
+	case INDR:
+		return int(z.reg.Read16(BC))*21 + 16
+	case OTDR:
+		return int(z.reg.Read16(BC))*21 + 16
+	default:
+		panic("Unknown edsimple instruction")
+	}
 }
 
 func (s EDSimple) String() string {
