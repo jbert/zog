@@ -36,16 +36,6 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	if flag.NArg() < 1 {
-		usage("Missing filename")
-	}
-	fname := flag.Arg(0)
-
-	buf, err := ioutil.ReadFile(fname)
-	if err != nil {
-		log.Fatalf("Failed to open file [%s] : %s\n", fname, err)
-	}
-
 	z := zog.New(0)
 	z.TraceOnHalt(*numhalttrace)
 
@@ -61,7 +51,7 @@ func main() {
 	}
 
 	fmt.Printf("Loading %s\n", machine.Name())
-	err = machine.Start()
+	err := machine.Start()
 	if err != nil {
 		log.Fatalf("Failed to load machine %s: %s", machine.Name(), err)
 	}
@@ -86,6 +76,8 @@ func main() {
 		log.Fatalf("Can't add watches [%s]: %s", err)
 	}
 
+	var runErr error
+
 	if *imageFname != "" {
 		h := file.Z80header{}
 		f, err := os.Open(*imageFname)
@@ -102,13 +94,27 @@ func main() {
 			panic(err)
 		}
 
-		err = z.Run()
+		runErr = z.Run()
 	} else {
 
-		err = z.RunBytes(machine.LoadAddr(), buf, machine.RunAddr())
+		if flag.NArg() < 1 {
+			usage("Missing filename")
+		}
+		fname := flag.Arg(0)
+
+		buf, err := ioutil.ReadFile(fname)
+		if err != nil {
+			log.Fatalf("Failed to open file [%s] : %s\n", fname, err)
+		}
+
+		runErr = z.RunBytes(machine.LoadAddr(), buf, machine.RunAddr())
 		if err != nil {
 			log.Fatalf("RunBytes returned error: %s", err)
 		}
+	}
+
+	if runErr != nil {
+		fmt.Printf("ERR: %s\n", runErr)
 	}
 
 	if *haltstate {
