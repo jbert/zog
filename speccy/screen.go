@@ -48,9 +48,9 @@ func NewScreen(mem *zog.Memory) (*Screen, error) {
 func (s *Screen) Draw() {
 
 	// Clear screen
-	rect := sdl.Rect{0, 0, int32(screenWidth * screenScale), int32(screenHeight * screenScale)}
-	s.renderer.SetDrawColor(255, 255, 255, 255)
-	s.renderer.FillRect(&rect)
+	//rect := sdl.Rect{0, 0, int32(screenWidth * screenScale), int32(screenHeight * screenScale)}
+	//	s.renderer.SetDrawColor(255, 255, 255, 255)
+	//	s.renderer.FillRect(&rect)
 
 	// Draw each scanline
 	for y := 0; y < screenHeight; y++ {
