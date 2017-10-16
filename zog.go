@@ -554,9 +554,9 @@ EXECUTING:
 			lastTStates = TStates
 		}
 
-		if waitTStates > 30 {
-			println(waitTStates, " ", z.eTrace.String())
-		}
+		//		if waitTStates > 30 {
+		//			println(waitTStates, " ", z.eTrace.String())
+		//		}
 		waitDuration := time.Duration(waitTStates) * tStateDuration
 		// Busy wait - can't get time.Sleep or syscall.Nanosleep to give me good enough granularity
 		waitUntil := before.Add(waitDuration)

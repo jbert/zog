@@ -1,3 +1,50 @@
+- fix Elite
+
+DONE - find out which instruction is pausing
+  - DJNZ error
+
+DONE - jetpac works
+  - just too fast
+  - need to work on timings/t-states
+
+  - maybe have single goro and 'wait until T-state X'?
+
+    - yes, have main loop:
+      - keep track of t-states
+      - everything in terms of t-states
+        - machine supplies intervals (in t-states) and callbacks (method callbacks on speccy obj)
+        - speccy provides 50 Hz hw interrupt
+          - that resets scan position
+        - speccy provides per-byte interrupt http://www.zxdesign.info/vidparam.shtml 
+          - which is NOP unless painting screen
+        - returns number of t-states 'taken'
+          - careful - if processor is halted, we don't want to account for these
+
+- make screen refresh per-line and interleave t-states
+
+- better LD tstate handling
+
+
+
+DONE - keyboard handling:
+
+  func keyboardByte(addrHi byte, keysDown []keys) byte
+  is a pure func which can be tested :-)
+  also, a 'key' is/should have an 'addr bit' and a 'data bit', and the above function
+  is a fairly simple combination of those
+    i.e. don't loop over all possible keys and see if they are depressed
+
+- 256x256 memory visualiser
+  - read/write/execute (RGB :-)
+
+
+- "PRESS ANY KEY" in arnhem is running IN A, (0xFE)
+  - which keyboard port should that read? all of them?
+
+  - http://faqwiki.zxnet.co.uk/wiki/ZX_Spectrum_ULA
+  "IN from port xxFE will read the keyboard state and tape input. Each bit of the high byte selects a keyboard half-row; that row is read if the bit is low. If a key is pressed on any selected half-row, the corresponding bit of the data byte is low; this accounts for bits d0–d4. d6 is the value at the EAR socket (polarity?); d5 and d7 are not used. "
+    - so LD A, 0 : IN A, (0xfe) has all high byte bits low, reads all keyboard ports
+
 - hanging loop is using HALT to wait for an interrupt
   - should interrupt return after HALT
   - and inspects system variable incremented during interrupt (FRAMES)
