@@ -210,7 +210,7 @@ func (z *Zog) LoadBytes(addr uint16, buf []byte) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("L: %04X [%04X]\n", addr, len(buf))
+	//	fmt.Printf("L: %04X [%04X]\n", addr, len(buf))
 	return nil
 }
 
