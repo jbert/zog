@@ -11,6 +11,7 @@ import (
 	"github.com/jbert/zog"
 	"github.com/jbert/zog/cpm"
 	"github.com/jbert/zog/file"
+	"github.com/jbert/zog/repl"
 	"github.com/jbert/zog/speccy"
 )
 
@@ -22,6 +23,7 @@ func main() {
 	numhalttrace := flag.Int("halttrace", 0, "Number of traces to print on halt")
 	machineName := flag.String("machine", "none", "Machine for console printer (none, cpm, spectrum)")
 	imageFname := flag.String("image", "", "Name of image file (.z80 supported)")
+	quiet := flag.Bool("quiet", false, "Suppress messages")
 
 	flag.Parse()
 
@@ -46,11 +48,15 @@ func main() {
 		machine = cpm.NewMachine(z)
 	case "spectrum", "speccy":
 		machine = speccy.NewMachine(z)
+	case "repl":
+		machine = repl.NewMachine(z)
 	default:
 		panic("Specify a machine type")
 	}
 
-	fmt.Printf("Loading %s\n", machine.Name())
+	if !*quiet {
+		fmt.Printf("Loading %s\n", machine.Name())
+	}
 	err := machine.Start()
 	if err != nil {
 		log.Fatalf("Failed to load machine %s: %s", machine.Name(), err)
@@ -93,6 +99,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		// JB - TODO hack. Elite z80 file has interrupts off
+		// (or we aren't parsing it correctly)
+		//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})
 
 		runErr = z.Run()
 	} else {
