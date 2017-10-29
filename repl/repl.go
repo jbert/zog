@@ -37,7 +37,7 @@ func (m Machine) Name() string {
 func (m *Machine) Start() error {
 
 	m.z.RegisterInputHandler(func(addr uint16) byte {
-		fmt.Fprintf(os.Stderr, "JB IN addr %04X [%s]\n", addr, m.inputLine)
+		//		fmt.Fprintf(os.Stderr, "JB IN addr %04X [%s]\n", addr, m.inputLine)
 		if addr != 0 {
 			return 0
 		}
@@ -60,7 +60,7 @@ func (m *Machine) Start() error {
 
 	m.z.RegisterOutputHandler(0, func(n byte) {
 		numWritten, err := os.Stdout.Write([]byte{n})
-		fmt.Fprintf(os.Stderr, "JB wrote [%02X] (%d bytes)\n", n, numWritten)
+		//		fmt.Fprintf(os.Stderr, "JB wrote [%02X] (%d bytes)\n", n, numWritten)
 		if err != nil {
 			panic(fmt.Sprintf("Error writing to stdout: %s", err))
 		}
