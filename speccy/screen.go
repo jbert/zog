@@ -10,7 +10,7 @@ import (
 const (
 	screenWidth  = 256
 	screenHeight = 192
-	screenScale  = 4
+	screenScale  = 5
 
 	screenMemStart = 0x4000
 	colourMemStart = 0x5800
