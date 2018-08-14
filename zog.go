@@ -201,6 +201,10 @@ func (z *Zog) LoadRegisters(reg Registers) {
 	z.reg = reg
 }
 
+func (z *Zog) GetRegisters() Registers {
+	return z.reg
+}
+
 func (z *Zog) LoadInterruptState(is InterruptState) {
 	z.is = is
 }
