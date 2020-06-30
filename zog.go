@@ -1,4 +1,4 @@
-package zog
+package zog // import "github.com/jbert/zog"
 
 import (
 	"errors"
