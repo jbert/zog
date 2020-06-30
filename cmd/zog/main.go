@@ -24,6 +24,7 @@ func main() {
 	machineName := flag.String("machine", "none", "Machine for console printer (none, cpm, spectrum)")
 	imageFname := flag.String("image", "", "Name of image file (.z80 supported)")
 	quiet := flag.Bool("quiet", false, "Suppress messages")
+	mode := flag.String("mode", "run", "Operation mode (run, disassemble)")
 
 	flag.Parse()
 
@@ -103,7 +104,28 @@ func main() {
 		// (or we aren't parsing it correctly)
 		//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})
 
-		runErr = z.Run()
+		switch *mode {
+		case "run":
+			runErr = z.Run()
+		case "disassemble":
+			// Grab some memory from the start point
+			reg := z.GetRegisters()
+			size := 0x100
+			buf, err := z.Mem.PeekBuf(reg.SP, size)
+			if err != nil {
+				panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.SP))
+			}
+			instructions, err := zog.DecodeBytes(buf)
+			if err != nil {
+				panic(fmt.Sprintf("Can't decode: %s", err))
+			}
+			for _, inst := range instructions {
+				fmt.Printf("%s\n", inst)
+			}
+		default:
+			panic(fmt.Sprintf("Unkown mode: %s", *mode))
+		}
+
 	} else {
 
 		if flag.NArg() < 1 {
