@@ -86,16 +86,9 @@ func (ks *keyboardState) update() {
 	// Drain events to update map
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch ev := event.(type) {
-		case *sdl.KeyDownEvent:
+		case *sdl.KeyboardEvent:
 			kc := ev.Keysym.Sym
-			//					s := sdl.GetScancodeName(sc)
-			ks.keymove(kc, false)
-			//(*ks)[sc] = struct{}{}
-		case *sdl.KeyUpEvent:
-			kc := ev.Keysym.Sym
-			ks.keymove(kc, true)
-			//					s := sdl.GetScancodeName(sc)
-			//delete(*ks, kc)
+			ks.keymove(kc, ev.Type == sdl.KEYUP)
 		}
 	}
 }
