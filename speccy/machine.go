@@ -1,10 +1,13 @@
 package speccy
 
 import (
-	"fmt"
 	"time"
 
+	"fmt"
+	"runtime"
+
 	"github.com/jbert/zog"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type Machine struct {
@@ -16,14 +19,10 @@ type Machine struct {
 }
 
 func NewMachine(z *zog.Zog) *Machine {
-	screen, err := NewScreen(z.Mem)
-	if err != nil {
-		panic(fmt.Sprintf("Can't create screen: %s", err))
-	}
 
 	return &Machine{
 		keys:   NewKeyboardState(),
-		screen: screen,
+		screen: nil,
 		z:      z,
 
 		done: make(chan struct{}),
@@ -49,7 +48,15 @@ func (m *Machine) Start() error {
 	}
 	m.z.RegisterInputHandler(func(addr uint16) byte { return m.keys.keyboardInputHandler(addr) })
 	every := time.Second / 50
+
 	go func() {
+		runtime.LockOSThread()
+		sdl.Init(sdl.INIT_EVERYTHING)
+		screen, err := NewScreen(m.z.Mem)
+		if err != nil {
+			panic(fmt.Sprintf("Can't create screen: %s", err))
+		}
+		m.screen = screen
 		tick := time.Tick(every)
 		for {
 			select {
