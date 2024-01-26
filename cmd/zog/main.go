@@ -15,6 +15,18 @@ import (
 	"github.com/jbert/zog/speccy"
 )
 
+func getFormat(format string) (file.ImageFormat, error) {
+	switch format {
+	case "z80":
+		return &file.Z80Snapshot{}, nil
+	case "sna":
+		return &file.SNASnapshot{}, nil
+	default:
+		return nil, fmt.Errorf("Unsupported format %s\n", format)
+	}
+
+}
+
 func main() {
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile `file`")
 	trace := flag.String("trace", "", "Trace addresses: start-end,s2-e2")
@@ -25,6 +37,7 @@ func main() {
 	imageFname := flag.String("image", "", "Name of image file (.z80 supported)")
 	quiet := flag.Bool("quiet", false, "Suppress messages")
 	mode := flag.String("mode", "run", "Operation mode (run, disassemble)")
+	format := flag.String("format", "z80", "Image format (z80, sna)")
 
 	flag.Parse()
 
@@ -86,13 +99,16 @@ func main() {
 	var runErr error
 
 	if *imageFname != "" {
-		h := file.Z80header{}
+		h, err := getFormat(*format)
+		if err != nil {
+			panic(err)
+		}
 		f, err := os.Open(*imageFname)
 		if err != nil {
 			panic(err)
 		}
 		defer f.Close()
-		err = file.Z80readHeader(f, &h)
+		err = h.Parse(f)
 		if err != nil {
 			panic(err)
 		}
@@ -100,6 +116,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		fmt.Printf("z.State(): %v\n", z.State())
+
 		// JB - TODO hack. Elite z80 file has interrupts off
 		// (or we aren't parsing it correctly)
 		//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})

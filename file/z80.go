@@ -10,6 +10,19 @@ import (
 	"github.com/jbert/zog"
 )
 
+type Z80Snapshot struct {
+	Z80header
+}
+
+func (z *Z80Snapshot) Parse(r io.Reader) error {
+	err := Z80readHeader(r, &z.Z80header)
+	return err
+}
+
+func (snap *Z80Snapshot) Load(r io.Reader, z *zog.Zog) error {
+	return snap.Z80header.Load(r, z)
+}
+
 // From http://www.worldofspectrum.org/faq/reference/z80format.htm
 type Z80header struct {
 	A, F                 byte
