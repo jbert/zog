@@ -111,9 +111,9 @@ func main() {
 			// Grab some memory from the start point
 			reg := z.GetRegisters()
 			size := 0x100
-			buf, err := z.Mem.PeekBuf(reg.SP, size)
+			buf, err := z.Mem.PeekBuf(reg.PC, size)
 			if err != nil {
-				panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.SP))
+				panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.PC))
 			}
 			instructions, err := zog.DecodeBytes(buf)
 			if err != nil {
