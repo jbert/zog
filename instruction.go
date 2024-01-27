@@ -1015,19 +1015,6 @@ func isPos8(v byte) bool {
 	return v&0x80 == 0
 }
 
-/*
-func aluAdd(z *Zog, a, b byte) byte {
-	v := a+b
-	z.SetFlag(F_S, v & 0x80 != 0)
-	z.SetFlag(F_Z, v == 0)
-	z.SetFlag(F_H, ((a&0x0f)+(b&0x0f))&0x10 != 0)
-	vSigned := int(int8(a)) + int(int8(b))
-	z.SetFlag(F_PV, vSigned >= 0x80 || vSigned < -0x80)
-	z.SetFlag(F_N, false)
-	z.SetFlag(F_C, int(a) + int(b) > 0xff)
-	return v
-}
-*/
 func aluAdd(z *Zog, a, b byte) byte {
 	return adcHelper(z, a, b, 0)
 }
@@ -1823,13 +1810,13 @@ func (s EDSimple) TStates(z *Zog) int {
 	case CPD:
 		return 16
 	case LDIR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	case CPIR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	case LDDR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	case CPDR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 
 	case INI:
 		return 16
@@ -1840,13 +1827,13 @@ func (s EDSimple) TStates(z *Zog) int {
 	case OUTD:
 		return 16
 	case INIR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	case OTIR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	case INDR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	case OTDR:
-		return int(z.reg.Read16(BC))*21 + 16
+		return int(z.instIters)*21 + 16
 	default:
 		panic("Unknown edsimple instruction")
 	}
@@ -2092,6 +2079,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if !z.GetFlag(F_PV) {
 				break
 			}
@@ -2103,6 +2091,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if !z.GetFlag(F_PV) || z.GetFlag(F_Z) {
 				break
 			}
@@ -2114,6 +2103,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if !z.GetFlag(F_PV) {
 				break
 			}
@@ -2125,6 +2115,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if !z.GetFlag(F_PV) || z.GetFlag(F_Z) {
 				break
 			}
@@ -2145,6 +2136,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if z.GetFlag(F_Z) {
 				break
 			}
@@ -2156,6 +2148,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if z.GetFlag(F_Z) {
 				break
 			}
@@ -2167,6 +2160,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if z.GetFlag(F_Z) {
 				break
 			}
@@ -2178,6 +2172,7 @@ func (s EDSimple) Execute(z *Zog) error {
 			if err != nil {
 				return err
 			}
+			z.instIters++
 			if z.GetFlag(F_Z) {
 				break
 			}
