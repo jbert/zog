@@ -29,6 +29,8 @@ type Zog struct {
 
 	eTrace executeTrace
 
+	instIters int
+
 	numRecentTraces   int
 	indexRecentTraces int
 	recentTraces      []executeTrace
@@ -523,10 +525,11 @@ EXECUTING:
 			break EXECUTING
 		}
 
+		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
+		z.instIters = 0
+		instErr := inst.Execute(z)
 		waitTStates := inst.TStates(z)
 
-		//		fmt.Printf("I: %04X %s\n", lastPC, inst)
-		instErr := inst.Execute(z)
 		z.eTrace = executeTrace{ops: ops, pc: lastPC, reg: z.reg, inst: inst, watches: make(map[uint16]locWatch)}
 		if z.traces.contains(lastPC) {
 			println(z.eTrace.String())
@@ -558,9 +561,9 @@ EXECUTING:
 			lastTStates = TStates
 		}
 
-		//		if waitTStates > 30 {
-		//			println(waitTStates, " ", z.eTrace.String())
-		//		}
+		//if waitTStates > 30 {
+		//	println(waitTStates, " ", z.eTrace.String())
+		//}
 		waitDuration := time.Duration(waitTStates) * tStateDuration
 		// Busy wait - can't get time.Sleep or syscall.Nanosleep to give me good enough granularity
 		waitUntil := before.Add(waitDuration)
