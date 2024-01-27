@@ -1,5 +1,11 @@
 - fix Elite
 
+- implement colour border
+    - honour the colour in SNA format
+
+- infer filename format (SNA, z80) from extension
+    - drop format arg
+
 DONE - find out which instruction is pausing
   - DJNZ error
 
