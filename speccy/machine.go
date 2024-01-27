@@ -21,10 +21,8 @@ type Machine struct {
 func NewMachine(z *zog.Zog) *Machine {
 
 	return &Machine{
-		keys:   NewKeyboardState(),
-		screen: nil,
-		z:      z,
-
+		keys: NewKeyboardState(),
+		z:    z,
 		done: make(chan struct{}),
 	}
 }
@@ -50,13 +48,15 @@ func (m *Machine) Start() error {
 	every := time.Second / 50
 
 	go func() {
+		// See https://wiki.libsdl.org/SDL2/SDL_RenderPresent for why this is necessary
+		// Technically this should be in the main thread, but it seems to work as long as
+		// all SDL calls run in the same thread
 		runtime.LockOSThread()
 		sdl.Init(sdl.INIT_EVERYTHING)
-		screen, err := NewScreen(m.z.Mem)
+		m.screen, err = NewScreen(m.z.Mem)
 		if err != nil {
 			panic(fmt.Sprintf("Can't create screen: %s", err))
 		}
-		m.screen = screen
 		tick := time.Tick(every)
 		for {
 			select {
