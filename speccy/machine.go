@@ -23,7 +23,6 @@ func NewMachine(z *zog.Zog) *Machine {
 	return &Machine{
 		keys: NewKeyboardState(),
 		z:    z,
-
 		done: make(chan struct{}),
 	}
 }
