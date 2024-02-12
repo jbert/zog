@@ -1,6 +1,7 @@
 package speccy
 
 import (
+	"os"
 	"time"
 
 	"fmt"
@@ -14,15 +15,45 @@ type Machine struct {
 	keys   *keyboardState
 	screen *Screen
 	z      *zog.Zog
+	tape   *Tape
 
 	done chan struct{}
 }
 
-func NewMachine(z *zog.Zog) *Machine {
+func (m *Machine) portInputHandler(addr uint16) byte {
+	if addr&1 != 0 {
+		return 0
+	}
+	keysdown := m.keys.keysdown()
 
+	keyboardBytes := calcInputByte(byte(addr>>8), keysdown)
+	keyboardBytes &= 0b00011111
+
+	ear_byte := m.tape.tapeEarByte()
+	ear_byte &= 0b01000000
+
+	return keyboardBytes | ear_byte
+
+}
+
+func (m *Machine) portOutputHandler(addr uint16, b byte) {
+
+	if addr&1 != 0 {
+		return
+	}
+
+	if m.screen != nil {
+		m.screen.SetBorderCol(b)
+	} else {
+		fmt.Fprintf(os.Stderr, "Screen not initialised, border colour not changed to %03b\n", b&0b111)
+	}
+}
+
+func NewMachine(z *zog.Zog, tape_file *os.File) *Machine {
 	return &Machine{
 		keys: NewKeyboardState(),
 		z:    z,
+		tape: NewTape(tape_file),
 		done: make(chan struct{}),
 	}
 }
@@ -44,7 +75,8 @@ func (m *Machine) Start() error {
 	if err != nil {
 		return err
 	}
-	m.z.RegisterInputHandler(func(addr uint16) byte { return m.keys.keyboardInputHandler(addr) })
+	m.z.RegisterInputHandler(m.portInputHandler)
+	m.z.RegisterOutputHandler(m.portOutputHandler)
 	every := time.Second / 50
 
 	go func() {
@@ -68,6 +100,8 @@ func (m *Machine) Start() error {
 			}
 		}
 	}()
+
+	go TapeReadManager(m.tape)
 
 	return nil
 }

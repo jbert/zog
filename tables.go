@@ -21,10 +21,10 @@ var baseTableRP2 []Loc16 = []Loc16{BC, DE, HL, AF}
 
 var tableCC []Conditional = []Conditional{Not{FT_Z}, FT_Z, Not{FT_C}, FT_C, FT_PO, FT_PE, FT_P, FT_M}
 var tableBLI [][]Instruction = [][]Instruction{
-	[]Instruction{LDI, CPI, INI, OUTI},
-	[]Instruction{LDD, CPD, IND, OUTD},
-	[]Instruction{LDIR, CPIR, INIR, OTIR},
-	[]Instruction{LDDR, CPDR, INDR, OTDR},
+	{LDI, CPI, INI, OUTI},
+	{LDD, CPD, IND, OUTD},
+	{LDIR, CPIR, INIR, OTIR},
+	{LDDR, CPDR, INDR, OTDR},
 }
 
 func NewDecodeTable(r io.Reader) *DecodeTable {

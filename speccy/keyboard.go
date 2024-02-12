@@ -20,14 +20,14 @@ func NewKeyboardState() *keyboardState {
 // 8 rows - index in array is bit position in addrHi 0->7
 // 5 keys = bit0 1st, bit 4last
 var keymapForBit = [][]sdl.Keycode{
-	[]sdl.Keycode{sdl.K_LSHIFT, sdl.K_z, sdl.K_x, sdl.K_c, sdl.K_v},
-	[]sdl.Keycode{sdl.K_a, sdl.K_s, sdl.K_d, sdl.K_f, sdl.K_g},
-	[]sdl.Keycode{sdl.K_q, sdl.K_w, sdl.K_e, sdl.K_r, sdl.K_t},
-	[]sdl.Keycode{sdl.K_1, sdl.K_2, sdl.K_3, sdl.K_4, sdl.K_5},
-	[]sdl.Keycode{sdl.K_0, sdl.K_9, sdl.K_8, sdl.K_7, sdl.K_6},
-	[]sdl.Keycode{sdl.K_p, sdl.K_o, sdl.K_i, sdl.K_u, sdl.K_y},
-	[]sdl.Keycode{sdl.K_RETURN, sdl.K_l, sdl.K_k, sdl.K_j, sdl.K_h},
-	[]sdl.Keycode{sdl.K_SPACE, sdl.K_RSHIFT, sdl.K_m, sdl.K_n, sdl.K_b},
+	{sdl.K_LSHIFT, sdl.K_z, sdl.K_x, sdl.K_c, sdl.K_v},
+	{sdl.K_a, sdl.K_s, sdl.K_d, sdl.K_f, sdl.K_g},
+	{sdl.K_q, sdl.K_w, sdl.K_e, sdl.K_r, sdl.K_t},
+	{sdl.K_1, sdl.K_2, sdl.K_3, sdl.K_4, sdl.K_5},
+	{sdl.K_0, sdl.K_9, sdl.K_8, sdl.K_7, sdl.K_6},
+	{sdl.K_p, sdl.K_o, sdl.K_i, sdl.K_u, sdl.K_y},
+	{sdl.K_RETURN, sdl.K_l, sdl.K_k, sdl.K_j, sdl.K_h},
+	{sdl.K_SPACE, sdl.K_RSHIFT, sdl.K_m, sdl.K_n, sdl.K_b},
 }
 
 func calcInputByte(addrHi byte, keysdown []sdl.Keycode) byte {

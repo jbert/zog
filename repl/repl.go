@@ -58,7 +58,10 @@ func (m *Machine) Start() error {
 		return n
 	})
 
-	m.z.RegisterOutputHandler(0, func(n byte) {
+	m.z.RegisterOutputHandler(func(port uint16, n byte) {
+		if port != 0 {
+			return
+		}
 		numWritten, err := os.Stdout.Write([]byte{n})
 		//		fmt.Fprintf(os.Stderr, "JB wrote [%02X] (%d bytes)\n", n, numWritten)
 		if err != nil {
@@ -74,3 +77,5 @@ func (m *Machine) Start() error {
 
 func (m *Machine) Stop() {
 }
+
+func (m *Machine) RegisterCallbacks() {}

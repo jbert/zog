@@ -213,18 +213,18 @@ type InstBin16 struct {
 func (i *InstBin16) exec(z *Zog, f func(uint16, uint16) uint16) error {
 	src, err := i.src.Read16(z)
 	if err != nil {
-		return fmt.Errorf("%T : can't read src: %s", i, i.src, err)
+		return fmt.Errorf("%T : can't read src: %s (%v)", i, i.src, err)
 	}
 	dst, err := i.dst.Read16(z)
 	if err != nil {
-		return fmt.Errorf("%T : can't read dst: %s", i, i.dst, err)
+		return fmt.Errorf("%T : can't read dst: %s (%v)", i, i.dst, err)
 	}
 
 	v := f(dst, src)
 
 	err = i.dst.Write16(z, v)
 	if err != nil {
-		return fmt.Errorf("%T : can't write dst: %s", i, i.dst, err)
+		return fmt.Errorf("%T : can't write dst: %s (%v)", i, i.dst, err)
 	}
 	return nil
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime/pprof"
@@ -11,6 +10,7 @@ import (
 	"github.com/jbert/zog"
 	"github.com/jbert/zog/cpm"
 	"github.com/jbert/zog/file"
+	"github.com/jbert/zog/monitor"
 	"github.com/jbert/zog/repl"
 	"github.com/jbert/zog/speccy"
 )
@@ -38,6 +38,7 @@ func main() {
 	quiet := flag.Bool("quiet", false, "Suppress messages")
 	mode := flag.String("mode", "run", "Operation mode (run, disassemble)")
 	format := flag.String("format", "z80", "Image format (z80, sna)")
+	tape := flag.String("tape", "", "Name of tape file")
 
 	flag.Parse()
 
@@ -61,7 +62,18 @@ func main() {
 	case "cpm":
 		machine = cpm.NewMachine(z)
 	case "spectrum", "speccy":
-		machine = speccy.NewMachine(z)
+		var tape_file *os.File
+		if *tape == "" {
+			tape_file = os.Stdin
+		} else {
+			tmp, err := os.Open(*tape)
+			if err != nil {
+				panic(err)
+			}
+			tape_file = tmp
+		}
+		machine = speccy.NewMachine(z, tape_file)
+		machine.RegisterCallbacks()
 	case "repl":
 		machine = repl.NewMachine(z)
 	default:
@@ -117,50 +129,33 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("z.State(): %v\n", z.State())
+	}
 
-		// JB - TODO hack. Elite z80 file has interrupts off
-		// (or we aren't parsing it correctly)
-		//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})
+	// JB - TODO hack. Elite z80 file has interrupts off
+	// (or we aren't parsing it correctly)
+	//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})
 
-		switch *mode {
-		case "run":
-			runErr = z.Run()
-		case "disassemble":
-			// Grab some memory from the start point
-			reg := z.GetRegisters()
-			size := 0x100
-			buf, err := z.Mem.PeekBuf(reg.PC, size)
-			if err != nil {
-				panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.PC))
-			}
-			instructions, err := zog.DecodeBytes(buf)
-			if err != nil {
-				panic(fmt.Sprintf("Can't decode: %s", err))
-			}
-			for _, inst := range instructions {
-				fmt.Printf("%s\n", inst)
-			}
-		default:
-			panic(fmt.Sprintf("Unkown mode: %s", *mode))
-		}
-
-	} else {
-
-		if flag.NArg() < 1 {
-			usage("Missing filename")
-		}
-		fname := flag.Arg(0)
-
-		buf, err := ioutil.ReadFile(fname)
+	switch *mode {
+	case "run":
+		go monitor.Monitor()
+		runErr = z.Run()
+	case "disassemble":
+		// Grab some memory from the start point
+		reg := z.GetRegisters()
+		size := 0x100
+		buf, err := z.Mem.PeekBuf(reg.PC, size)
 		if err != nil {
-			log.Fatalf("Failed to open file [%s] : %s\n", fname, err)
+			panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.PC))
 		}
-
-		runErr = z.RunBytes(machine.LoadAddr(), buf, machine.RunAddr())
+		instructions, err := zog.DecodeBytes(buf)
 		if err != nil {
-			log.Fatalf("RunBytes returned error: %s", err)
+			panic(fmt.Sprintf("Can't decode: %s", err))
 		}
+		for _, inst := range instructions {
+			fmt.Printf("%s\n", inst)
+		}
+	default:
+		panic(fmt.Sprintf("Unkown mode: %s", *mode))
 	}
 
 	if runErr != nil {
