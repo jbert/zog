@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -22,8 +23,8 @@ type Zog struct {
 
 	interruptCh chan byte
 
-	outputHandlers map[uint16]func(n byte)
-	inputHandler   func(uint16) byte
+	outputHandler func(uint16, byte)
+	inputHandler  func(uint16) byte
 
 	traces Regions
 
@@ -68,10 +69,9 @@ func New(memSize uint16) *Zog {
 		Mode: 1,
 	}
 	z := &Zog{
-		Mem:            NewMemory(memSize),
-		outputHandlers: make(map[uint16]func(n byte)),
-		interruptCh:    make(chan byte),
-		is:             is,
+		Mem:         NewMemory(memSize),
+		interruptCh: make(chan byte),
+		is:          is,
 	}
 	z.Clear()
 	return z
@@ -237,12 +237,11 @@ func (z *Zog) Clear() {
 	z.is.IFF2 = false
 }
 
-func (z *Zog) RegisterOutputHandler(addr uint16, handler func(n byte)) error {
-	_, ok := z.outputHandlers[addr]
-	if ok {
-		return fmt.Errorf("Addr [%04X] already has an output handler", addr)
+func (z *Zog) RegisterOutputHandler(handler func(uint16, byte)) error {
+	if z.outputHandler != nil {
+		return errors.New("Output handler already registered")
 	}
-	z.outputHandlers[addr] = handler
+	z.outputHandler = handler
 	return nil
 }
 
@@ -405,17 +404,17 @@ func (z *Zog) pop() uint16 {
 }
 
 func (z *Zog) out(port uint16, n byte) {
-	//	fmt.Printf("OUT: [%04X] %02X\n", port, n)
-	handler, ok := z.outputHandlers[port]
-	if ok {
-		handler(n)
+	if z.outputHandler == nil {
+		fmt.Fprintf(os.Stderr, "Output handler not yet registered, %02X not send to %04X\n", n, port)
 	}
+	z.outputHandler(port, n)
 }
 
 func (z *Zog) in(port uint16) byte {
 	if z.inputHandler != nil {
 		return z.inputHandler(port)
 	}
+	fmt.Fprintf(os.Stderr, "Input handler not yet registered, %04X not read\n", port)
 	return 0xff
 }
 

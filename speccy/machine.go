@@ -18,8 +18,28 @@ type Machine struct {
 	done chan struct{}
 }
 
-func NewMachine(z *zog.Zog) *Machine {
+func (m *Machine) portInputHandler(addr uint16) byte {
+	if addr&1 != 0 {
+		return 0
+	}
+	keysdown := m.keys.keysdown()
 
+	keyboardBytes := calcInputByte(byte(addr>>8), keysdown)
+	keyboardBytes &= 0b00011111
+
+	return keyboardBytes
+
+}
+
+func (m *Machine) portOutputHandler(addr uint16, b byte) {
+
+	if addr&1 != 0 {
+		return
+	}
+
+}
+
+func NewMachine(z *zog.Zog) *Machine {
 	return &Machine{
 		keys: NewKeyboardState(),
 		z:    z,
@@ -44,7 +64,8 @@ func (m *Machine) Start() error {
 	if err != nil {
 		return err
 	}
-	m.z.RegisterInputHandler(func(addr uint16) byte { return m.keys.keyboardInputHandler(addr) })
+	m.z.RegisterInputHandler(m.portInputHandler)
+	m.z.RegisterOutputHandler(m.portOutputHandler)
 	every := time.Second / 50
 
 	go func() {
