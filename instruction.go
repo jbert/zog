@@ -54,8 +54,104 @@ func NewLD8(dst Loc8, src Loc8) *LD8 {
 }
 
 func (i *LD8) TStates(z *Zog) int {
-	// TODO: fixup t-states
-	return 8
+
+	switch i.dst.(type) {
+	case R8:
+		r8 := i.dst.(R8)
+		switch i.src.(type) {
+		case R8:
+			r8s := i.src.(R8)
+			if r8 >= A && r8 <= L && r8 != F {
+				if r8s >= A && r8s <= L && r8s != F {
+					return 4
+				}
+			}
+			if r8 == I {
+				if r8s == A {
+					return 9
+				}
+			}
+			if r8 == IXH || r8 == IXL || r8 == IYH || r8 == IYL {
+				return 8
+			}
+			if r8 == A && r8s == R {
+				return 9
+			}
+			if r8 == R && r8s == A {
+				return 9
+			}
+		case Imm8:
+			if r8 >= A && r8 <= L && r8 != F {
+				return 7
+			} else if r8 == IXH || r8 == IXL || r8 == IYH || r8 == IYL {
+				return 11
+			}
+
+		case Contents:
+			c := i.src.(Contents)
+			switch c.addr.(type) {
+			case R16:
+				r16, ok := c.addr.(R16)
+				if ok {
+					if r16 == HL {
+						return 7
+					}
+					if r8 == A {
+						if r16 == BC || r16 == DE {
+							return 7
+						}
+					}
+				}
+			case Imm16:
+				if r8 == A {
+					return 13
+				}
+			}
+		case IndexedContents:
+			return 19
+		}
+	case Contents:
+		c := i.dst.(Contents)
+		switch c.addr.(type) {
+		case R16:
+			r16 := c.addr.(R16)
+			if r16 == HL {
+				switch i.src.(type) {
+				case R8:
+					r8 := i.src.(R8)
+					if r8 >= A && r8 <= L && r8 != F {
+						return 7
+					}
+				case Imm8:
+					return 10
+				}
+
+			} else if r16 == BC || r16 == DE {
+
+				r8, ok := i.src.(R8)
+				if ok {
+					if r8 == A {
+						return 7
+					}
+				}
+			}
+
+		case Imm16:
+			r8, ok := i.src.(R8)
+			if ok {
+				if r8 == A {
+					return 13
+				}
+			}
+		}
+	case IndexedContents:
+		return 19
+	}
+
+	fmt.Printf("%v\n", i)
+	fmt.Printf("i.src.(R8): %d\n", i.src.(R8))
+
+	panic("Invalid load instruction\n")
 }
 
 func (l *LD8) String() string {
@@ -230,8 +326,50 @@ func NewLD16(dst, src Loc16) *LD16 {
 	return &LD16{InstBin16: InstBin16{dst: dst, src: src}}
 }
 func (i *LD16) TStates(z *Zog) int {
-	// TODO: fixup more correct timings
-	return 20
+
+	switch i.dst.(type) {
+	case R16:
+		r16 := i.dst.(R16)
+		switch i.src.(type) {
+		case Imm16:
+			if r16 == IX || r16 == IY {
+				return 14
+			}
+			return 10
+		case Contents:
+			c := i.src.(Contents)
+			switch c.addr.(type) {
+			case Imm16:
+				if r16 == HL {
+					return 16
+				}
+				return 20
+			}
+		case R16:
+			r16s := i.src.(R16)
+			if r16 == SP {
+				if r16s == HL {
+					return 6
+				} else if r16s == IX || r16s == IY {
+					return 10
+				}
+			}
+		}
+	case Contents:
+		c := i.dst.(Contents)
+		switch c.addr.(type) {
+		case Imm16:
+			r16, ok := i.src.(R16)
+			if ok {
+				if r16 == HL {
+					return 16
+				}
+				return 20
+			}
+		}
+	}
+
+	panic("Invalid load instruction\n")
 }
 func (l *LD16) String() string {
 	return fmt.Sprintf("LD %s, %s", l.dst, l.src)
@@ -800,14 +938,19 @@ func (o *OUT) Execute(z *Zog) error {
 		address bus.
 	*/
 	var addr uint16
-	v, err := o.value.Read8(z)
+	port, err := o.port.Read8(z)
 	if err != nil {
 		return err
 	}
 	if o.port == C {
 		addr = z.reg.Read16(BC)
 	} else {
-		addr = uint16(v) | (uint16(z.reg.A) << 8)
+		addr = uint16(port&0xFF) | (uint16(z.reg.A) << 8)
+	}
+
+	v, err := o.value.Read8(z)
+	if err != nil {
+		return err
 	}
 	z.out(addr, v)
 	return nil
