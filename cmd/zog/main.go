@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime/pprof"
@@ -117,50 +116,32 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("z.State(): %v\n", z.State())
+	}
 
-		// JB - TODO hack. Elite z80 file has interrupts off
-		// (or we aren't parsing it correctly)
-		//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})
+	// JB - TODO hack. Elite z80 file has interrupts off
+	// (or we aren't parsing it correctly)
+	//		z.LoadInterruptState(zog.InterruptState{IFF1: true, IFF2: true, Mode: 1})
 
-		switch *mode {
-		case "run":
-			runErr = z.Run()
-		case "disassemble":
-			// Grab some memory from the start point
-			reg := z.GetRegisters()
-			size := 0x100
-			buf, err := z.Mem.PeekBuf(reg.PC, size)
-			if err != nil {
-				panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.PC))
-			}
-			instructions, err := zog.DecodeBytes(buf)
-			if err != nil {
-				panic(fmt.Sprintf("Can't decode: %s", err))
-			}
-			for _, inst := range instructions {
-				fmt.Printf("%s\n", inst)
-			}
-		default:
-			panic(fmt.Sprintf("Unkown mode: %s", *mode))
-		}
-
-	} else {
-
-		if flag.NArg() < 1 {
-			usage("Missing filename")
-		}
-		fname := flag.Arg(0)
-
-		buf, err := ioutil.ReadFile(fname)
+	switch *mode {
+	case "run":
+		runErr = z.Run()
+	case "disassemble":
+		// Grab some memory from the start point
+		reg := z.GetRegisters()
+		size := 0x100
+		buf, err := z.Mem.PeekBuf(reg.PC, size)
 		if err != nil {
-			log.Fatalf("Failed to open file [%s] : %s\n", fname, err)
+			panic(fmt.Sprintf("Can't read [%X] bytes from [%04X]", size, reg.PC))
 		}
-
-		runErr = z.RunBytes(machine.LoadAddr(), buf, machine.RunAddr())
+		instructions, err := zog.DecodeBytes(buf)
 		if err != nil {
-			log.Fatalf("RunBytes returned error: %s", err)
+			panic(fmt.Sprintf("Can't decode: %s", err))
 		}
+		for _, inst := range instructions {
+			fmt.Printf("%s\n", inst)
+		}
+	default:
+		panic(fmt.Sprintf("Unkown mode: %s", *mode))
 	}
 
 	if runErr != nil {
