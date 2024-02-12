@@ -10,6 +10,7 @@ import (
 	"github.com/jbert/zog"
 	"github.com/jbert/zog/cpm"
 	"github.com/jbert/zog/file"
+	"github.com/jbert/zog/monitor"
 	"github.com/jbert/zog/repl"
 	"github.com/jbert/zog/speccy"
 )
@@ -72,6 +73,7 @@ func main() {
 			tape_file = tmp
 		}
 		machine = speccy.NewMachine(z, tape_file)
+		machine.RegisterCallbacks()
 	case "repl":
 		machine = repl.NewMachine(z)
 	default:
@@ -135,6 +137,7 @@ func main() {
 
 	switch *mode {
 	case "run":
+		go monitor.Monitor()
 		runErr = z.Run()
 	case "disassemble":
 		// Grab some memory from the start point
