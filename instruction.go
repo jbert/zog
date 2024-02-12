@@ -685,20 +685,20 @@ func (ex *EX) Encode() []byte {
 func (ex *EX) Execute(z *Zog) error {
 	a, err := ex.src.Read16(z)
 	if err != nil {
-		return fmt.Errorf("%s : can't read src: %s", ex, ex.src, err)
+		return fmt.Errorf("%s : can't read src: %s (%v)", ex, ex.src, err)
 	}
 	b, err := ex.dst.Read16(z)
 	if err != nil {
-		return fmt.Errorf("%s : can't read dst: %s", ex, ex.dst, err)
+		return fmt.Errorf("%s : can't read dst: %s (%v)", ex, ex.dst, err)
 	}
 
 	err = ex.dst.Write16(z, a)
 	if err != nil {
-		return fmt.Errorf("%s : can't write dst: %s", ex, ex.dst, err)
+		return fmt.Errorf("%s : can't write dst: %s (%v)", ex, ex.dst, err)
 	}
 	err = ex.src.Write16(z, b)
 	if err != nil {
-		return fmt.Errorf("%s : can't write dst: %s", ex, ex.dst, err)
+		return fmt.Errorf("%s : can't write dst: %s (%v)", ex, ex.dst, err)
 	}
 	return nil
 }
