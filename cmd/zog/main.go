@@ -37,6 +37,7 @@ func main() {
 	quiet := flag.Bool("quiet", false, "Suppress messages")
 	mode := flag.String("mode", "run", "Operation mode (run, disassemble)")
 	format := flag.String("format", "z80", "Image format (z80, sna)")
+	tape := flag.String("tape", "", "Name of tape file")
 
 	flag.Parse()
 
@@ -60,7 +61,17 @@ func main() {
 	case "cpm":
 		machine = cpm.NewMachine(z)
 	case "spectrum", "speccy":
-		machine = speccy.NewMachine(z)
+		var tape_file *os.File
+		if *tape == "" {
+			tape_file = os.Stdin
+		} else {
+			tmp, err := os.Open(*tape)
+			if err != nil {
+				panic(err)
+			}
+			tape_file = tmp
+		}
+		machine = speccy.NewMachine(z, tape_file)
 	case "repl":
 		machine = repl.NewMachine(z)
 	default:
