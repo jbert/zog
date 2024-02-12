@@ -477,6 +477,10 @@ func (z *Zog) execute(addr uint16) (errRet error) {
 	return z.Run()
 }
 
+const ClockHz = 3500000 / 2
+
+var TStateDuration = time.Second / time.Duration(ClockHz)
+
 func (z *Zog) Run() (errRet error) {
 	ops := uint64(0)
 	TStates := uint64(0)
@@ -506,9 +510,6 @@ func (z *Zog) Run() (errRet error) {
 	}()
 
 	halted := false
-
-	clockHz := 4000000
-	tStateDuration := time.Second / time.Duration(clockHz)
 
 EXECUTING:
 	for {
@@ -563,7 +564,7 @@ EXECUTING:
 		//if waitTStates > 30 {
 		//	println(waitTStates, " ", z.eTrace.String())
 		//}
-		waitDuration := time.Duration(waitTStates) * tStateDuration
+		waitDuration := time.Duration(waitTStates) * TStateDuration
 		// Busy wait - can't get time.Sleep or syscall.Nanosleep to give me good enough granularity
 		waitUntil := before.Add(waitDuration)
 		for time.Now().Before(waitUntil) {
