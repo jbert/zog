@@ -72,8 +72,14 @@ printstr_end:
 func (m *Machine) Stop() {
 }
 
+func (m *Machine) outputHandle(port uint16, data byte) {
+	if port == 0xffff {
+		printByte(data)
+	}
+}
+
 func (m *Machine) Start() error {
-	m.z.RegisterOutputHandler(0xffff, printByte)
+	m.z.RegisterOutputHandler(m.outputHandle)
 	zeroPageAssembly, err := zog.Assemble(`
 	ORG 0000h
 	HALT
@@ -105,3 +111,5 @@ func (m *Machine) Start() error {
 func printByte(n byte) {
 	fmt.Fprintf(os.Stderr, "%c", n)
 }
+
+func (m *Machine) RegisterCallbacks() {}

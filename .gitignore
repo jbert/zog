@@ -8,3 +8,11 @@ err
 out
 *.out
 *.z80
+**.tap
+**.TAP
+**.SNA
+**.snapshot
+**.tzx
+**.TZX
+**/zog
+**/zogas

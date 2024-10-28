@@ -6,4 +6,5 @@ type Machine interface {
 	Name() string
 	Start() error
 	Stop()
+	RegisterCallbacks()
 }
